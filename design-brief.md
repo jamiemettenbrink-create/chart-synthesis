@@ -46,13 +46,21 @@ feel like turning pages, not scrolling through a feed.
 
 ## Page Structure
 
+**Before first generation:**
 ```
 ┌─────────────────────────────┐
 │         HEADER              │  Logo/title — minimal, centered
 ├─────────────────────────────┤
-│         INPUT FORM          │  Collapsible after submission
+│         INPUT FORM          │  All fields visible
 ├─────────────────────────────┤
 │      [ Generate Button ]    │
+└─────────────────────────────┘
+```
+
+**After generation (reading state):**
+```
+┌─────────────────────────────┐
+│  HEADER + PROFILE SUMMARY   │  Name · date · city · Enneagram (if set) · ✏ Edit
 ├─────────────────────────────┤
 │         BLUEPRINT           │  Always visible, full-width
 │   (streams in on generate)  │
@@ -63,7 +71,7 @@ feel like turning pages, not scrolling through a feed.
 │   ...                       │
 │   ▶ Section 13              │
 ├─────────────────────────────┤
-│      CHART GLOSSARY         │  7 collapsible system sections
+│      CHART GLOSSARY         │  6–7 collapsible system sections
 │   ▶ Western Astrology       │  All collapsed by default
 │   ▶ Human Design            │
 │   ...                       │
@@ -76,8 +84,15 @@ feel like turning pages, not scrolling through a feed.
 
 ## Input Form
 
-All fields visible on load. Form collapses (or fades to a compact summary bar) after
-the user hits Generate, so the reading takes over the screen.
+All fields visible on load. After the user hits Generate, the form collapses into the
+header as a compact profile summary, so the reading takes over the screen.
+
+**Collapsed state (header):**
+- Displays: name · birth date · birth city · Enneagram type (if provided)
+- A small edit affordance (pencil icon or "Edit" link) sits at the right edge
+- Tapping anywhere on the summary re-expands the full form above the reading
+- The Generate button reappears when the form is expanded; hidden otherwise
+- Transition: form slides up and fades into the header (~250ms); smooth, not abrupt
 
 **Fields:**
 
@@ -105,6 +120,13 @@ the user hits Generate, so the reading takes over the screen.
 - Loading state: label changes to "Calculating..." during JS calculations, then
   "Writing your reading..." during API stream
 - Disabled state while already generating
+- Hidden after first generation; reappears only when the form is re-expanded via Edit
+
+**Regeneration behavior (when user edits and re-submits):**
+- Existing reading fades to 50% opacity
+- A centered "Regenerating..." graphic overlays the faded content
+- New content streams in, replacing the old reading in place
+- Reading returns to full opacity on completion
 
 ---
 
