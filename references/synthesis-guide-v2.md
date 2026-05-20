@@ -231,7 +231,7 @@ Day Master + Strength + Dominant/Missing Elements
 
 ### Section 7: Relationship Dynamics
 
-**Systems to draw from:** Western 7th house | Venus sign/house | Moon | HD Authority in relationships | Enneagram relational pattern | Vedic 7th lord
+**Systems to draw from:** Western 7th house | Venus sign/house | Moon | HD Authority in relationships | Enneagram relational pattern (if provided) | Vedic 7th lord
 
 **What to cover:**
 - 7th house sign and any planets (what is encountered in partnership / what hasn't been claimed)
@@ -358,6 +358,10 @@ Day Master + Strength + Dominant/Missing Elements
 - When systems contradict, explore the tension rather than hiding it
 - Weight convergences explicitly: "Three independent systems agree here..."
 - Write the alignment statement as something true enough to be slightly uncomfortable
+
+**If Enneagram is not provided:** Omit all Enneagram content from the synthesis and
+glossary entirely. Do not note its absence. Proceed as if the system inventory is
+Western + Human Design + Vedic + BaZi + Numerology + Gene Keys + Sabian Symbols.
 
 **Never do:**
 - Generic descriptions that could apply to anyone with that sun sign

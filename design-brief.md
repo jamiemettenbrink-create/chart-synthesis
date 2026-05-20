@@ -87,13 +87,9 @@ the user hits Generate, so the reading takes over the screen.
 | Birth date | Date picker | |
 | Birth time | Time input | Include "Time unknown" toggle — disables ASC/MC/houses when checked |
 | Birth city | Text with autocomplete | Geocoded via Nominatim (OpenStreetMap, no API key needed) |
-| Human Design API key | Password input | Optional; link: humandesignhub.app/en/developer; "What's this?" tooltip |
-| Enneagram type | Dropdown | Format: "Type 1", "Type 2" ... "Type 9"; second dropdown for wing (optional); third for instinct SP/SX/SO (optional) |
-| Current year | Number | Defaults to current year; used for numerology Personal Year |
-| Anthropic API key | Password input | Required for synthesis generation; stored in sessionStorage only |
+| Enneagram type | Dropdown | Optional. Format: "Type 1" ... "Type 9"; second dropdown for wing (optional); third for instinct SP/SX/SO (optional). If left blank, Enneagram section is omitted from output entirely. |
 
 **Form UX notes:**
-- API key fields should have a show/hide toggle
 - "Time unknown" toggle should visually disable the time field
 - City field should show a subtle loading state while geocoding
 - Form validation inline, not on submit — gold underline for active field, red for error
@@ -159,7 +155,7 @@ the user hits Generate, so the reading takes over the screen.
 
 ## Output: The Chart Glossary
 
-Same accordion pattern as Deep Dive, but grouped by system (7 accordions):
+Same accordion pattern as Deep Dive, but grouped by system (6–7 accordions):
 
 1. Western Astrology
 2. Human Design
@@ -167,7 +163,7 @@ Same accordion pattern as Deep Dive, but grouped by system (7 accordions):
 4. BaZi Four Pillars
 5. Numerology
 6. Gene Keys
-7. Enneagram
+7. Enneagram *(only rendered if Enneagram type was entered)*
 
 Within each open system section, entries are formatted:
 
@@ -243,10 +239,10 @@ handle this comfortably, not just look good with two lines of Lorem Ipsum.
 - No external JS libraries except: optionally a lightweight markdown renderer
 - Nominatim for geocoding (free, no key)
 - timeapi.io for timezone lookup
-- Human Design Hub API for HD data (user provides key)
-- Anthropic Messages API for synthesis (user provides key, streamed via fetch)
-- All API keys stay in sessionStorage only — never logged, never sent anywhere except
-  their respective APIs
+- Human Design Hub API for HD data (key pre-configured in source — not entered by user)
+- Anthropic Messages API for synthesis (key pre-configured in source, streamed via fetch)
+- Current year auto-detected from the browser — not entered by user
+- App is private/personal use; keys are hardcoded for simplicity
 
 ---
 
@@ -254,10 +250,10 @@ handle this comfortably, not just look good with two lines of Lorem Ipsum.
 
 A single static HTML file with:
 - Full visual design implemented in CSS
-- All input form fields present and styled (non-functional)
+- All input form fields present and styled (non-functional) — 5 fields: name, date, time, city, Enneagram
 - Sample Blueprint content visible (hardcoded)
 - All 13 Deep Dive accordions present with hardcoded section titles and sample content
-- All 7 Glossary accordions present with hardcoded sample entries
+- 6 Glossary accordions present with hardcoded sample entries (Enneagram included as example of conditional render)
 - Working accordion expand/collapse behavior (JS)
 - Copy button present (non-functional in mockup)
 - Mobile-responsive layout

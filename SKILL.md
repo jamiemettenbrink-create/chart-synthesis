@@ -52,9 +52,8 @@ Required:
 
 Optional but valuable:
 - Full legal birth name at birth (enables numerology Expression and Soul Urge numbers)
-- Human Design Hub API key (get free at humandesignhub.app/en/developer)
-- Enneagram type (e.g. "2w3" or "Type 4, Social subtype")
-- Current year (for Personal Year numerology; defaults to 2026)
+- Enneagram type (e.g. "2w3" or "Type 4, Social subtype") — if not provided, omit all Enneagram content from synthesis and glossary
+- Current year (for Personal Year numerology; auto-detected — no input required)
 
 ---
 
@@ -108,8 +107,7 @@ python3 scripts/calculate_vedic.py \
 ```bash
 python3 scripts/calculate_numerology.py \
   --year YYYY --month MM --day DD \
-  --name "Full Legal Birth Name" \
-  --current_year 2026
+  --name "Full Legal Birth Name"
 ```
 
 ### OR: Run all at once with the master runner
@@ -135,7 +133,7 @@ python3 scripts/run_full_chart.py \
 ### 3E. Human Design Hub API (call from browser/fetch, not bash — network restricted)
 ```
 POST https://api.humandesignhub.app/v1/bodygraph
-Header: X-API-KEY: {user's key}
+Header: X-API-KEY: [pre-configured — not required from user]
 Body: {"datetime": "YYYY-MM-DDTHH:MM:SS±HH:MM"}
 ```
 Cost: 1 credit (100/month free). Returns: type, strategy, authority, profile,
@@ -168,7 +166,7 @@ The `run_full_chart.py` script auto-generates convergence hints — review these
 □ Does the same element appear in Western Sun/ASC, BaZi Day Master, and Vedic Lagna?
 □ Does the North Node direction match across Western and Vedic systems?
 □ Does the BaZi Day Master element echo the Western dominant element?
-□ Do the Gene Keys primary shadow and Enneagram core wound name the same pattern?
+□ Do the Gene Keys primary shadow and Enneagram core wound name the same pattern? (only if Enneagram provided)
 □ Does the Numerology Life Path theme echo the HD Incarnation Cross purpose?
 □ Do current timing indicators (Vedic Dasha, Numerology Personal Year) agree?
 
@@ -203,7 +201,7 @@ End with the Integrated Alignment Statement (4-6 sentences, first person).
 
 **Closing — Chart Glossary ("Your Chart at a Glance")**
 All systems, all key terms, 2–3 sentences each — personalized to this specific chart.
-Organized by system: Western → Human Design → Vedic → BaZi → Numerology → Gene Keys → Enneagram.
+Organized by system: Western → Human Design → Vedic → BaZi → Numerology → Gene Keys → Enneagram (only if provided).
 See `references/synthesis-guide-addendum-v2.1.md` for full structure and tone guidance.
 
 ---
@@ -232,8 +230,7 @@ python3 scripts/run_full_chart.py \
   --hd_cross "Right Angle Cross of the Unexpected" \
   --hd_centers "Sacral,Solar Plexus" \
   --hd_channels "27-50,28-38,41-30" \
-  --hd_gates "27,28,41,31,50,38,30" \
-  --current_year 2026
+  --hd_gates "27,28,41,31,50,38,30"
 ```
 
 Key convergences this produces:

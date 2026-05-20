@@ -30,6 +30,7 @@ import sys
 import os
 import argparse
 import json
+from datetime import datetime
 
 # Add scripts dir to path
 SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -41,11 +42,13 @@ from calculate_vedic import calculate_vedic, format_vedic
 from calculate_numerology import calculate_numerology, format_numerology
 
 def run_full_chart(year, month, day, hour, minute, utc_offset, lat, lng,
-                   name="Chart", full_name=None, current_year=2026,
+                   name="Chart", full_name=None, current_year=None,
                    hd_data=None, enneagram=None, enneagram_instinct=None):
     """
     Run all calculators and return unified results dict.
     """
+    if current_year is None:
+        current_year = datetime.now().year
     results = {}
     errors = []
     
@@ -288,7 +291,7 @@ def main():
     parser.add_argument('--lng',    type=float, required=True)
     parser.add_argument('--name',   type=str, default='Chart')
     parser.add_argument('--full_name', type=str, default=None, help='Full legal birth name for numerology')
-    parser.add_argument('--current_year', type=int, default=2026)
+    parser.add_argument('--current_year', type=int, default=None)
     # HD arguments
     parser.add_argument('--hd_type',      type=str, default=None)
     parser.add_argument('--hd_strategy',  type=str, default=None)
