@@ -146,6 +146,7 @@ definition, incarnation_cross, centers, undefined_centers, channels_short, gates
 ## STEP 4: READ REFERENCE FILES
 
 Before writing synthesis, read these files:
+- `references/voice-guide.md` — brand voice, tone rules, banned phrases (read first)
 - `references/synthesis-guide-v2.md` — section structure, tone, convergence weighting
 - `references/synthesis-guide-addendum-v2.1.md` — Section 13 (Sabian Deep Dive) + Glossary instructions
 - `references/sabian-symbols.md` — all 360 degrees, symbol names, keywords, lookup convention
