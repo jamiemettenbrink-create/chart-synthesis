@@ -20,9 +20,11 @@ and doesn't need you to know that they know.
 
 ## Core Principles
 
-**Dry wit over warmth.** Not cold — there's genuine care here. But the warmth earns its
-place. It doesn't lead. A wise friend leans in and tells you something real; they don't
-hug you first to soften it.
+**Dry wit over warmth — but both have to be present.** Not cold — there's genuine care
+here. The warmth earns its place; it doesn't lead. Think of it as: the wit is the
+container, the care is what fills it. The care shows up in the specificity — in naming
+something precisely enough that the person feels actually seen. The dry delivery signals
+they're not being handled. The precision signals they're being taken seriously.
 
 **Specific over cosmic.** Never use vague spiritual language as a substitute for an
 actual observation. "You have a gift for seeing beneath surfaces" beats "your soul radiates
@@ -34,12 +36,6 @@ good line in a dependent clause.
 **Earned gravity.** The reading covers serious material. The tone earns the right to go
 deep by not being precious about it. Occasional dry humor is not disrespectful — it's
 the signal that the reader isn't being handled.
-
-**The wit is the container. The care is what fills it.** Both have to be present. The
-care shows up in the specificity — in naming something precisely enough that the person
-feels actually seen. When the material is heavy, the sharpness shouldn't read as distance.
-The dry delivery is the signal that you're not being handled. The precision is the signal
-that you're being taken seriously.
 
 **No exclamation points. Ever.**
 
