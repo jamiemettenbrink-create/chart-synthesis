@@ -14,6 +14,7 @@ Usage:
 
 import argparse
 import re
+from datetime import datetime
 
 # ── Pythagorean Letter-to-Number Map ─────────────────────────────────────────
 LETTER_VALUES = {
@@ -214,7 +215,9 @@ def pinnacles_and_challenges(month, day, year, life_path_num):
         'challenges': [c1, c2, c3, c4],
     }
 
-def calculate_numerology(year, month, day, full_name, current_year=2026):
+def calculate_numerology(year, month, day, full_name, current_year=None):
+    if current_year is None:
+        current_year = datetime.now().year
     lp   = life_path(year, month, day)
     expr = expression_number(full_name)
     soul = soul_urge_number(full_name)
@@ -299,7 +302,7 @@ def main():
     parser.add_argument('--month', type=int, required=True)
     parser.add_argument('--day',   type=int, required=True)
     parser.add_argument('--name',  type=str, required=True, help='Full legal birth name')
-    parser.add_argument('--current_year', type=int, default=2026)
+    parser.add_argument('--current_year', type=int, default=None)
     args = parser.parse_args()
     
     num = calculate_numerology(args.year, args.month, args.day, args.name, args.current_year)
