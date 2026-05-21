@@ -227,6 +227,36 @@ See `references/synthesis-guide-addendum-v2.1.md` for full structure and tone gu
 
 ---
 
+## STEP 6.5: PRE-SAVE QUALITY GATE
+
+Run this checklist before saving. These are the failure modes that have produced factual errors or structural problems in past charts. Check every box before proceeding to Step 7.
+
+### Planetary Accuracy
+```bash
+python3 scripts/calculate_chart.py --test
+```
+All 6 tests must PASS. If any fail, do not proceed — the underlying script has a regression.
+
+Additionally, spot-check Pluto and the outer nodes against the calculator output:
+- □ Pluto's sign is consistent with the birth year:
+  - Before Nov 1983 → Libra/earlier | 1983–1995 → Scorpio | 1995–2008 → Sagittarius
+  - 2008–2024 → Capricorn | 2024 onwards → Aquarius (with retrograde exceptions)
+- □ If any planet is within 2° of a sign boundary, note it as potentially retrogrades across — double-check the exact date in the synthesis prose
+
+### Document Structure
+- □ **One Integrated Alignment Statement only** — it belongs at the close of the Blueprint. The Deep Dive and Glossary do not repeat it. Search the document for a second occurrence before saving.
+- □ **"For parents" notes are present in all four Blueprint sub-sections** for child charts (subject under 13). These stop at the Blueprint; do not add them to the Deep Dive.
+- □ **HD and Gene Keys sections present only if HD gate list was confirmed** from the API. If the API was unavailable, both sections are omitted entirely — no approximations.
+- □ **Gene Keys at-a-glance is marked as a reference table** (not a second interpretive pass). If Section 5 exists, the at-a-glance adds no new interpretation — it is a lookup only.
+- □ **Numerology is present only if a full legal birth name was provided.** If the name is approximate, nickname-only, or unverified, omit the section and note why.
+- □ **All planet aspects described as "conjunct" are within orb** (8° for personal planets, 5° for angles). Planets sharing a house but outside orb are described as "co-present in [house/sign]," not conjunct.
+
+### Cross-System Consistency
+- □ The Pluto house in the document matches the chart output house (should now be H1 for Capricorn Pluto with Capricorn rising — not H12)
+- □ The Moon/MC note clarifies the house system if the MC falls outside the 10th house in Whole Sign (expected behavior — add a parenthetical if so)
+
+---
+
 ## STEP 7: SAVE OUTPUT TO FILE
 
 After the synthesis is complete, always save the full reading to a file.

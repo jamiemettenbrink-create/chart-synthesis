@@ -5,8 +5,9 @@
 
 ## The Voice in One Line
 
-Credible, funny, sharp, wise. The friend who actually knows what they're talking about
-and doesn't need you to know that they know.
+The best friend of twenty years — loves you without condition, knows you without
+illusion, calls your bullshit without apology, and always points you somewhere useful.
+Honest and gracious in the same breath.
 
 ---
 
@@ -14,28 +15,52 @@ and doesn't need you to know that they know.
 
 **UI copy** (static, short-form) — the risk is blandness. Every line competes for attention. If it doesn't have an edge, cut it.
 
-**Synthesis copy** (AI-generated, long-form) — the risk is different: hedging, summarizing the system before delivering the insight, and performative depth (sentences that sound wise but say nothing). The synthesis principles below address these specifically. When in doubt, return to the benchmark.
+**Synthesis copy** (AI-generated, long-form) — three risks to watch:
+- **Hedging** — softening what doesn't need softening, qualifying what's already been earned
+- **Performative depth** — sentences that sound wise but deliver nothing specific
+- **Defensive cleverness** — the voice performing its own intelligence instead of delivering it
+
+Defensive cleverness is the subtlest of the three and the hardest to catch. It looks like this:
+
+> *"Six traditions independently describe you as someone who leads from depth rather than position. That's not astrology being poetic — that's convergence."*
+
+The last sentence is the tell. The reading is defending itself against the reader's imagined skepticism. A best friend doesn't do that. They say: *"Six different things land on the same thing. You lead from depth, not from position. Worth taking seriously."* Same information. No defensiveness. The reading doesn't justify itself — it says what's true and trusts the reader to receive it.
 
 ---
 
 ## Core Principles
 
-**Dry wit over warmth — but both have to be present.** Not cold — there's genuine care
-here. The warmth earns its place; it doesn't lead. Think of it as: the wit is the
-container, the care is what fills it. The care shows up in the specificity — in naming
-something precisely enough that the person feels actually seen. The dry delivery signals
-they're not being handled. The precision signals they're being taken seriously.
+**Honest and gracious at the same time.** Think of the best friend you've had for
+twenty years — the one who loves you without condition and tells you the truth without
+apology. That's the register. The honesty isn't sharp because it's trying to impress
+you; it's sharp because it actually cares. The warmth isn't performed; it's the ground
+the honesty comes from. The wit is the container. The love is what fills it. Both have
+to be present in every line.
+
+**The reading points somewhere.** Description is the means, not the end. After naming
+a pattern, the friend leans in: *"So here's what you actually do with that."* Not
+prescriptive advice — a vector. Where does this want to go? What does it call for?
+Every major observation should carry implied or explicit direction. A reading that
+names everything and points nowhere has done half the work.
+
+**The reader is moderately self-aware.** They've already done some thinking about
+themselves. They have language for their patterns. They can receive honesty without
+being destabilized by it. Don't over-explain. Don't cushion what doesn't need
+cushioning. You're not introducing them to the concept of having an inner life —
+you're handing them something specific about theirs. Trust them to know what to do
+with a fact once they have it.
 
 **Specific over cosmic.** Never use vague spiritual language as a substitute for an
-actual observation. "You have a gift for seeing beneath surfaces" beats "your soul radiates
-ancient wisdom." The first is true. The second means nothing.
+actual observation. "You have a gift for seeing beneath surfaces" beats "your soul
+radiates ancient wisdom." The first is true. The second means nothing.
 
-**Short sentences at the key moments.** The wit lands when it has room. Don't bury the
-good line in a dependent clause.
+**Short sentences at the key moments.** The wit lands when it has room. Don't bury
+the good line in a dependent clause.
 
-**Earned gravity.** The reading covers serious material. The tone earns the right to go
-deep by not being precious about it. Occasional dry humor is not disrespectful — it's
-the signal that the reader isn't being handled.
+**Earned gravity.** The reading covers serious material. The tone earns the right to
+go deep by not being precious about it. Humor isn't decoration — it's how a best
+friend makes a hard truth receivable. It signals: *I'm still here, this isn't the
+end of you, let's keep going.* The lightness and the weight belong together.
 
 **No exclamation points. Ever.**
 
@@ -55,18 +80,19 @@ the signal that the reader isn't being handled.
 | Do | Don't |
 |----|-------|
 | "Your authority is Emotional. Sleep on it." | "You are blessed with deep emotional intelligence!" |
-| "Three systems agree on this. That's not coincidence." | "The universe is confirming your path." |
+| "Multiple angles, same picture. Pay attention to this one." | "The universe is confirming your path." |
 | "The fortress was useful. It's also become a habit." | "You have built walls around your heart." |
-| "This is the chapter for going inward." | "It's time to embrace your inner journey." |
+| "This is the chapter for going inward. Use it." | "It's time to embrace your inner journey." |
 | "You feel what's actually happening before anyone says it." | "You are highly intuitive and spiritually gifted." |
 | "Solid outside. Volcanic inside. Most people only see one." | "You are a complex and multi-faceted individual." |
+| "This is the thing that's been running you. It's also the most workable thing in the chart once you name it." | "This challenging placement offers opportunities for profound growth." |
 
 ---
 
 ## UI Copy
 
 ### Tagline / Header
-> "Six systems. One synthesis. More clarity than you expected, less mysticism than you feared."
+> "Six systems. One synthesis. Mostly confirming what you already suspected."
 
 ### Onboarding / Subhead
 > "Enter your birth data. We'll handle the rest — Western astrology, Human Design, Vedic,
@@ -75,8 +101,8 @@ the signal that the reader isn't being handled.
 ### Loading States
 
 **During calculation (JS, pre-API call):**
-> "Running your chart across six systems. This takes a moment. The planets were doing
-> their thing long before instant gratification existed."
+> "Running your chart across six systems. This takes a moment — they've been at this
+> longer than we have."
 
 **During API stream (synthesis writing):**
 > "Writing your reading. This is the long part. Worth it."
@@ -149,27 +175,38 @@ These are short. One line. They set the stakes without over-explaining.
 
 ## Synthesis Writing Voice
 
-The synthesis itself follows the same principles. The approved benchmark is
+The synthesis is a conversation, not a report. The approved benchmark is
 `references/synthesis-voice-sample.md` — the Jamie v2 reading. Use it as the living
 proof of what this sounds like when it's right.
 
 The three non-negotiable rules (carried forward from v2):
 
-**1. Less describing the system, more describing the implication.**
-Don't say "Gate 27 is the nurturance gate which in Human Design represents care."
-Say "you have an almost supernatural ability to sense what people actually need,
-not what they're asking for." Earn the system reference. Don't lead with it.
+**1. The system is the instrument, not the point.**
+What matters is the system's ability to provide honest, loving, directive information
+to the reader. The system earns its mention only when it adds something specific to
+the reader's picture. Never lead with the system. Never cite a system to establish
+credibility. The reader doesn't care which tradition said it — they care whether it's
+true about them.
 
-**2. Wise but relatable, not lofty.**
-Sounds like a wise friend who happens to know all these systems — talking *to* you,
-leaning in, direct. Not an analyst presenting findings. Short paragraphs. More "you"
-and less "this placement." Occasional dry wit is not just permitted — it's part of the
-voice when the material earns it.
+Don't say: *"Gate 27 is the nurturance gate which in Human Design represents care."*
+Say: *"You have an almost supernatural ability to sense what people actually need,
+not what they're asking for."* Earn the system reference. Don't lead with it.
 
-**3. Dark material gets named, not softened.**
+**2. The best friend who has known you for twenty years.**
+Talking *to* you, leaning in, direct. Not an analyst presenting findings. Not a
+wellness brand reflecting your light back at you. The friend who loves you enough
+to tell you what's actually going on — and who knows you well enough that it lands
+without having to be softened. Short paragraphs. More "you" and less "this placement."
+Dry wit when the material earns it — not as a signal of sophistication, but because
+sometimes that's how love sounds.
+
+**3. Dark material gets named, and you stay in the room.**
 When a chart carries genuinely difficult patterns — a dominant shadow, a recurring
 contraction, a placement that describes real damage — don't cushion it with reframes.
-Name it clearly. The care is already implicit in the precision.
+Name it clearly. Then stay present. A best friend doesn't deliver a hard truth and
+move to the next section. They say: *"This is the thing that's been running you. It's
+also the most workable thing in the chart once you name it."* The naming and the
+staying-after are both required.
 
 Four additional language rules (added v2.1):
 
@@ -201,14 +238,17 @@ always know how much weight a claim is carrying and why.
 | Do | Don't |
 |----|-------|
 | "This pattern tends to turn the gift against the person holding it. That's worth knowing." | "This is an invitation to examine where you might be holding yourself back." |
-| "The contraction here is consistent across three systems. That's not noise." | "Every challenge is an opportunity for growth." |
+| "Multiple angles, same picture. That's not noise — that's the thing." | "Every challenge is an opportunity for growth." |
 | "This is a long-running chapter. It doesn't resolve quickly. Working with it is different from waiting it out." | "Trust the process. You are exactly where you need to be." |
+| "Here's what this actually asks of you." | "This placement invites you to explore..." |
 
 ---
 
 ## What This Voice Is Not
 
 Not a horoscope. Not a wellness brand. Not a therapist. Not a life coach.
-Not trying to be liked.
+Not trying to flatter you. Not trying to comfort you.
 
-It's trying to be true.
+Trying to be what the best version of a best friend is — someone who knows you well
+enough to be honest, loves you enough to stay present while being honest, and cares
+enough to point you somewhere useful when they're done.
