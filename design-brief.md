@@ -12,38 +12,6 @@ from the browser.
 
 ---
 
-## Aesthetic Direction
-
-**Dark, refined, unhurried.** Think old leather, ink, candlelight, gold leaf on black.
-Not mystical-kitschy (no stars-and-moons clip art, no purple gradients). Not sterile-tech
-(no white cards, no Material UI). The closest reference: a beautifully typeset private
-document — something that feels like it was made specifically for one person.
-
-**Design tokens:**
-
-| Token | Value |
-|-------|-------|
-| Background | `#0d0d0d` (near-black) |
-| Surface (cards, input fields) | `#141414` |
-| Text primary | `#e8e0d0` (warm off-white) |
-| Text secondary | `#a09880` (muted warm gray) |
-| Accent / gold | `#c9a96e` (muted gold) |
-| Accent hover | `#dbbf85` (slightly brighter gold) |
-| Divider | 1px `#c9a96e` at 30% opacity |
-| Error | `#c97a6e` |
-
-**Typography:**
-
-- Headings: Georgia, serif — warm, classic, not trendy
-- Body: system-ui or Inter, sans-serif — readable at length on mobile
-- Section labels / metadata: small caps or spaced uppercase, muted gold
-- No web font dependencies — keep it self-contained
-
-**Spacing:** Generous. This is a long reading. Give it room to breathe. Sections should
-feel like turning pages, not scrolling through a feed.
-
----
-
 ## Page Structure
 
 **Before first generation:**
