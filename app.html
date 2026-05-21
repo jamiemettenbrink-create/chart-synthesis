@@ -1,0 +1,1517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#0D0D11"/>
+<title>un/charted</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#0D0D11;--void-soft:#0F0F14;--iron:#1A1D26;--iron-soft:#161922;
+  --slate:#3A4158;--slate-soft:#2A2F3F;--pewter:#7A869E;--pewter-soft:#5E6B83;
+  --auric:#C8A96E;--auric-dim:rgba(200,169,110,0.65);--auric-faint:rgba(200,169,110,0.14);
+  --parchment:#EDE8DC;--rust:#C76A6A;
+  --display:"Cormorant Garamond","EB Garamond",Georgia,serif;
+  --ui:"DM Sans","Inter",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --ease-reveal:cubic-bezier(0.16,1,0.3,1);
+  --gutter:22px;--max:720px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{background:var(--void)}
+body{background:var(--void);color:var(--parchment);font-family:var(--ui);font-size:16px;font-weight:400;line-height:1.75;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;min-height:100vh;overflow-x:hidden}
+::selection{background:var(--auric);color:var(--void)}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+#app{position:relative;min-height:100vh}
+.shell{position:relative;z-index:2;max-width:var(--max);margin:0 auto;padding:28px var(--gutter) 96px}
+.wm{font-family:var(--display);font-weight:500;line-height:1;letter-spacing:-0.01em;display:inline-flex;align-items:baseline}
+.wm .prefix{color:var(--auric);letter-spacing:-0.06em;padding-right:0.02em}
+.wm .resolve{color:var(--parchment);letter-spacing:-0.005em}
+.wm-small{font-size:22px}
+.eyebrow{font-family:var(--ui);font-size:11px;font-weight:500;letter-spacing:0.09em;text-transform:uppercase;color:var(--pewter);margin:0}
+.orbit-backdrop{position:fixed;top:50%;right:-42vw;transform:translateY(-50%);width:95vw;height:95vw;max-width:820px;max-height:820px;pointer-events:none;z-index:1;opacity:0.42;animation:slow-drift 60s linear infinite}
+.orbit-backdrop .ring{position:absolute;inset:0;border-radius:50%;border:1px solid var(--slate)}
+.orbit-backdrop .r2{inset:14%;border-color:rgba(58,65,88,0.6)}
+.orbit-backdrop .r3{inset:28%;border-color:rgba(58,65,88,0.35)}
+.orbit-backdrop .pt{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--auric);top:50%;left:0;transform:translate(-50%,-50%);box-shadow:0 0 18px rgba(200,169,110,0.5)}
+@keyframes slow-drift{from{transform:translateY(-50%) rotate(0deg)}to{transform:translateY(-50%) rotate(360deg)}}
+@media(max-width:500px){.orbit-backdrop{opacity:0.32}}
+.app-header--form{text-align:left;margin-bottom:56px;display:flex;flex-direction:column;gap:18px}
+.app-header--form .wm{font-size:36px}
+.app-header--form .tagline{font-family:var(--display);font-style:italic;font-size:17px;color:var(--auric);margin:0;line-height:1.3}
+.lede{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.35;color:var(--parchment);margin:0 0 40px;text-wrap:pretty}
+.form{display:flex;flex-direction:column;gap:22px}
+.field{display:flex;flex-direction:column;gap:8px}
+.field-label-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;row-gap:6px}
+.field label{font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:var(--pewter);white-space:nowrap}
+.field-aside{font-family:var(--mono);font-size:10px;color:var(--pewter-soft);text-transform:uppercase;letter-spacing:0.09em}
+.field input,.field select{background:var(--void);border:1px solid var(--slate);color:var(--parchment);font-family:var(--ui);font-size:16px;padding:14px;outline:none;transition:border-color 150ms ease-out,background 150ms ease-out;width:100%;min-height:48px;border-radius:0;-webkit-appearance:none;appearance:none}
+.field input:focus,.field select:focus{border-color:var(--auric)}
+.field input::placeholder{color:var(--pewter-soft)}
+.field input:disabled{color:var(--pewter-soft);background:var(--iron-soft);border-color:var(--slate-soft)}
+.field input[type="date"],.field input[type="time"]{color-scheme:dark}
+.field select{background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8' fill='none'><path d='M1 1.5L6 6.5L11 1.5' stroke='%237A869E' stroke-width='1.2'/></svg>");background-repeat:no-repeat;background-position:right 14px center;background-size:12px 8px;padding-right:38px}
+.field-help{font-family:var(--mono);font-size:11px;color:var(--pewter);margin:0;line-height:1.55;letter-spacing:0.01em}
+.field-help.err{color:var(--rust)}
+.ennea-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:6px}
+.time-toggle{display:inline-flex;align-items:center;gap:8px;background:transparent;border:0;padding:0;cursor:pointer;font-family:var(--ui);font-weight:500;font-size:10.5px;letter-spacing:0.09em;text-transform:uppercase;color:var(--pewter);transition:color 150ms ease-out;white-space:nowrap;flex-shrink:0}
+.time-toggle:hover{color:var(--parchment)}
+.time-toggle.is-on{color:var(--auric)}
+.time-toggle .dot{width:28px;height:14px;border:1px solid var(--slate);border-radius:999px;position:relative;transition:border-color 150ms ease-out,background 150ms ease-out}
+.time-toggle .dot::after{content:'';position:absolute;top:50%;left:2px;width:8px;height:8px;border-radius:50%;background:var(--pewter);transform:translateY(-50%);transition:left 200ms var(--ease-reveal),background 150ms ease-out}
+.time-toggle .dot.is-on{border-color:var(--auric);background:rgba(200,169,110,0.12)}
+.time-toggle .dot.is-on::after{left:16px;background:var(--auric)}
+.form-err{font-family:var(--ui);font-size:13px;color:var(--rust);margin:0;line-height:1.5;max-height:0;opacity:0;overflow:hidden;transition:max-height 240ms var(--ease-reveal),opacity 240ms ease-out}
+.form-err.show{max-height:80px;opacity:1}
+.btn{font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;padding:18px 24px;border:1px solid var(--slate);background:transparent;color:var(--parchment);cursor:pointer;transition:opacity 150ms ease-out,background 150ms ease-out,color 150ms ease-out,border-color 150ms ease-out;min-height:52px}
+.btn:hover{background:var(--iron)}
+.btn:disabled{cursor:default;opacity:0.5}
+.btn-primary{background:var(--auric);color:var(--void);border-color:var(--auric)}
+.btn-primary:hover{opacity:0.88;background:var(--auric)}
+.btn-ghost{color:var(--pewter);border-color:transparent}
+.btn-ghost:hover{color:var(--parchment);background:var(--iron);border-color:var(--slate)}
+.btn-line{background:transparent;border-color:var(--slate);color:var(--parchment)}
+.btn-block{width:100%;display:block}
+.form-footer{margin-top:56px;border-top:1px solid var(--slate-soft);padding-top:22px}
+.form-footer p{font-family:var(--mono);font-size:10px;color:var(--pewter-soft);letter-spacing:0.06em;margin:0;text-transform:uppercase}
+.app-header--reading{margin:-28px calc(var(--gutter)*-1) 32px;padding:14px var(--gutter);background:rgba(13,13,17,0.85);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);position:sticky;top:0;z-index:30;display:flex;flex-direction:column;gap:10px}
+.app-header--reading .wm-small{font-size:26px}
+.profile-summary{display:grid;grid-template-columns:1fr auto;align-items:start;gap:14px;background:transparent;border:0;padding:0;cursor:pointer;text-align:left;width:100%;transition:opacity 150ms ease-out}
+.profile-summary:hover{opacity:0.85}
+.ps-line{display:flex;flex-direction:column;align-items:flex-start;gap:2px;flex:1;min-width:0;line-height:1.35}
+.ps-name{font-family:var(--display);font-weight:500;font-size:18px;color:var(--parchment);letter-spacing:-0.005em;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.ps-sep{color:var(--slate);font-size:11px;align-self:center}
+.ps-meta{font-family:var(--ui);font-size:12px;color:var(--pewter);letter-spacing:0.01em;white-space:nowrap}
+.ps-meta-row{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.edit-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--ui);font-weight:500;font-size:10.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--pewter);flex-shrink:0;transition:color 150ms ease-out;padding-top:4px}
+.edit-link svg{stroke:currentColor}
+.profile-summary:hover .edit-link{color:var(--auric)}
+.blueprint{margin-top:48px;padding-bottom:56px;border-bottom:1px solid var(--slate-soft);animation:fade-up 700ms var(--ease-reveal) both}
+.blueprint .eyebrow{margin-bottom:28px}
+.blueprint-body{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.55;color:var(--parchment);text-wrap:pretty;letter-spacing:0.005em}
+.blueprint-body p{margin:0 0 20px;max-width:38em}
+.blueprint-body h4.bp-sub{font-family:var(--display);font-weight:500;font-size:26px;line-height:1.18;color:var(--parchment);margin:32px 0 14px;letter-spacing:-0.005em;text-wrap:balance}
+.blueprint-body h4.bp-sub:first-child{margin-top:0}
+.blueprint-body p.sabian{padding:4px 0 4px 22px;border-left:2px solid var(--auric-dim);color:var(--auric);font-family:var(--display);font-style:italic;font-size:21px;line-height:1.4;margin:22px 0 28px;max-width:52ch}
+.blueprint-body strong{color:var(--parchment);font-weight:500}
+.blueprint-body em{color:var(--auric);font-style:italic}
+.alignment-statement{font-family:var(--display);font-style:italic;font-weight:400;font-size:24px!important;line-height:1.4;color:var(--auric);text-align:center;max-width:32ch!important;margin:40px auto 0!important;padding-top:32px;border-top:1px solid var(--auric-faint);text-wrap:pretty}
+.cursor{display:inline-block;width:7px;height:1.1em;background:var(--auric);vertical-align:-0.18em;margin-left:2px;animation:blink 900ms steps(2,start) infinite}
+@keyframes blink{0%,50%{opacity:1}50.01%,100%{opacity:0}}
+.rv{opacity:0;transition:opacity 420ms cubic-bezier(0.16,1,0.3,1)}
+.rv.on{opacity:1}
+.bp-loading,.acc-loading{display:flex;align-items:center;gap:16px;padding:14px 0;color:var(--pewter);font-family:var(--display);font-style:italic;font-size:17px;line-height:1.45;max-width:56ch}
+.acc-loading{font-size:15px;padding:8px 0}
+.orbital-sm{width:26px;height:26px;border-radius:50%;border:1px solid var(--slate);position:relative;flex-shrink:0;animation:orbit 3s linear infinite}
+.orbital-sm::before{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:var(--auric);top:-2.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 10px rgba(200,169,110,0.6)}
+@keyframes orbit{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.orbital{width:110px;height:110px;border-radius:50%;border:1px solid var(--slate);position:relative;animation:orbit 3s linear infinite}
+.orbital::before{content:"";position:absolute;width:7px;height:7px;border-radius:50%;background:var(--auric);top:-3.5px;left:50%;transform:translateX(-50%);box-shadow:0 0 14px rgba(200,169,110,0.7)}
+.orbital::after{content:"";position:absolute;inset:22%;border-radius:50%;border:1px solid rgba(58,65,88,0.55)}
+.deep-dive,.glossary{margin-top:56px}
+.deep-dive .eyebrow,.glossary .eyebrow{margin-bottom:20px}
+.glossary-intro{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.45;color:var(--pewter);max-width:56ch;margin:0 0 28px;text-wrap:pretty}
+.acc{border-top:1px solid var(--slate-soft)}
+.deep-dive .acc:last-child,.glossary .acc:last-child{border-bottom:1px solid var(--slate-soft)}
+.acc-header{display:grid;grid-template-columns:30px 1fr 18px;gap:10px;align-items:start;width:100%;background:transparent;border:0;padding:22px 0;cursor:pointer;text-align:left;min-height:56px;transition:opacity 150ms ease-out}
+.glossary .acc-header{grid-template-columns:1fr 18px}
+.acc-header:hover{opacity:0.86}
+.acc-num{font-family:var(--mono);font-size:11px;color:var(--pewter-soft);letter-spacing:0.06em;padding-top:8px}
+.acc-text{display:flex;flex-direction:column;gap:8px;min-width:0}
+.acc-title{font-family:var(--display);font-weight:500;font-size:20px;line-height:1.22;color:var(--parchment);letter-spacing:-0.01em;display:block}
+.glossary .acc-title{font-size:20px}
+.acc-intro{font-family:var(--display);font-style:italic;font-weight:400;font-size:15px;line-height:1.4;color:var(--pewter);max-width:48ch}
+.acc-eyebrow{font-family:var(--mono);font-size:11px;color:var(--pewter);letter-spacing:0.04em;line-height:1.5}
+.acc-chevron{width:18px;height:18px;position:relative;margin-top:7px;flex-shrink:0;transition:transform 280ms var(--ease-reveal)}
+.acc-chevron::before,.acc-chevron::after{content:'';position:absolute;background:var(--pewter);top:50%;width:8px;height:1px}
+.acc-chevron::before{left:2px;transform:translateY(-50%) rotate(45deg);transform-origin:right center}
+.acc-chevron::after{right:2px;transform:translateY(-50%) rotate(-45deg);transform-origin:left center}
+.acc-header.is-open .acc-chevron{transform:rotate(180deg)}
+.acc-header.is-open .acc-chevron::before,.acc-header.is-open .acc-chevron::after{background:var(--auric)}
+.acc-body{overflow:hidden;max-height:0;transition:max-height 480ms var(--ease-reveal),padding 480ms var(--ease-reveal)}
+.acc-body.is-open{max-height:6000px;padding:4px 0 30px}
+.deep-dive .acc-body.is-open{padding-left:40px}
+.acc-body p{margin:0 0 16px;font-family:var(--ui);font-size:15.5px;line-height:1.78;color:var(--parchment);max-width:64ch}
+.acc-body p:last-child{margin-bottom:0}
+.acc-body strong{color:var(--parchment);font-weight:500}
+.acc-body em{color:var(--auric);font-style:italic}
+.gl-entry{border-bottom:1px dashed rgba(58,65,88,0.45);padding:14px 0;margin:0!important}
+.gl-entry:last-child{border-bottom:0;padding-bottom:0}
+.gl-entry:first-child{padding-top:4px}
+.gl-entry strong{color:var(--auric);font-family:var(--display);font-weight:500;font-size:16px;letter-spacing:-0.005em}
+.err-inline{color:var(--rust);font-family:var(--ui);font-size:14px;margin:0;padding:8px 0}
+.copy-wrap{margin-top:56px;opacity:0;transform:translateY(10px);transition:opacity 600ms var(--ease-reveal),transform 600ms var(--ease-reveal)}
+#copy-btn{opacity:0;transform:translateY(6px);transition:opacity 500ms var(--ease-reveal),transform 500ms var(--ease-reveal),background 150ms ease-out}
+#copy-btn.show{opacity:1;transform:translateY(0)}
+.copy-wrap:has(#copy-btn.show){opacity:1;transform:translateY(0)}
+.reading-footer{margin-top:80px;padding-top:32px;border-top:1px solid var(--slate-soft);text-align:center}
+.reading-footer .end{font-family:var(--display);font-style:italic;color:var(--auric);font-size:17px;margin:0}
+.edit-overlay{position:fixed;inset:0;background:rgba(13,13,17,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:100;opacity:0;transition:opacity 240ms ease-out;display:flex;align-items:flex-end;justify-content:center}
+.edit-overlay.show{opacity:1}
+.edit-sheet{width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--iron);border-top:1px solid var(--slate);padding:28px var(--gutter) calc(28px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform 360ms var(--ease-reveal)}
+.edit-overlay.show .edit-sheet{transform:translateY(0)}
+@media(min-width:720px){.edit-overlay{align-items:center;padding:24px}.edit-sheet{border:1px solid var(--slate)}}
+.edit-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.edit-close{background:transparent;border:1px solid var(--slate);color:var(--pewter);width:36px;height:36px;font-size:20px;line-height:1;cursor:pointer;padding:0;transition:color 150ms ease-out,border-color 150ms ease-out}
+.edit-close:hover{color:var(--parchment);border-color:var(--pewter)}
+.edit-actions{margin-top:28px;display:flex;gap:10px;justify-content:space-between}
+.edit-actions .btn{flex:1}
+.shell-reading.regenerating>*:not(.regen-veil){opacity:0.4;transition:opacity 360ms ease-out;pointer-events:none}
+.regen-veil{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:rgba(13,13,17,0.4);opacity:0;transition:opacity 360ms ease-out;pointer-events:none}
+.regen-veil.show{opacity:1}
+.regen-msg{font-family:var(--display);font-style:italic;font-size:19px;color:var(--auric);margin:0;letter-spacing:0.01em}
+@keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:no-preference){
+  .shell-form .app-header--form{animation:fade-up 700ms var(--ease-reveal) both;animation-delay:0ms}
+  .shell-form .lede{animation:fade-up 700ms var(--ease-reveal) both;animation-delay:120ms}
+  .shell-form .form .field{animation:fade-up 700ms var(--ease-reveal) both}
+  .shell-form .form .field:nth-of-type(1){animation-delay:220ms}
+  .shell-form .form .field:nth-of-type(2){animation-delay:290ms}
+  .shell-form .form .field:nth-of-type(3){animation-delay:360ms}
+  .shell-form .form .field:nth-of-type(4){animation-delay:430ms}
+  .shell-form .form .field:nth-of-type(5){animation-delay:500ms}
+  .shell-form .form .btn-primary{animation:fade-up 700ms var(--ease-reveal) both;animation-delay:600ms}
+  .shell-form .form-footer{animation:fade-up 700ms var(--ease-reveal) both;animation-delay:700ms}
+  .shell-reading .app-header--reading{animation:fade-up 600ms var(--ease-reveal) both}
+  .shell-reading .deep-dive .acc,.shell-reading .glossary .acc{opacity:0;animation:fade-up 600ms var(--ease-reveal) forwards}
+  .deep-dive .acc:nth-child(2){animation-delay:200ms}.deep-dive .acc:nth-child(3){animation-delay:260ms}
+  .deep-dive .acc:nth-child(4){animation-delay:320ms}.deep-dive .acc:nth-child(5){animation-delay:380ms}
+  .deep-dive .acc:nth-child(6){animation-delay:440ms}.deep-dive .acc:nth-child(7){animation-delay:500ms}
+  .deep-dive .acc:nth-child(8){animation-delay:560ms}.deep-dive .acc:nth-child(9){animation-delay:620ms}
+  .deep-dive .acc:nth-child(10){animation-delay:680ms}.deep-dive .acc:nth-child(11){animation-delay:740ms}
+  .deep-dive .acc:nth-child(12){animation-delay:800ms}.deep-dive .acc:nth-child(13){animation-delay:860ms}
+  .deep-dive .acc:nth-child(14){animation-delay:920ms}
+  .glossary .acc:nth-child(3){animation-delay:200ms}.glossary .acc:nth-child(4){animation-delay:260ms}
+  .glossary .acc:nth-child(5){animation-delay:320ms}.glossary .acc:nth-child(6){animation-delay:380ms}
+  .glossary .acc:nth-child(7){animation-delay:440ms}.glossary .acc:nth-child(8){animation-delay:500ms}
+  .glossary .acc:nth-child(9){animation-delay:560ms}
+}
+@media(min-width:720px){
+  :root{--gutter:56px}
+  .shell{padding-top:56px;padding-bottom:120px}
+  .app-header--form .wm{font-size:56px}
+  .app-header--form .tagline{font-size:19px}
+  .lede{font-size:26px;margin-bottom:56px}
+  .blueprint-body{font-size:20px}
+  .blueprint-body h4.bp-sub{font-size:30px}
+  .blueprint-body p.sabian{font-size:23px}
+  .alignment-statement{font-size:28px!important;max-width:36ch!important}
+  .acc-title{font-size:25px}
+  .glossary .acc-title{font-size:22px}
+  .acc-intro{font-size:16px}
+  .app-header--reading{padding-top:18px;padding-bottom:18px}
+  .ps-name{font-size:20px}
+  .ps-meta{font-size:13px}
+  .copy-wrap{display:flex;justify-content:center}
+  #copy-btn{max-width:360px}
+}
+@media(min-width:960px){
+  .shell{padding-top:80px}
+  .app-header--form .wm{font-size:80px}
+  .lede{font-size:28px;max-width:36ch}
+}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<script>
+/* ─────────────────────────────────────────────────────────────────
+   un/charted · app v2
+   Phase 1: real Anthropic API streaming · Meeus Sun longitude ·
+   Sabian Symbol lookup · full synthesis guide system prompt
+   ───────────────────────────────────────────────────────────────── */
+
+/* ─── CONFIG — fill in your keys ─── */
+const CONFIG = {
+  anthropicKey: 'YOUR_ANTHROPIC_KEY_HERE',
+  hdKey: '',   // optional — humandesignhub.app free key (100 charts/mo)
+  model: 'claude-sonnet-4-20250514',
+  maxTokens: 8000,
+};
+
+/* ─── DOM helpers ─── */
+const $ = (sel, root = document) => root.querySelector(sel);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v;
+    else if (k === 'html') n.innerHTML = v;
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v);
+    else if (v === false || v == null) continue;
+    else if (v === true) n.setAttribute(k, '');
+    else n.setAttribute(k, v);
+  }
+  for (const k of kids.flat()) {
+    if (k == null) continue;
+    n.appendChild(typeof k === 'string' ? document.createTextNode(k) : k);
+  }
+  return n;
+};
+
+/* ─── Sabian Symbols — all 360 degrees ─── */
+// Each sign: array indexed 1–30 (index 0 = null)
+const SABIAN_DATA = {
+  Aries:[null,
+    ["A woman just risen from the sea, a seal embracing her","Emergence"],
+    ["A comedian entertaining a group","Release"],
+    ["A cameo profile of a man, suggesting the outline of his country","Exploitation"],
+    ["Two lovers strolling through a secluded walk","Enjoyment"],
+    ["A triangle with wings","Zeal"],
+    ["A square with one of its sides brightly illuminated","Structural integrity"],
+    ["A man successfully expressing himself in two realms at once","Facility"],
+    ["A large hat with streamers flying, facing east","Aspiration"],
+    ["A seer gazes intently into a crystal ball before them","Revelation"],
+    ["A scholar reads in his library, surrounded by ancient tomes","Profundity"],
+    ["The ruler of a nation","Effectiveness"],
+    ["A flock of wild geese","Serenity"],
+    ["An unsuccessful bomb explosion","Protection"],
+    ["A serpent coiling near a man and woman","Polarization"],
+    ["An Indian weaving a blanket","Realization"],
+    ["Brownies dancing in the setting sun","Invigoration"],
+    ["Two prim spinsters","Fastidiousness"],
+    ["An empty hammock hung between two trees","Repose"],
+    ["The magic carpet","Panorama"],
+    ["A young girl feeding birds in winter","Tenderness"],
+    ["A pugilist entering the ring","Exertion"],
+    ["The gate to the garden of desire","Prospect"],
+    ["A woman in pastel colors carrying a heavy and valuable, but veiled, load","Reticence"],
+    ["An open window and a net curtain blowing into a cornucopia","Munificence"],
+    ["A double promise","Covenanting"],
+    ["A person possessed of more gifts than they can hold","Opulence"],
+    ["Through imagination a lost opportunity is regained","Recovery"],
+    ["A large audience confronts the performer who disappoints its expectations","Appraisal"],
+    ["A celestial choir singing","Veneration"],
+    ["A duck pond and its brood","Reliability"],
+  ],
+  Taurus:[null,
+    ["A clear mountain stream","Endowment"],
+    ["An electrical storm","Transformation"],
+    ["Natural stepping stones across a brook","Adequacy"],
+    ["The pot of gold at the end of the rainbow","Promise"],
+    ["A widow at an open grave","Reorientation"],
+    ["A bridge being built across a gorge","Channeling"],
+    ["The woman of Samaria at the ancestral well","Regeneration"],
+    ["A sleigh without snow","Sustainment"],
+    ["A fully decorated Christmas tree","Commemoration"],
+    ["A red cross nurse","Enlistment"],
+    ["A woman watering flowers in her garden","Cultivation"],
+    ["A young couple window-shopping","Acquisition"],
+    ["A man handling baggage","Duty"],
+    ["On the beach, children play while shellfish grope along the bottom","Utterness"],
+    ["A man muffled up, with a rakish silk hat","Sophistication"],
+    ["An old man attempting vainly to reveal the Mysteries","Pertinacity"],
+    ["A symbolical battle between swords and torches","Resolution"],
+    ["A woman holding a bag out of a window","Facilitation"],
+    ["A newly formed continent","Originality"],
+    ["Wisps of cloud, like wings, are seen on either side of the sun's disk","Fineness"],
+    ["A finger pointing in an open book","Indication"],
+    ["White dove over troubled waters","Mediation"],
+    ["A jewelry shop","Preservation"],
+    ["An Indian girl introduces her white lover to her assembled tribe","Justification"],
+    ["A large well-kept public park","Recreation"],
+    ["A Spaniard serenading his seniorita","Constancy"],
+    ["A squaw selling beads","Detachment"],
+    ["A woman pursued by mature romance","Persuasion"],
+    ["Two cobblers working at a table","Subdivision"],
+    ["A peacock parading on an ancient lawn","Aloofness"],
+  ],
+  Gemini:[null,
+    ["A glass-bottomed boat reveals undersea wonders","Curiosity"],
+    ["Santa Claus furtively filling Christmas stockings","Anticipation"],
+    ["The garden of the Tuileries","Luxury"],
+    ["Holly and mistletoe reawaken old memories of Christmas","Recollection"],
+    ["A revolutionary magazine asking for action","Representation"],
+    ["Drilling for oil","Penetration"],
+    ["An old-fashioned well with the handle","Attraction"],
+    ["Aroused strikers surround a factory","Intensification"],
+    ["A quiver filled with arrows","Preparation"],
+    ["An airplane dives toward the earth as if to land","Decisiveness"],
+    ["Newly opened lands offer the pioneer new opportunities","Crossing"],
+    ["A topsy saucy lass","Impertinence"],
+    ["A great musician at his piano","Achievement"],
+    ["A conversation by telepathy","Intimacy"],
+    ["Two Dutch children talking","Understanding"],
+    ["A woman activist in an emotional speech, dramatizing her cause","Indignation"],
+    ["The head of a robust youth changes into that of a mature thinker","Expansion"],
+    ["Two Chinese men talk Chinese in a western crowd","Insulation"],
+    ["A large archaic volume reveals a traditional wisdom","Erudition"],
+    ["A modern cafeteria displays an abundance of food, products of various regions","Assimilation"],
+    ["A labor demonstration","Representation"],
+    ["A barn dance","Festivity"],
+    ["Three fledglings in a nest high in a tree","Elevation"],
+    ["Children skating over a frozen village pond","Gliding"],
+    ["A man trimming palms","Diligence"],
+    ["Winter frost in the woods","Crystallization"],
+    ["A gypsy emerging from the forest where her tribe is encamped","Exoticism"],
+    ["A crowd upon the beach","Exhilaration"],
+    ["The first mockingbird in spring","Promise"],
+    ["Bathing beauties","Artlessness"],
+  ],
+  Cancer:[null,
+    ["On a ship the sailors lower an old flag and raise a new one","Allegiance"],
+    ["A man suspended over a vast level place","Contemplation"],
+    ["A man all bundled up in fur leading a shaggy horse","Circumspection"],
+    ["A cat arguing with a mouse","Justification"],
+    ["An automobile wrecked by a train","Dispersion"],
+    ["Gamebirds feathering their nests","Preparation"],
+    ["Two fairies dancing on a moonlit night","Ascendancy"],
+    ["Rabbits dressed in clothes and on parade","Appropriation"],
+    ["A tiny nude miss reaching in the water for a fish","Inclination"],
+    ["A large diamond in the first stages of the cutting process","Latency"],
+    ["A clown caricaturing well-known personalities","Sophistication"],
+    ["A Chinese woman nursing a baby whose aura reveals him to be the reincarnation of a great teacher","Investiture"],
+    ["One hand slightly flexed with a very prominent thumb","Determination"],
+    ["A very old man facing a vast dark space to the northeast","Sanction"],
+    ["In a sumptuous dining hall, guests relax after a huge feast","Opportunity"],
+    ["A man before a square with a manuscript scroll before him","Profundity"],
+    ["The germ grows into knowledge and life","Unfoldment"],
+    ["A hen scratching the ground to find nourishment for her progeny","Industriousness"],
+    ["A priest performing a marriage ceremony","Continuity"],
+    ["Venetian gondoliers in a serenade","Sentiment"],
+    ["A prima donna singing","Projection"],
+    ["A woman awaiting a sailboat","Quickening"],
+    ["Meeting of a literary society","Communion"],
+    ["A woman and two men castaways on a small island of the south seas","Adequateness"],
+    ["A dark shadow or mantle thrown suddenly over the right shoulder","Destiny"],
+    ["Contentment and happiness in luxury, people reading on davenports","Sumptuousness"],
+    ["A violent storm in a canyon filled with expensive homes","Exposure"],
+    ["A modern Pocahontas","Nativeness"],
+    ["A Muse weighing twins","Approbation"],
+    ["A daughter of the American Revolution","Inheritance"],
+  ],
+  Leo:[null,
+    ["Blood rushes to a man's head as his vital energies are mobilized under the spur of ambition","Ambition"],
+    ["An epidemic of mumps","Infection"],
+    ["A woman having her hair bobbed","Transformation"],
+    ["A ham actor","Pretension"],
+    ["Rock formations at the edge of a precipice","Endurance"],
+    ["A conservative, old-fashioned lady is confronted by a hippie girl","Contrast"],
+    ["The constellations of stars shine brilliantly in the night sky","Surety"],
+    ["A Bolshevist propagandist","Fanaticism"],
+    ["Glass blowers shape beautiful vases with their controlled breathing","Skillfulness"],
+    ["Early morning dew sparkling on grass and flowers","Refreshment"],
+    ["Children play on a swing hanging from the branches of a huge oak tree","Delight"],
+    ["An evening lawn party of adults","Cultivation"],
+    ["An old sea captain rocking on the porch of his cottage","Retrospection"],
+    ["A human soul seeking opportunities for outward manifestation","Ingenuity"],
+    ["A pageant moves along a street, packed with people","Demonstration"],
+    ["Brilliant sunshine just after a storm","Restoration"],
+    ["A volunteer church choir makes a social event of rehearsal","Cooperation"],
+    ["A teacher of chemistry","Instruction"],
+    ["A houseboat party","Congeniality"],
+    ["The Zuni sun worshippers","Fidelity"],
+    ["Chickens intoxicated","Bliss"],
+    ["A carrier pigeon fulfilling its mission","Conviction"],
+    ["A bareback rider in a circus displays her dangerous skill","Audacity"],
+    ["Totally concentrated upon inner spiritual attainment, a man is sitting in a state of complete neglect of bodily appearance and cleanliness","Purification"],
+    ["A large camel crossing a vast and forbidding desert","Adequacy"],
+    ["After the heavy storm, a rainbow","Assurance"],
+    ["Daybreak — the luminescence of dawn in the eastern sky","Illumination"],
+    ["Many little birds on a limb of a big tree","Congeniality"],
+    ["A mermaid emerges from the ocean waves ready for rebirth in human form","Emergence"],
+    ["An unsealed letter","Confidence"],
+  ],
+  Virgo:[null,
+    ["In a portrait, the best of a man's features and traits are idealized","Perfectibility"],
+    ["A large white cross upraised","Glorification"],
+    ["Two guardian angels bringing protection","Invigoration"],
+    ["Black and white children play together happily","Communion"],
+    ["A man dreaming of fairies","Sensitivity"],
+    ["A merry-go-round","Diversion"],
+    ["A harem","Restraint"],
+    ["First dancing instruction","Discipline"],
+    ["An expressionist painter making a futuristic drawing","Daring"],
+    ["Two heads looking out and beyond the shadows","Acuity"],
+    ["A boy molded in his mother's aspirations for him","Aspiration"],
+    ["A bride with her veil snatched away","Exposure"],
+    ["A strong hand supplanting political hysteria","Legality"],
+    ["A family tree","Nobility"],
+    ["A fine lace ornamental handkerchief","Gracefulness"],
+    ["In the zoo, children are brought face to face with an orangutan","Innate nature"],
+    ["A volcano in eruption","Explosion"],
+    ["Two girls playing with a ouija board","Acuity"],
+    ["A swimming race","Stamina"],
+    ["A caravan of cars headed to the west coast","Foresight"],
+    ["A girls' basketball team","Ambition"],
+    ["A royal coat of arms","Prerogative"],
+    ["A lion tamer rushes fearlessly into the circus arena","Daring"],
+    ["Mary and her white lamb","Artlessness"],
+    ["A flag at half-mast in front of a large public building","Respect"],
+    ["A boy with a censer serves the priest near the altar","Refinement"],
+    ["Grande dames at a tea party","Gentility"],
+    ["A bald-headed man who has seized power","Dominance"],
+    ["A man gaining secret knowledge from an ancient scroll he is reading","Perseverance"],
+    ["Having an urgent task to complete, a man doesn't look to distractions","Concentration"],
+  ],
+  Libra:[null,
+    ["A butterfly made perfect by a dart through it","Articulation"],
+    ["The light of the sixth race transmuted to the seventh","Threshold"],
+    ["The dawn of a new day reveals everything changed","Innovations"],
+    ["A group around a campfire","Communion"],
+    ["A man teaching the true inner knowledge","Affinity"],
+    ["A strand of brilliant new gems","Desirability"],
+    ["A woman feeding chickens and protecting them from the hawks","Guardianship"],
+    ["A blazing fireplace in a deserted home","Permanence"],
+    ["Three old masters hanging in an art gallery","Accord"],
+    ["A canoe approaching safety through dangerous waters","Competency"],
+    ["A professor peering over his glasses at his students","Dominance"],
+    ["Miners are surfacing from a deep coalmine","Extrication"],
+    ["Children blowing soap bubbles","Enchantment"],
+    ["A noon siesta","Recuperation"],
+    ["Circular paths","Cycling"],
+    ["After a storm, a boat landing stands in need of reconstruction","Repair"],
+    ["A retired sea captain watches ships entering and leaving the harbor","Command"],
+    ["Two men placed under arrest","Consequence"],
+    ["A gang of robbers in hiding","Divergence"],
+    ["A Jewish rabbi performing his duties","Fidelity"],
+    ["A crowd upon the beach","Exhilaration"],
+    ["A child giving birds a drink at a fountain","Solicitude"],
+    ["Chanticleer's proud and vigilant crowing","Anticipation"],
+    ["A butterfly with the right wing more perfectly formed","Uniqueness"],
+    ["The sight of an autumn leaf brings to a pilgrim the sudden revelation of the mystery of life and death","Initiation"],
+    ["An eagle and a large white dove turning one into the other","Adeptness"],
+    ["An airplane hovering overhead","Surveillance"],
+    ["A man in the midst of brightening influences","Responsiveness"],
+    ["Humanity seeking to span the bridge of knowledge","Rationality"],
+    ["Three mounds of knowledge on a philosopher's head","Prescience"],
+  ],
+  Scorpio:[null,
+    ["A sight-seeing bus filled with tourists","Friendliness"],
+    ["A broken bottle and spilled perfume","Permeation"],
+    ["A house-raising","Helpfulness"],
+    ["A youth holding a lighted candle","Reliance"],
+    ["A massive rocky shore resists the pounding of the sea","Durability"],
+    ["A gold rush tears men away from their native soil","Ambition"],
+    ["Mature woman keeps ideals while accepting social compromises","Compromise"],
+    ["The silvery moon shining across a lake","Quietescence"],
+    ["Dental work","Practicality"],
+    ["A fellowship supper reunites old comrades","Fraternity"],
+    ["A drowning man is being rescued","Resurgence"],
+    ["An embassy ball","Allurement"],
+    ["An inventor performs a laboratory experiment","Conjecture"],
+    ["Telephone linemen at work installing new connections","Technique"],
+    ["Children playing around five mounds of sand","Fascination"],
+    ["A girl's face breaking into a smile","Acquiescence"],
+    ["A woman, fecundated by her own spirit, is great with child","Fecundation"],
+    ["A woods rich in autumn coloring","Fulfillment"],
+    ["A parrot listening and then talking, filled with chatter","Conventionality"],
+    ["A woman drawing two dark curtains aside","Daring"],
+    ["A soldier derelict in duty","Relinquishment"],
+    ["Hunters starting out for ducks","Anticipation"],
+    ["A rabbit metamorphoses into a nature spirit","Transition"],
+    ["Crowds coming down the mountain to listen to one inspired man","Channeling"],
+    ["An X-ray photograph helps with the diagnosis","Penetration"],
+    ["Indians making camp in new territory","Hardihood"],
+    ["A military band marches noisily through the city streets","Intrepidity"],
+    ["The king of the fairies approaching his domain","Regality"],
+    ["An Indian woman pleading to the chief for the lives of her children","Effectiveness"],
+    ["The Halloween jester","Spontaneousness"],
+  ],
+  Sagittarius:[null,
+    ["Retired army veterans gather to reawaken old memories","Reminiscence"],
+    ["The ocean covered with whitecaps","Irrepressibility"],
+    ["Two men playing chess","Profundity"],
+    ["A little child learning to walk with the encouragement of his parents","Assistance"],
+    ["An old owl sits alone on the branch of a large tree","Wisdom"],
+    ["A game of cricket","Fitness"],
+    ["Cupid knocking at the door","Enticement"],
+    ["Within the depths of the earth, new elements of life are being formed","Germination"],
+    ["A mother with her children on the stairs","Adequateness"],
+    ["A golden-haired goddess of opportunity","Reward"],
+    ["The lamp of physical enlightenment at the left temple","Transcendence"],
+    ["A flag turns into an eagle, the eagle into a chanticleer","Progressiveness"],
+    ["A widow's past brought to light","Karma"],
+    ["The pyramid and the sphinx","Conventionalization"],
+    ["The groundhog looking for its shadow on Ground Hog's Day","Reassurance"],
+    ["Sea gulls watching a ship","Alertness"],
+    ["An Easter sunrise service draws a large crowd","Rebirth"],
+    ["Tiny children are playing on swings in the shade of a huge oak tree","Delight"],
+    ["Pelicans menaced by the behavior and refuse of men seek safer areas","Survival"],
+    ["In an old-fashioned northern village, men cut the ice of a frozen pond for use in summer","Provision"],
+    ["A child and a dog wearing borrowed eyeglasses","Curiosity"],
+    ["A Chinese laundry","Unremittingness"],
+    ["Immigrants entering a new country","Entrance"],
+    ["A bluebird standing at the door of the house","Happiness"],
+    ["A chubby boy on a hobby-horse","Emulation"],
+    ["A flag bearer in a battle","Inspiration"],
+    ["A sculptor's vision is slowly taking form","Externalization"],
+    ["An old bridge over a beautiful stream is still in constant use","Persistence"],
+    ["A fat boy mowing the lawn of his house on an elegant suburban street","Normalness"],
+    ["The Pope blessing the faithful","Sanction"],
+  ],
+  Capricorn:[null,
+    ["An Indian chief claims power from the assembled tribe","Leadership"],
+    ["Three stained-glass windows in a gothic church, one damaged by war","Commemoration"],
+    ["The human soul, in its eagerness for new experiences, seeks embodiment","Daring"],
+    ["A party entering a large canoe","Co-adventuring"],
+    ["Indians — some rowing a canoe while others are dancing a war dance","Mobilization"],
+    ["Ten logs lie under an archway leading to darker woods","Thoroughness"],
+    ["A veiled prophet speaks, seized by the power of a god","Mediatorship"],
+    ["In a sunlit home, domesticated birds sing joyously","Contentment"],
+    ["An angel carrying a harp","Attunement"],
+    ["An albatross feeding from the hand of a sailor","Thanksgiving"],
+    ["Pheasants display their brilliant colors on a private estate","Aristocracy"],
+    ["An illustrated lecture on natural science reveals little-known aspects of life","Instructiveness"],
+    ["A fire worshipper","Aspiration"],
+    ["An ancient bas-relief carved in granite remains a witness to a long-forgotten culture","Imperishability"],
+    ["Many toys in the children's ward of a hospital","Abundance"],
+    ["School grounds filled with boys and girls in gym suits","Exercise"],
+    ["A girl, surreptitiously bathing in the nude","Daring"],
+    ["The Union Jack flies from a new British warship","Seapower"],
+    ["A child of about five with a huge shopping bag","Expectation"],
+    ["A hidden choir singing during a religious service","Communion"],
+    ["A relay race","Sportsmanship"],
+    ["A general accepting defeat gracefully","Resignation"],
+    ["A soldier receiving two awards for bravery in combat","Recognition"],
+    ["A woman entering a convent","Consecration"],
+    ["An oriental rug dealer in a store filled with precious ornamental rugs","Sumptuousness"],
+    ["A water sprite","Affinity"],
+    ["Pilgrims climbing the steep steps leading to a mountain shrine","Perseverance"],
+    ["A large aviary","Companionship"],
+    ["A woman reading tea leaves","Divination"],
+    ["A secret business conference","Opportunity"],
+  ],
+  Aquarius:[null,
+    ["An old adobe mission in California","Establishment"],
+    ["An unexpected thunderstorm","Accident"],
+    ["A deserter from the navy","Defiance"],
+    ["A Hindu healer glows with a mystic healing force","Therapy"],
+    ["A council of ancestors is seen implementing the efforts of a young leader","Empowerment"],
+    ["During a silent hour, a man receives a new inspiration which may change his life","Receptiveness"],
+    ["A child is seen being born out of an egg","Emergence"],
+    ["Beautifully gowned wax figures on display","Idealization"],
+    ["A flag is seen turning into an eagle","Ritualization"],
+    ["A man who had for a time become the embodiment of a popular ideal awakens to the confusion of his life","Disillusionment"],
+    ["During a silent hour, a man receives a new inspiration","Receptiveness"],
+    ["People on stairs graduated upwards","Progression"],
+    ["A barometer","Indication"],
+    ["A train entering a tunnel","Penetration"],
+    ["Two lovebirds sitting on a fence and singing happily","Contentment"],
+    ["A big businessman at his desk","Authority"],
+    ["A watchdog stands guard, protecting his master and his possessions","Vigilance"],
+    ["A man unmasked","Disillusionment"],
+    ["A forest fire is being subdued by the use of water, chemicals and the creation of new disinfected earth","Effectiveness"],
+    ["A large white dove bearing a message","Conviction"],
+    ["A woman disappointed and disillusioned, courageously faces a seemingly empty life","Resilience"],
+    ["A rug placed on a floor for children to play","Comfort"],
+    ["A big bear sitting down and waving all its paws","Aptitude"],
+    ["A man turning his back on his passions and teaching from his experience","Counseling"],
+    ["A butterfly with the right wing more perfectly formed","Growth"],
+    ["A garage man testing a car's battery with a hydrometer","Efficiency"],
+    ["An ancient pottery bowl filled with violets","Conservation"],
+    ["A tree felled and sawed to ensure a supply of wood for the winter","Foresight"],
+    ["A butterfly emerging from a chrysalis","Metamorphosis"],
+    ["Moonlit fields, once Babylon, are now bathed in the moon-light","Cancellation"],
+  ],
+  Pisces:[null,
+    ["A public market","Commerce"],
+    ["A squirrel hiding from hunters","Protection"],
+    ["Petrified forest, an eternal record of a life lived long ago","Stability"],
+    ["Heavy car traffic on a narrow isthmus linking two seashore resorts","Convergence"],
+    ["A church bazaar","Fundraising"],
+    ["Officers on dress parade","Discipline"],
+    ["Illumined by a shaft of light, a large cross lies on rocks surrounded by sea","Martyrdom"],
+    ["A girl blowing a bugle","Summons"],
+    ["A jockey","Emulation"],
+    ["An aviator pursues his journey, flying through ground-obscuring clouds","Perseverance"],
+    ["Men traveling a narrow path, seeking illumination, are guided into a sanctuary","Transcendence"],
+    ["In the sanctuary of an occult brotherhood, newly initiated members are being examined and their character tested","Qualification"],
+    ["A sword, used in many battles, is now in a museum","Collective inheritance"],
+    ["A lady wrapped in a large stole of fur","Luxury"],
+    ["An officer instructing his men before a simulated assault under a barrage of live shells","Toughening"],
+    ["In the quiet of his study, a creative individual experiences a flow of inspiration","Transcendence"],
+    ["An Easter promenade","Celebration"],
+    ["In a gigantic tent, thousands of people watch the performance of a spectacular pageant","Ritualization"],
+    ["A master instructing his disciple","Discipleship"],
+    ["A table set for an evening meal","Abundance"],
+    ["Under the watchful and kind eye of a Chinese servant, a girl fondles a little white lamb","Gentleness"],
+    ["A man bringing down the new law from Sinai","Mandate"],
+    ["Spiritist phenomena are at work","Sensitivity"],
+    ["On a small island surrounded by the vast expanse of the sea, people are seen living in close interaction","Community"],
+    ["The purging of the priesthood","Reformation"],
+    ["Watching the very thin crescent of a new moon, people realize the end of a particular cycle","Finality"],
+    ["The harvest moon illumines a clear autumnal sky","Benediction"],
+    ["A fertile garden under the full moon reveals a variety of full-grown vegetables","Fulfillment"],
+    ["Light breaking into many colors as it passes through a prism","Revelation"],
+    ["The Great Stone Face","Manifestation"],
+  ],
+};
+
+const SIGN_NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+function lookupSabian(lon) {
+  const normLon = ((lon % 360) + 360) % 360;
+  const signIdx = Math.floor(normLon / 30);
+  const signName = SIGN_NAMES[signIdx];
+  const degInSign = normLon % 30;
+  const degree = Math.max(1, Math.ceil(degInSign)); // round up, min 1
+  const entry = SABIAN_DATA[signName][degree];
+  return { sign: signName, degree, symbol: entry[0], keyword: entry[1] };
+}
+
+/* ─── Sun longitude (Meeus Astronomical Algorithms, Ch.25) ─── */
+function julianDay(y, m, d, hourUT) {
+  if (m <= 2) { y -= 1; m += 12; }
+  const A = Math.trunc(y / 100);
+  const B = 2 - A + Math.trunc(A / 4);
+  return Math.trunc(365.25 * (y + 4716)) + Math.trunc(30.6001 * (m + 1)) + d + hourUT / 24 + B - 1524.5;
+}
+function norm360(x) { return ((x % 360) + 360) % 360; }
+function sunLongitude(y, m, d, hourUT) {
+  const JD = julianDay(y, m, d, hourUT);
+  const T = (JD - 2451545.0) / 36525.0;
+  const M = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T * T) * Math.PI / 180;
+  const e = 0.016708634 - 0.000042037 * T;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M)
+          + (0.019993 - 0.000101 * T) * Math.sin(2 * M)
+          + 0.000289 * Math.sin(3 * M);
+  return norm360(280.46646 + 36000.76983 * T + 0.0003032 * T * T + C);
+}
+
+/* ─── Synthesis system prompt ─── */
+const SYNTHESIS_SYSTEM = `You are the synthesis engine for un/charted, a multi-system natal chart reading app. You write integrated natal chart readings that feel like hearing the truth from a brilliant friend who happens to know all of these symbolic systems — and who loves you enough to be honest.
+
+VOICE (non-negotiable):
+1. The system is an instrument, not the point. Never lead with the system name. Earn the reference.
+   Wrong: "Gate 27 in Human Design represents nurturance." Right: "You have an almost supernatural ability to sense what people actually need, not what they're asking for."
+2. Write like a best friend of twenty years — talking to you, direct, honest, occasionally dry. Not an analyst. Not a wellness brand. No hedging. No cushioning.
+3. Name difficult patterns clearly and stay in the room after. Don't deliver a hard truth and immediately pivot.
+4. No system-first sentences. If a sentence opens by naming the tradition before delivering the insight, rewrite it.
+5. Every metaphor must trace to a specific placement. Float-free metaphors get cut.
+6. Interpretive paragraphs start at the intersection of two coordinates, not one. "Moon in Sagittarius" is a sign. "Moon in Sagittarius in the 8th" starts a reading.
+7. Label single-system claims. Don't build on them as if they're convergences.
+
+BANNED PHRASES (never use): "your soul's journey", "the universe is calling", "shine your light", "ancient wisdom", "you are exactly where you need to be", "hold space", "deeply", anything that sounds like wellness Instagram copy.
+
+NO EXCLAMATION POINTS. Short sentences at key moments.
+
+CONVERGENCE HIERARCHY:
+- 4+ independent systems agree → state with near-certainty
+- 2–3 systems agree → strong pattern
+- 1 system only → label explicitly as single-system, hold lightly
+
+AUDIENCE:
+- Under 13: third person throughout, addressed to parent. Use child's first name.
+- 13–17: second person with brief opening framing note.
+- 18+: standard second person. No age modification.
+
+BLUEPRINT STRUCTURE (Layer 1, ~400–600 words total):
+Four sub-sections in this exact order with these exact headings:
+## The Core Pattern
+## What You're Here to Do
+## The Central Challenge
+## Right Now
+
+In "The Core Pattern", after the main description, include ONE line for the Sabian Symbol:
+*Sabian Symbol — [Symbol name] ([Sign] [Degree]°) — Keyword: [Keyword].*
+
+Close with one line on its own, prefixed exactly: ALIGNMENT_STATEMENT:
+One sentence (~18–25 words), first person, integrates the whole chart, names specific placements.
+
+DEEP DIVE STRUCTURE (Layer 2, 13 sections):
+Each section 250–350 words. 3–4 paragraphs. End each with one concrete observation or instruction.
+1. Core Energetic Signature — Western Sun+ASC+Moon, HD Type, BaZi Day Master, Vedic Lagna. The 2–3 loudest cross-system signatures.
+2. Central Psychological Architecture — Primary tension axis, nodal axis as evolutionary spine, Enneagram core wound (if provided), Gene Keys primary shadow, BaZi clashes.
+3. Decision-Making & Mental Style — HD Authority (be specific about the process), Mercury, Moon, Numerology LP.
+4. Moon Deep Dive — Western Moon sign+house+aspects, Vedic Nakshatra emotional intelligence type, BaZi emotional element.
+5. Natural Gifts & Gene Keys — Gene Keys primary gate shadow→gift, BaZi Output element, Numerology Expression.
+6. Shadow Patterns & Growth Edges — HD Profile shadow, South Node groove, Enneagram shadow (if provided), BaZi missing elements, Chiron.
+7. Relationship Dynamics — 7th house planets, Venus sign+house, DSC ruler, HD Authority in relationships, Enneagram relational pattern (if provided).
+8. Ideal Work & Creative Expression — MC sign+planets, HD Incarnation Cross as vocation, BaZi Wealth/Power gods, Numerology LP.
+9. Family, Ancestry & Roots — IC, 4th house, BaZi Year pillar as ancestral inheritance, Moon.
+10. Nervous System & Body — Element balance, BaZi dominant element risks, HD Type energy needs, undefined centers.
+11. Vedic Mahadasha Context — Current dasha planet (sign, house, dignity), what it activates, previous and upcoming dasha.
+12. Living in Alignment — 4–5 chart-specific practices (not generic). Nodal compass. Closes with the Integrated Alignment Statement (4–6 sentences, first person, names placements and convergences, structured: identity → purpose → honest acknowledgment → direction forward).
+13. The Seal on the Sun — ~300 words. Sabian Symbol of the Sun degree. Structure: (1) paint the image vividly, don't explain yet; (2) decode the archetype — what pattern of consciousness does it represent; (3) connect to 1–2 chart themes already found; (4) close with a living question or invitation for this person.
+
+Section 13 can be the most lyrical of the synthesis — earned. But lyrical ≠ vague. Must connect to this specific chart.
+
+GLOSSARY (after Section 13):
+One entry per key placement per system. Format: **[Term]** — 1–2 sentences personalized to this person. "Your Taurus Sun in the first house..." not "Taurus Sun in House 1 means..."
+Systems in order: Western Astrology → Human Design → Vedic/Jyotish → BaZi Four Pillars → Numerology → Gene Keys → Enneagram (only if provided).
+
+QUALITY TESTS before each response:
+- Specificity: could this paragraph have been written about someone with a different chart? If yes, add a second coordinate.
+- Conjunction discipline: only describe planets as conjunct if within 8° (personal planets) or 5° (angles). Otherwise: "co-present in [sign/house]."
+- Missing data: if a system's data is absent, omit that section entirely — no approximations.
+
+OUTPUT: Begin immediately with the content requested. No preamble. No "Here is your reading."`;
+
+/* ─── Anthropic API — streaming ─── */
+async function streamToElement(userPrompt, container) {
+  if (!CONFIG.anthropicKey || CONFIG.anthropicKey === 'YOUR_ANTHROPIC_KEY_HERE') {
+    throw new Error('No API key configured. Edit CONFIG.anthropicKey in app.html.');
+  }
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CONFIG.anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: CONFIG.model,
+      max_tokens: CONFIG.maxTokens,
+      system: SYNTHESIS_SYSTEM,
+      messages: [{ role: 'user', content: userPrompt }],
+      stream: true,
+    }),
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`API ${response.status}: ${errText}`);
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let sseBuffer = '';
+  let rawText = '';
+  let started = false;
+  const streamDiv = document.createElement('div');
+  const cursor = el('span', { class: 'cursor' });
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    sseBuffer += decoder.decode(value, { stream: true });
+    const lines = sseBuffer.split('\n');
+    sseBuffer = lines.pop();
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') continue;
+      try {
+        const evt = JSON.parse(data);
+        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+          if (!started) {
+            container.innerHTML = '';
+            container.appendChild(streamDiv);
+            container.appendChild(cursor);
+            started = true;
+          }
+          rawText += evt.delta.text;
+          streamDiv.innerHTML = renderMd(rawText);
+        }
+      } catch (_) {}
+    }
+  }
+  cursor.remove();
+  container.innerHTML = renderMd(rawText);
+  return rawText;
+}
+
+/* ─── Anthropic API — non-streaming (for accordion sections) ─── */
+async function llmText(userPrompt) {
+  if (!CONFIG.anthropicKey || CONFIG.anthropicKey === 'YOUR_ANTHROPIC_KEY_HERE') {
+    throw new Error('No API key configured.');
+  }
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': CONFIG.anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: CONFIG.model,
+      max_tokens: 2500,
+      system: SYNTHESIS_SYSTEM,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+  if (!response.ok) throw new Error(`API ${response.status}`);
+  const data = await response.json();
+  return data.content[0].text;
+}
+
+/* ─── App state ─── */
+const state = {
+  form: { name:'', date:'', time:'', timeUnknown:false, city:'', geo:null, enneagramType:'', enneagramWing:'', enneagramInstinct:'' },
+  chart: null,
+  hdData: null,
+  reading: { blueprint:'', deepDive:{}, glossary:{} },
+  generating: false,
+};
+
+/* ─── Static content ─── */
+const DEEP_DIVE_SECTIONS = [
+  { id:'signature',    title:'The Mountain and the River',          intro:'Not the mask. Not the coping strategy. The actual signal.',              guide:'Core Energetic Signature' },
+  { id:'architecture', title:'The Tension That Runs Everything',    intro:'A single contradiction your whole life is organized around resolving.',  guide:'Central Psychological Architecture' },
+  { id:'decisions',    title:'How You Actually Make Decisions',      intro:'How you\'re wired to choose. And where it goes wrong.',                 guide:'Decision-Making & Mental Style' },
+  { id:'moon',         title:'The Interior Life You Don\'t Show Much',intro:'The emotional body. What it needs, what it hides, and why.',            guide:'Moon Deep Dive' },
+  { id:'gifts',        title:'What You\'re Actually Good At',        intro:'The gift in its open form — before it collapses under pressure.',        guide:'Natural Gifts & Gene Keys' },
+  { id:'shadows',      title:'The Patterns Worth Naming',            intro:'The contracted form of the gift.',                                       guide:'Shadow Patterns & Growth Edges' },
+  { id:'relationships',title:'Relationships',                        intro:'What you bring. What you draw in. What the growth edge is.',             guide:'Relationship Dynamics' },
+  { id:'work',         title:'Work and Purpose',                     intro:'The vocation underneath the job.',                                       guide:'Ideal Work & Creative Expression' },
+  { id:'roots',        title:'Where You Came From',                  intro:'The inherited material. What was handed down, and what\'s actually yours.',guide:'Family, Ancestry & Roots' },
+  { id:'body',         title:'The Body and How to Regulate It',      intro:'Not wellness advice. Specific to this chart.',                           guide:'Nervous System & Body' },
+  { id:'chapter',      title:'The Chapter You\'re In',               intro:'The current chapter — what it\'s asking for and when it turns.',         guide:'Vedic Mahadasha Context' },
+  { id:'alignment',    title:'How to Actually Live This',            intro:'The five practices. Specific to this chart.',                            guide:'Living in Alignment' },
+  { id:'seal',         title:'The Seal on the Sun',                  intro:'One image. Your exact solar degree. Surprisingly hard to shake.',        guide:'The Seal on the Sun (Sabian Symbol)' },
+];
+
+const SYSTEMS = [
+  { id:'western',   name:'Western Astrology',  needsTime:false },
+  { id:'human',     name:'Human Design',       needsTime:true  },
+  { id:'vedic',     name:'Vedic / Jyotish',    needsTime:false },
+  { id:'bazi',      name:'BaZi Four Pillars',  needsTime:false },
+  { id:'numerology',name:'Numerology',         needsTime:false },
+  { id:'gene_keys', name:'Gene Keys',          needsTime:false },
+  { id:'enneagram', name:'Enneagram',          needsTime:false, optional:true },
+];
+
+/* ─── Zodiac data ─── */
+const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+const ELEMENTS = {Aries:'fire',Leo:'fire',Sagittarius:'fire',Taurus:'earth',Virgo:'earth',Capricorn:'earth',Gemini:'air',Libra:'air',Aquarius:'air',Cancer:'water',Scorpio:'water',Pisces:'water'};
+const MODALITY = {Aries:'cardinal',Cancer:'cardinal',Libra:'cardinal',Capricorn:'cardinal',Taurus:'fixed',Leo:'fixed',Scorpio:'fixed',Aquarius:'fixed',Gemini:'mutable',Virgo:'mutable',Sagittarius:'mutable',Pisces:'mutable'};
+
+/* ─── Seeded random (for placeholder placements) ─── */
+function seededRand(seed) {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return () => {
+    h += 0x6D2B79F5;
+    let t = h;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/* ─── Numerology ─── */
+function reduceNumber(n, allowMaster = true) {
+  while (n > 9 && !(allowMaster && (n === 11 || n === 22 || n === 33))) {
+    n = String(n).split('').reduce((a, d) => a + Number(d), 0);
+  }
+  return n;
+}
+function lifePath(y, m, d) {
+  return reduceNumber(reduceNumber(y, false) + reduceNumber(m, false) + reduceNumber(d, false), true);
+}
+const LETTER_VALUES = {a:1,j:1,s:1,b:2,k:2,t:2,c:3,l:3,u:3,d:4,m:4,v:4,e:5,n:5,w:5,f:6,o:6,x:6,g:7,p:7,y:7,h:8,q:8,z:8,i:9,r:9};
+const VOWELS = new Set(['a','e','i','o','u']);
+function nameNumerology(name) {
+  const clean = name.toLowerCase().replace(/[^a-z]/g, '');
+  let expression = 0, soul = 0, personality = 0;
+  for (const ch of clean) {
+    const v = LETTER_VALUES[ch] || 0;
+    expression += v;
+    if (VOWELS.has(ch)) soul += v; else personality += v;
+  }
+  return { expression: reduceNumber(expression,true), soul: reduceNumber(soul,true), personality: reduceNumber(personality,true) };
+}
+
+/* ─── Chinese zodiac ─── */
+const CHINESE_ANIMALS = ['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'];
+const CHINESE_ELEMENTS_LIST = ['Wood','Wood','Fire','Fire','Earth','Earth','Metal','Metal','Water','Water'];
+function chineseZodiac(y, m, d) {
+  let year = y;
+  if (m === 1 || (m === 2 && d < 4)) year -= 1;
+  const animal = CHINESE_ANIMALS[(year - 4) % 12];
+  const stemIdx = (year - 4) % 10;
+  return { animal, element: CHINESE_ELEMENTS_LIST[stemIdx], polarity: stemIdx % 2 === 0 ? 'Yang' : 'Yin' };
+}
+
+/* ─── HD API fetch (optional) ─── */
+async function fetchHD(form, utcOffset) {
+  if (!CONFIG.hdKey || form.timeUnknown || !form.time) return null;
+  const [y, m, d] = form.date.split('-').map(Number);
+  const [h, min] = form.time.split(':').map(Number);
+  const sign = utcOffset >= 0 ? '+' : '-';
+  const absOff = Math.abs(utcOffset);
+  const offStr = `${sign}${String(Math.trunc(absOff)).padStart(2,'0')}:${String(Math.round((absOff%1)*60)).padStart(2,'0')}`;
+  const datetime = `${String(y).padStart(4,'0')}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00${offStr}`;
+  try {
+    const res = await fetch('https://api.humandesignhub.app/v1/bodygraph', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-API-KEY': CONFIG.hdKey },
+      body: JSON.stringify({ datetime }),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (_) { return null; }
+}
+
+/* ─── Compute chart ─── */
+function computeChart(form, hdApiData) {
+  const [y, m, d] = form.date.split('-').map(Number);
+  // Estimate UTC offset from geocoded longitude (±1hr accuracy, fine for Sun)
+  const estOffset = form.geo ? Math.round(form.geo.lon / 15) : 0;
+  let hourUT = 12; // noon default if time unknown
+  if (!form.timeUnknown && form.time) {
+    const [h, min] = form.time.split(':').map(Number);
+    hourUT = h + min / 60 - estOffset;
+  }
+
+  // Real Sun longitude (Meeus)
+  const sunLon = sunLongitude(y, m, d, hourUT);
+  const sunSignIdx = Math.floor(sunLon / 30);
+  const sunDegInSign = sunLon % 30;
+  const sunSignName = SIGNS[sunSignIdx];
+  const sunSabian = lookupSabian(sunLon);
+
+  // Seeded random for placeholder placements (Moon, Rising, other planets)
+  const rand = seededRand(`${form.name}|${form.date}|${form.time}|${form.city}`);
+  const moonSign = SIGNS[Math.floor(rand() * 12)];
+  const moonDeg = Math.floor(rand() * 30);
+  const rising = form.timeUnknown ? null : SIGNS[Math.floor(rand() * 12)];
+  const risingLon = form.timeUnknown ? null : (SIGNS.indexOf(rising) * 30 + Math.floor(rand() * 30));
+  const ascSabian = risingLon != null ? lookupSabian(risingLon) : null;
+  const venus = SIGNS[Math.floor(rand() * 12)];
+  const mars = SIGNS[Math.floor(rand() * 12)];
+  const mercury = SIGNS[Math.floor(rand() * 12)];
+
+  const NAKSHATRAS = ['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'];
+  const nakshatra = NAKSHATRAS[Math.floor(rand() * NAKSHATRAS.length)];
+  const vedicMoon = SIGNS[Math.floor(rand() * 12)];
+
+  const HD_TYPES = ['Generator','Manifesting Generator','Projector','Manifestor','Reflector'];
+  const HD_AUTHS = ['Sacral','Emotional','Splenic','Self-Projected','Ego','Mental','Lunar'];
+  const HD_PROFILES = ['1/3','1/4','2/4','2/5','3/5','3/6','4/6','4/1','5/1','5/2','6/2','6/3'];
+  const STEMS = ['Jia (Yang Wood)','Yi (Yin Wood)','Bing (Yang Fire)','Ding (Yin Fire)','Wu (Yang Earth)','Ji (Yin Earth)','Geng (Yang Metal)','Xin (Yin Metal)','Ren (Yang Water)','Gui (Yin Water)'];
+
+  // Use HD API data if available, otherwise seeded placeholder
+  let hdType, hdAuthority, hdProfile, hdCross, hdChannels, hdGates;
+  if (hdApiData) {
+    hdType = hdApiData.type || hdApiData.energy_type;
+    hdAuthority = hdApiData.authority || hdApiData.inner_authority;
+    hdProfile = hdApiData.profile;
+    hdCross = hdApiData.incarnation_cross || hdApiData.cross;
+    hdChannels = (hdApiData.channels_short || []).join(', ');
+    hdGates = (hdApiData.gates || []).join(', ');
+  } else if (!form.timeUnknown) {
+    hdType = HD_TYPES[Math.floor(rand() * HD_TYPES.length)];
+    hdAuthority = HD_AUTHS[Math.floor(rand() * HD_AUTHS.length)];
+    hdProfile = HD_PROFILES[Math.floor(rand() * HD_PROFILES.length)];
+    hdCross = `Gate ${Math.floor(rand()*64)+1}/${Math.floor(rand()*64)+1}`;
+    hdChannels = null;
+    hdGates = null;
+  }
+
+  const ch = chineseZodiac(y, m, d);
+  const numName = nameNumerology(form.name);
+  const lp = lifePath(y, m, d);
+
+  // Age and audience
+  const today = new Date();
+  const birth = new Date(`${form.date}T00:00:00`);
+  let age = today.getFullYear() - birth.getFullYear();
+  if (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate())) age--;
+  const audience = age < 13 ? 'minor' : age < 18 ? 'teen' : 'adult';
+
+  return {
+    age, audience,
+    western: {
+      sun: { sign: sunSignName, deg: Math.floor(sunDegInSign * 10) / 10, element: ELEMENTS[sunSignName], modality: MODALITY[sunSignName], sabian: sunSabian },
+      moon: { sign: moonSign, deg: moonDeg, element: ELEMENTS[moonSign] },
+      rising: rising ? { sign: rising, sabian: ascSabian } : null,
+      mercury: { sign: mercury }, venus: { sign: venus }, mars: { sign: mars },
+    },
+    vedic: { moonSign: vedicMoon, nakshatra },
+    humanDesign: (form.timeUnknown && !hdApiData) ? null : { type: hdType, authority: hdAuthority, profile: hdProfile, cross: hdCross, channels: hdChannels, gates: hdGates },
+    bazi: { dayMaster: STEMS[Math.floor(rand() * 10)], yearPillar: `${ch.element} ${ch.animal}`, animal: ch.animal, element: ch.element },
+    numerology: { lifePath: lp, expression: numName.expression, soul: numName.soul, personality: numName.personality, birthdayNum: d > 9 ? reduceNumber(d, true) : d },
+    geneKeys: { lifesWork: Math.floor(rand()*64)+1, evolution: Math.floor(rand()*64)+1, radiance: Math.floor(rand()*64)+1, purpose: Math.floor(rand()*64)+1 },
+    enneagram: form.enneagramType ? { type: form.enneagramType, wing: form.enneagramWing || null, instinct: form.enneagramInstinct || null } : null,
+  };
+}
+
+/* ─── Chart facts string for prompts ─── */
+function chartFacts(chart, form) {
+  const lines = [];
+  lines.push(`Name: ${form.name}`);
+  lines.push(`Birth date: ${form.date}`);
+  lines.push(form.timeUnknown ? `Birth time: unknown` : `Birth time: ${form.time}`);
+  lines.push(`Birth city: ${form.geo?.display || form.city}${form.geo ? ` (${form.geo.lat.toFixed(2)}°, ${form.geo.lon.toFixed(2)}°)` : ''}`);
+  lines.push(`Age: ${chart.age} | Audience mode: ${chart.audience}`);
+  lines.push('');
+  lines.push('WESTERN ASTROLOGY:');
+  lines.push(`  Sun ${chart.western.sun.deg.toFixed(1)}° ${chart.western.sun.sign} (${chart.western.sun.element}, ${chart.western.sun.modality})`);
+  lines.push(`  Sabian Symbol (Sun ${chart.western.sun.sabian.degree}° ${chart.western.sun.sabian.sign}): "${chart.western.sun.sabian.symbol}" — Keyword: ${chart.western.sun.sabian.keyword}`);
+  lines.push(`  Moon ~${chart.western.moon.deg}° ${chart.western.moon.sign} (${chart.western.moon.element}) [approximate — birth time based]`);
+  if (chart.western.rising) {
+    lines.push(`  Rising: ${chart.western.rising.sign}`);
+    if (chart.western.rising.sabian) lines.push(`  Sabian Symbol (ASC): "${chart.western.rising.sabian.symbol}" — Keyword: ${chart.western.rising.sabian.keyword}`);
+  }
+  lines.push(`  Mercury: ${chart.western.mercury.sign} | Venus: ${chart.western.venus.sign} | Mars: ${chart.western.mars.sign} [approximate]`);
+  lines.push('');
+  lines.push('VEDIC / JYOTISH:');
+  lines.push(`  Moon sign (sidereal): ${chart.vedic.moonSign} | Nakshatra: ${chart.vedic.nakshatra} [approximate]`);
+  lines.push('');
+  if (chart.humanDesign) {
+    lines.push('HUMAN DESIGN:');
+    lines.push(`  Type: ${chart.humanDesign.type} | Authority: ${chart.humanDesign.authority} | Profile: ${chart.humanDesign.profile}`);
+    lines.push(`  Incarnation Cross: ${chart.humanDesign.cross}`);
+    if (chart.humanDesign.channels) lines.push(`  Channels: ${chart.humanDesign.channels}`);
+    if (chart.humanDesign.gates) lines.push(`  Gates: ${chart.humanDesign.gates}`);
+    lines.push('');
+  }
+  lines.push('BAZI FOUR PILLARS:');
+  lines.push(`  Day Master: ${chart.bazi.dayMaster} | Year Pillar: ${chart.bazi.yearPillar} [year animal is accurate; other pillars approximate]`);
+  lines.push('');
+  lines.push('NUMEROLOGY:');
+  lines.push(`  Life Path: ${chart.numerology.lifePath} | Expression: ${chart.numerology.expression} | Soul Urge: ${chart.numerology.soul} | Personality: ${chart.numerology.personality}`);
+  lines.push(`  Birthday Number: ${chart.numerology.birthdayNum}`);
+  lines.push('');
+  lines.push('GENE KEYS (primary quartet):');
+  lines.push(`  Life's Work: Gate ${chart.geneKeys.lifesWork} | Evolution: Gate ${chart.geneKeys.evolution} | Radiance: Gate ${chart.geneKeys.radiance} | Purpose: Gate ${chart.geneKeys.purpose} [approximate]`);
+  lines.push('');
+  if (chart.enneagram) {
+    lines.push('ENNEAGRAM:');
+    const ennStr = `${chart.enneagram.type}${chart.enneagram.wing ? 'w' + chart.enneagram.wing : ''}${chart.enneagram.instinct ? ' ' + chart.enneagram.instinct : ''}`;
+    lines.push(`  ${ennStr} (self-identified)`);
+    lines.push('');
+  }
+  lines.push('NOTE: Placements marked [approximate] use seeded deterministic estimates. The Sun longitude and numerology are calculated accurately. HD data is from the API if a key is configured.');
+  return lines.join('\n');
+}
+
+function audienceFraming(audience, name) {
+  const firstName = name.split(' ')[0];
+  if (audience === 'minor') return `AUDIENCE: This subject is a child under 13. Write in THIRD PERSON throughout, addressed to the parent. Use the child's first name: ${firstName}. Example: "${firstName} has a Moon in..." Never use "you" to address the child.`;
+  if (audience === 'teen') return `AUDIENCE: This subject is 13–17. Write in second person. Open with one sentence acknowledging you are writing directly to them and that their parent may also read this.`;
+  return `AUDIENCE: Adult (18+). Standard second person ("you").`;
+}
+
+/* ─── LLM prompt builders ─── */
+function blueprintPrompt(chart, form) {
+  return `${audienceFraming(chart.audience, form.name)}
+
+Chart facts:
+${chartFacts(chart, form)}
+
+Write THE BLUEPRINT. Use this exact structure with these exact headings:
+
+## The Core Pattern
+3–4 sentences. The single shape the whole chart is making. Reference at least 2 specific placements from different systems. Include exactly one Sabian Symbol line in italics: *Sabian Symbol — [symbol name] ([Sign] [Degree]°) — Keyword: [Keyword].*
+
+## What You're Here to Do
+3–4 sentences. The vocation underneath the job. Specific placements only, not general encouragement.
+
+## The Central Challenge
+3–4 sentences. Name the core tension. At least two systems should point to the same pattern.
+
+## Right Now
+2–3 sentences. The current chapter based on timing indicators (dasha, numerology cycles, transits if relevant).
+
+Then on its own line, the alignment statement prefixed exactly as shown:
+ALIGNMENT_STATEMENT: [one sentence, ~18–25 words, first person, integrates the reading, names specific placements]
+
+Output only the Blueprint. Begin with the ## heading.`;
+}
+
+function deepDivePrompt(chart, form, section) {
+  return `${audienceFraming(chart.audience, form.name)}
+
+Chart facts:
+${chartFacts(chart, form)}
+
+Write Deep Dive section: "${section.guide}"
+This section will be displayed under the app title: "${section.title}"
+Section tagline: "${section.intro}"
+
+Length: 250–350 words. 3–4 paragraphs. Reference specific placements from the chart facts by name. Be specific to this person — nothing generic. End with one concrete observation or instruction (not a summary).
+
+Output only the prose. No heading. No preamble. Begin directly.`;
+}
+
+function glossaryPrompt(chart, form, system) {
+  const dataNote = {
+    western: 'Include: Sun, Moon (note approximate), Rising (if time known), Mercury, Venus, Mars. Then key aspects if notable.',
+    human: chart.humanDesign ? 'Include: Type, Authority, Profile, Incarnation Cross, defined centers/channels if available.' : 'NOTE: Human Design data was not available for this chart. Write a brief note that HD data requires birth time and an API key.',
+    vedic: 'Include: Moon sign sidereal, Nakshatra (note approximate). Current Mahadasha if calculable.',
+    bazi: 'Include: Day Master, Year Pillar/animal. Note which values are approximate.',
+    numerology: 'Include: Life Path, Expression, Soul Urge, Personality, Birthday Number.',
+    gene_keys: 'Include: Life\'s Work gate, Evolution gate, Radiance gate, Purpose gate. Note these are approximate.',
+    enneagram: chart.enneagram ? `Include: Type, Wing, Instinct. All three if provided. Core fear, core desire, integration/disintegration paths.` : 'Enneagram was not provided — skip this section.',
+  }[system.id] || '';
+
+  return `${audienceFraming(chart.audience, form.name)}
+
+Chart facts:
+${chartFacts(chart, form)}
+
+Write the "${system.name}" section of the Chart Glossary.
+${dataNote}
+
+Format each entry exactly as: **[Placement and value]** — [1–2 sentences personalized to this person.]
+
+Write to the person directly: "Your Taurus Sun in the first house..." not "Taurus Sun means..."
+Each sentence must be specific to this person's chart — not generic definitions.
+1–2 sentences per entry is a firm limit.
+
+Output only the entries. No heading. No intro line. No bullet markers except the **bold** format shown.`;
+}
+
+/* ─── Markdown renderer ─── */
+function renderMd(src) {
+  let s = src.trim();
+  s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
+  s = s.replace(/^##\s+(.+)$/gm, '<h4 class="bp-sub">$1</h4>');
+  s = s.replace(/ALIGNMENT_STATEMENT:\s*([^\n]+)/, '<p class="alignment-statement">$1</p>');
+  s = s.replace(/<em>(Sabian Symbol[^<]+)<\/em>/g, '<p class="sabian"><em>$1</em></p>');
+  s = s.split(/\n{2,}/).map(p => {
+    p = p.trim();
+    if (!p) return '';
+    if (/^<(h4|p)/.test(p)) return p;
+    return `<p>${p.replace(/\n/g, ' ')}</p>`;
+  }).join('\n');
+  return s;
+}
+
+function stripMd(s) {
+  return s.replace(/^##\s+/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/ALIGNMENT_STATEMENT:\s*/,'— ').trim();
+}
+
+/* ─── Geocoding ─── */
+let geocodeTimer = null, lastQuery = '';
+function setupGeocode(input, statusEl) {
+  input.addEventListener('input', () => {
+    state.form.city = input.value;
+    state.form.geo = null;
+    const q = input.value.trim();
+    statusEl.textContent = '';
+    statusEl.className = 'field-help';
+    if (geocodeTimer) clearTimeout(geocodeTimer);
+    if (q.length < 3) return;
+    if (q === lastQuery) return;
+    lastQuery = q;
+    statusEl.textContent = 'Looking up…';
+    geocodeTimer = setTimeout(() => geocode(q, statusEl), 600);
+  });
+}
+async function geocode(q, statusEl) {
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, { headers: {'Accept':'application/json'} });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    if (!data.length) { statusEl.textContent = "Couldn't find that city. Try adding the country, or use coordinates."; statusEl.className = 'field-help err'; return; }
+    const r = data[0];
+    state.form.geo = { lat: parseFloat(r.lat), lon: parseFloat(r.lon), display: r.display_name };
+    statusEl.textContent = `${Number(r.lat).toFixed(2)}°${r.lat>=0?'N':'S'} · ${Number(r.lon).toFixed(2)}°${r.lon>=0?'E':'W'} · ${r.display_name.split(',').slice(-3).join(',').trim()}`;
+    statusEl.className = 'field-help ok';
+  } catch (_) { statusEl.textContent = "Couldn't reach the geocoder. Continuing without coordinates."; statusEl.className = 'field-help err'; }
+}
+
+/* ─── Form ─── */
+function renderForm() {
+  const root = $('#app');
+  root.innerHTML = '';
+  root.appendChild(el('div', { class:'orbit-backdrop', 'aria-hidden':'true' },
+    el('div',{class:'ring r1'}), el('div',{class:'ring r2'}), el('div',{class:'ring r3'}), el('div',{class:'pt'})
+  ));
+  const shell = el('div', { class:'shell shell-form' });
+  root.appendChild(shell);
+  shell.appendChild(el('header', {class:'app-header app-header--form'},
+    el('span', {class:'wm','aria-label':'un/charted'}, el('span',{class:'prefix'},'un/'), el('span',{class:'resolve'},'charted')),
+    el('p', {class:'tagline'}, 'The map no one else saw coming.'),
+  ));
+  shell.appendChild(el('p', {class:'lede'}, 'Many systems. One report. A reflection that feels true to the core.'));
+  const form = el('form', {class:'form', novalidate:true});
+  shell.appendChild(form);
+
+  form.appendChild(field({id:'f-name', label:'Name at birth', help:'Full legal name as given at birth. Used for numerology.', input:el('input',{id:'f-name',type:'text',autocomplete:'name',value:state.form.name,oninput:e=>state.form.name=e.target.value})}));
+  form.appendChild(field({id:'f-date', label:'Birth date', input:el('input',{id:'f-date',type:'date',value:state.form.date,oninput:e=>state.form.date=e.target.value})}));
+
+  const timeInput = el('input',{id:'f-time',type:'time',value:state.form.time,disabled:state.form.timeUnknown,oninput:e=>state.form.time=e.target.value});
+  const timeDot = el('span',{class:'dot'+(state.form.timeUnknown?' is-on':'')});
+  const timeToggle = el('button',{type:'button',class:'time-toggle'+(state.form.timeUnknown?' is-on':''),title:"No birth time? You'll lose Ascendant, houses, and Human Design — but the rest holds.",onclick:()=>{
+    state.form.timeUnknown=!state.form.timeUnknown;
+    timeInput.disabled=state.form.timeUnknown;
+    timeToggle.classList.toggle('is-on',state.form.timeUnknown);
+    timeDot.classList.toggle('is-on',state.form.timeUnknown);
+  }},timeDot,'Time unknown');
+  form.appendChild(field({id:'f-time',label:'Birth time',labelTrail:timeToggle,help:"If you don't know it, use the toggle — don't guess.",input:timeInput}));
+
+  const cityHelp = el('p',{class:'field-help'});
+  const cityInput = el('input',{id:'f-city',type:'text',autocomplete:'address-level2',placeholder:'City, country',value:state.form.city});
+  setupGeocode(cityInput, cityHelp);
+  form.appendChild(field({id:'f-city',label:'Birth city',input:cityInput,helpEl:cityHelp}));
+
+  const enneaRow = el('div',{class:'ennea-row'});
+  enneaRow.appendChild(el('select',{id:'f-type',onchange:e=>state.form.enneagramType=e.target.value},el('option',{value:''},'Type'),...[1,2,3,4,5,6,7,8,9].map(n=>el('option',{value:'Type '+n,selected:state.form.enneagramType==='Type '+n},'Type '+n))));
+  enneaRow.appendChild(el('select',{onchange:e=>state.form.enneagramWing=e.target.value},el('option',{value:''},'Wing'),...[1,2,3,4,5,6,7,8,9].map(n=>el('option',{value:n,selected:state.form.enneagramWing==n},'w'+n))));
+  enneaRow.appendChild(el('select',{onchange:e=>state.form.enneagramInstinct=e.target.value},el('option',{value:''},'Instinct'),...['SP','SX','SO'].map(s=>el('option',{value:s,selected:state.form.enneagramInstinct===s},s))));
+  form.appendChild(field({id:'f-type',label:'Enneagram',labelTrail:el('span',{class:'field-aside'},'optional'),help:"Self-identified only. If you're not sure, skip it — a wrong type does more damage than a missing one.",input:enneaRow,rawInput:true}));
+
+  const formErr = el('p',{id:'form-err',class:'form-err'});
+  form.appendChild(formErr);
+  const generateBtn = el('button',{type:'submit',class:'btn btn-primary btn-block'},'Generate Reading');
+  form.appendChild(generateBtn);
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const errs = validate();
+    if (errs.length) { formErr.textContent=errs[0]; formErr.classList.add('show'); return; }
+    formErr.classList.remove('show');
+    startReading();
+  });
+  shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Sun longitude and numerology calculated accurately. Other placements are seeded estimates. Synthesis generated via Claude API.')));
+}
+
+function field({id, label, labelTrail, help, helpEl, input}) {
+  const labelEl = el('label',{for:id},label);
+  const labelWrap = labelTrail ? el('div',{class:'field-label-row'},labelEl,labelTrail) : labelEl;
+  return el('div',{class:'field'},labelWrap,input,helpEl||(help?el('p',{class:'field-help'},help):null));
+}
+
+function validate() {
+  const errs = [];
+  const f = state.form;
+  if (!f.name || f.name.trim().length < 2) errs.push('Name is empty. Use the name on the birth certificate.');
+  if (!f.date) errs.push('Birth date is empty.');
+  if (!f.timeUnknown && !f.time) errs.push("Birth time is empty. If you don't know it, use the toggle above — don't guess.");
+  if (!f.city || f.city.trim().length < 2) errs.push('Birth city is empty.');
+  return errs;
+}
+
+/* ─── Reading lifecycle ─── */
+async function startReading() {
+  state.reading = { blueprint:'', deepDive:{}, glossary:{} };
+  state.generating = true;
+  // Try HD API if key configured
+  const estOffset = state.form.geo ? Math.round(state.form.geo.lon / 15) : 0;
+  state.hdData = await fetchHD(state.form, estOffset);
+  state.chart = computeChart(state.form, state.hdData);
+  renderReading();
+  await streamBlueprint();
+  state.generating = false;
+  const copyBtn = $('#copy-btn');
+  if (copyBtn) copyBtn.classList.add('show');
+}
+
+function renderReading() {
+  const root = $('#app');
+  root.innerHTML = '';
+  const shell = el('div',{class:'shell shell-reading'});
+  root.appendChild(shell);
+  shell.appendChild(renderHeaderSummary());
+  shell.appendChild(el('section',{class:'blueprint'},
+    el('p',{class:'eyebrow'},'§ The Blueprint'),
+    el('div',{class:'blueprint-body',id:'blueprint-body'}),
+  ));
+  shell.appendChild(renderDeepDive());
+  shell.appendChild(renderGlossary());
+  shell.appendChild(el('div',{class:'copy-wrap'},el('button',{id:'copy-btn',class:'btn btn-line btn-block',onclick:copyFullReading},'Copy full reading')));
+  shell.appendChild(el('footer',{class:'reading-footer'},el('p',{class:'end'},'The map no one else saw coming.')));
+}
+
+function renderHeaderSummary() {
+  const f = state.form, c = state.chart;
+  const dt = new Date(f.date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
+  const cityStr = (f.geo?.display?.split(',').slice(0,2).join(', ').trim()) || f.city;
+  const enn = c.enneagram ? `${c.enneagram.type.replace('Type ','T')}${c.enneagram.wing?'w'+c.enneagram.wing:''}${c.enneagram.instinct?' '+c.enneagram.instinct:''}` : null;
+  const metaItems = [dt, cityStr];
+  if (enn) metaItems.push(enn);
+  const metaRow = el('div',{class:'ps-meta-row'});
+  metaItems.forEach((m,i) => { if(i>0) metaRow.appendChild(el('span',{class:'ps-sep'},'·')); metaRow.appendChild(el('span',{class:'ps-meta'},m)); });
+  const editSvg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  editSvg.setAttribute('width','12'); editSvg.setAttribute('height','12'); editSvg.setAttribute('viewBox','0 0 24 24'); editSvg.setAttribute('fill','none'); editSvg.setAttribute('stroke','currentColor'); editSvg.setAttribute('stroke-width','1.5');
+  const editPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+  editPath.setAttribute('d','M11 4H4v16h16v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z');
+  editSvg.appendChild(editPath);
+  return el('header',{class:'app-header app-header--reading'},
+    el('span',{class:'wm wm-small'},el('span',{class:'prefix'},'un/'),el('span',{class:'resolve'},'charted')),
+    el('button',{class:'profile-summary',type:'button',onclick:editForm,'aria-label':'Edit birth data'},
+      el('span',{class:'ps-line'},el('span',{class:'ps-name'},f.name),metaRow),
+      el('span',{class:'edit-link'},editSvg,'Edit'),
+    ),
+  );
+}
+
+function renderDeepDive() {
+  const wrap = el('section',{class:'deep-dive'},el('p',{class:'eyebrow'},'§ The Deep Dive'));
+  DEEP_DIVE_SECTIONS.forEach((s,i) => {
+    wrap.appendChild(accordion({id:'dd-'+s.id, idx:i+1, title:s.title, intro:s.intro, onExpand:elBody=>loadDeepDive(s,elBody)}));
+  });
+  return wrap;
+}
+
+function renderGlossary() {
+  const wrap = el('section',{class:'glossary'},
+    el('p',{class:'eyebrow'},'§ Your Chart at a Glance'),
+    el('p',{class:'glossary-intro'},'Everything above is the synthesis. This is the map behind it — every placement, every system, what each one means for you. Come back here when you want to know where a specific insight came from.'),
+  );
+  for (const sys of SYSTEMS) {
+    if (sys.optional && !state.chart.enneagram) continue;
+    if (sys.id === 'human' && !state.chart.humanDesign) continue;
+    wrap.appendChild(accordion({id:'gl-'+sys.id, title:sys.name, eyebrow:sysSummary(sys.id), onExpand:elBody=>loadGlossary(sys,elBody)}));
+  }
+  return wrap;
+}
+
+function sysSummary(id) {
+  const c = state.chart;
+  switch(id) {
+    case 'western': return `Sun ${c.western.sun.deg.toFixed(0)}° ${c.western.sun.sign} · Moon ${c.western.moon.sign}${c.western.rising?' · Rising '+c.western.rising.sign:''}`;
+    case 'vedic': return `Moon ${c.vedic.moonSign} · ${c.vedic.nakshatra}`;
+    case 'human': return c.humanDesign ? `${c.humanDesign.type} · ${c.humanDesign.profile} · ${c.humanDesign.authority}` : '';
+    case 'bazi': return `${c.bazi.yearPillar} · ${c.bazi.dayMaster.split(' ')[0]} Day`;
+    case 'numerology': return `Life Path ${c.numerology.lifePath} · Expression ${c.numerology.expression}`;
+    case 'gene_keys': return `Life's Work Gate ${c.geneKeys.lifesWork} · Evolution Gate ${c.geneKeys.evolution}`;
+    case 'enneagram': return c.enneagram ? `${c.enneagram.type}${c.enneagram.wing?'w'+c.enneagram.wing:''}${c.enneagram.instinct?' '+c.enneagram.instinct:''}` : '';
+    default: return '';
+  }
+}
+
+function accordion({id, idx, title, intro, eyebrow, onExpand}) {
+  const body = el('div',{class:'acc-body',id:id+'-body'});
+  let loaded = false, loading = false;
+  const header = el('button',{type:'button',class:'acc-header','aria-expanded':'false',onclick:async()=>{
+    const open = header.classList.toggle('is-open');
+    header.setAttribute('aria-expanded', open?'true':'false');
+    body.classList.toggle('is-open', open);
+    if (open && !loaded && !loading) {
+      loading = true;
+      body.innerHTML = '<div class="acc-loading"><span class="orbital-sm" aria-hidden="true"></span><span>Writing this section.</span></div>';
+      try { await onExpand(body); loaded = true; }
+      catch (e) { body.innerHTML = '<p class="err-inline">The synthesis didn\'t complete. This is usually an API key issue or a timeout. Try again.</p>'; }
+      finally { loading = false; }
+    }
+  }},
+    idx ? el('span',{class:'acc-num'},String(idx).padStart(2,'0')) : null,
+    el('span',{class:'acc-text'},
+      el('span',{class:'acc-title'},title),
+      intro ? el('span',{class:'acc-intro'},intro) : null,
+      eyebrow ? el('span',{class:'acc-eyebrow'},eyebrow) : null,
+    ),
+    el('span',{class:'acc-chevron','aria-hidden':'true'}),
+  );
+  return el('div',{class:'acc'},header,body);
+}
+
+/* ─── Streaming runners ─── */
+async function streamBlueprint() {
+  const body = $('#blueprint-body');
+  body.innerHTML = '<div class="bp-loading"><span class="orbital-sm" aria-hidden="true"></span><span id="bp-msg">Running your chart across six systems. This takes a moment — they\'ve been at this longer than we have.</span></div>';
+  const msgSwap = setTimeout(() => {
+    const t = $('#bp-msg');
+    if (t) { t.style.transition='opacity 240ms ease-out'; t.style.opacity='0'; setTimeout(()=>{ t.textContent='Writing your reading. This is the long part. Worth it.'; t.style.opacity='1'; },240); }
+  }, 1800);
+  try {
+    const prompt = blueprintPrompt(state.chart, state.form);
+    clearTimeout(msgSwap);
+    const text = await streamToElement(prompt, body);
+    state.reading.blueprint = text;
+  } catch (e) {
+    clearTimeout(msgSwap);
+    body.innerHTML = `<p class="err-inline">The synthesis didn't complete. ${e.message || 'Check your API key and try again.'}</p>`;
+    throw e;
+  }
+}
+
+async function loadDeepDive(section, container) {
+  const prompt = deepDivePrompt(state.chart, state.form, section);
+  const text = await llmText(prompt);
+  state.reading.deepDive[section.id] = text;
+  container.innerHTML = renderMd(text);
+  container.style.opacity = '0'; container.style.transform = 'translateY(6px)';
+  requestAnimationFrame(() => { container.style.transition='opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)'; container.style.opacity='1'; container.style.transform='translateY(0)'; });
+}
+
+async function loadGlossary(system, container) {
+  const prompt = glossaryPrompt(state.chart, state.form, system);
+  const text = await llmText(prompt);
+  state.reading.glossary[system.id] = text;
+  const html = text.split('\n').filter(Boolean).map(line => `<p class="gl-entry">${renderMd(line).replace(/^<p>|<\/p>$/g,'')}</p>`).join('');
+  container.innerHTML = html;
+  container.style.opacity = '0'; container.style.transform = 'translateY(6px)';
+  requestAnimationFrame(() => { container.style.transition='opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)'; container.style.opacity='1'; container.style.transform='translateY(0)'; });
+}
+
+/* ─── Edit / regenerate ─── */
+function editForm() { showEditModal(); }
+function showEditModal() {
+  if ($('#edit-modal')) return;
+  const overlay = el('div',{id:'edit-modal',class:'edit-overlay'});
+  const sheet = el('div',{class:'edit-sheet'});
+  sheet.appendChild(el('div',{class:'edit-head'},el('p',{class:'eyebrow'},'Edit birth data'),el('button',{class:'edit-close',onclick:closeEditModal,type:'button','aria-label':'Close'},'×')));
+  const form = el('form',{class:'form',novalidate:true});
+  sheet.appendChild(form);
+  form.appendChild(field({id:'e-name',label:'Name at birth',input:el('input',{id:'e-name',type:'text',value:state.form.name,oninput:e=>state.form.name=e.target.value})}));
+  form.appendChild(field({id:'e-date',label:'Birth date',input:el('input',{id:'e-date',type:'date',value:state.form.date,oninput:e=>state.form.date=e.target.value})}));
+  const ti = el('input',{id:'e-time',type:'time',value:state.form.time,disabled:state.form.timeUnknown,oninput:e=>state.form.time=e.target.value});
+  const td = el('span',{class:'dot'+(state.form.timeUnknown?' is-on':'')});
+  const tt = el('button',{type:'button',class:'time-toggle'+(state.form.timeUnknown?' is-on':''),onclick:()=>{state.form.timeUnknown=!state.form.timeUnknown;ti.disabled=state.form.timeUnknown;tt.classList.toggle('is-on',state.form.timeUnknown);td.classList.toggle('is-on',state.form.timeUnknown);}},td,'Time unknown');
+  form.appendChild(field({id:'e-time',label:'Birth time',labelTrail:tt,input:ti}));
+  const ch2 = el('p',{class:'field-help'});
+  if (state.form.geo){ch2.textContent=`${state.form.geo.lat.toFixed(2)}°${state.form.geo.lat>=0?'N':'S'} · ${state.form.geo.lon.toFixed(2)}°${state.form.geo.lon>=0?'E':'W'}`;ch2.className='field-help ok';}
+  const ci = el('input',{id:'e-city',type:'text',value:state.form.city});
+  setupGeocode(ci, ch2);
+  form.appendChild(field({id:'e-city',label:'Birth city',input:ci,helpEl:ch2}));
+  const er2 = el('div',{class:'ennea-row'});
+  er2.appendChild(el('select',{onchange:e=>state.form.enneagramType=e.target.value},el('option',{value:''},'Type'),...[1,2,3,4,5,6,7,8,9].map(n=>el('option',{value:'Type '+n,selected:state.form.enneagramType==='Type '+n},'Type '+n))));
+  er2.appendChild(el('select',{onchange:e=>state.form.enneagramWing=e.target.value},el('option',{value:''},'Wing'),...[1,2,3,4,5,6,7,8,9].map(n=>el('option',{value:n,selected:state.form.enneagramWing==n},'w'+n))));
+  er2.appendChild(el('select',{onchange:e=>state.form.enneagramInstinct=e.target.value},el('option',{value:''},'Instinct'),...['SP','SX','SO'].map(s=>el('option',{value:s,selected:state.form.enneagramInstinct===s},s))));
+  form.appendChild(field({id:'e-type',label:'Enneagram',labelTrail:el('span',{class:'field-aside'},'optional'),input:er2,rawInput:true}));
+  const errLine = el('p',{class:'form-err'});
+  form.appendChild(errLine);
+  form.appendChild(el('div',{class:'edit-actions'},
+    el('button',{type:'button',class:'btn btn-ghost',onclick:closeEditModal},'Cancel'),
+    el('button',{type:'submit',class:'btn btn-primary'},'Regenerate'),
+  ));
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const errs = validate();
+    if (errs.length){errLine.textContent=errs[0];errLine.classList.add('show');return;}
+    closeEditModal();
+    await regenerateInPlace();
+  });
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>overlay.classList.add('show'));
+  overlay.addEventListener('click', e=>{if(e.target===overlay)closeEditModal();});
+}
+function closeEditModal(){const o=$('#edit-modal');if(!o)return;o.classList.remove('show');setTimeout(()=>o.remove(),240);}
+async function regenerateInPlace(){
+  const shell = $('.shell-reading');
+  shell.classList.add('regenerating');
+  const veil = el('div',{class:'regen-veil'},el('div',{class:'orbital'}),el('p',{class:'regen-msg'},'Regenerating'));
+  shell.appendChild(veil);
+  requestAnimationFrame(()=>veil.classList.add('show'));
+  const estOffset = state.form.geo ? Math.round(state.form.geo.lon / 15) : 0;
+  state.hdData = await fetchHD(state.form, estOffset);
+  state.chart = computeChart(state.form, state.hdData);
+  state.reading = {blueprint:'',deepDive:{},glossary:{}};
+  await new Promise(r=>setTimeout(r,600));
+  renderReading();
+  await streamBlueprint();
+}
+
+/* ─── Copy ─── */
+async function copyFullReading(){
+  const f = state.form, c = state.chart;
+  const dt = new Date(f.date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric'});
+  let out = `un/charted — natal chart synthesis\n${f.name} · ${dt}${f.timeUnknown?'':' · '+f.time} · ${f.geo?.display||f.city}\n\n———\n\nTHE BLUEPRINT\n\n`;
+  out += stripMd(state.reading.blueprint)+'\n\n———\n\nTHE DEEP DIVE\n\n';
+  for (let i=0; i<DEEP_DIVE_SECTIONS.length; i++){
+    const s=DEEP_DIVE_SECTIONS[i];
+    out+=`${String(i+1).padStart(2,'0')} · ${s.title}\n${s.intro}\n\n`;
+    out+=(state.reading.deepDive[s.id]?stripMd(state.reading.deepDive[s.id]):'[ Not yet expanded ]')+'\n\n';
+  }
+  out+='———\n\nYOUR CHART AT A GLANCE\n\n';
+  for (const sys of SYSTEMS){
+    if(sys.optional&&!c.enneagram)continue;
+    if(sys.id==='human'&&!c.humanDesign)continue;
+    out+=`${sys.name}\n`+(state.reading.glossary[sys.id]?stripMd(state.reading.glossary[sys.id]):'[ Not yet expanded ]')+'\n\n';
+  }
+  try {
+    await navigator.clipboard.writeText(out);
+    const btn=$('#copy-btn');
+    const orig=btn.textContent;
+    btn.textContent='Copied';
+    setTimeout(()=>{btn.textContent=orig;},2000);
+  } catch(_){alert("Couldn't copy. Your browser may be blocking clipboard access.");}
+}
+
+/* ─── Boot ─── */
+document.addEventListener('DOMContentLoaded', ()=>{ renderForm(); });
+</script>
+</body>
+</html>
