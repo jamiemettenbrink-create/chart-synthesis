@@ -200,6 +200,10 @@ End with the Integrated Alignment Statement (4-6 sentences; first person for adu
 subjects; for child subjects, first person marked explicitly as written for the child to read
 when older).
 
+For child charts (subject under 13): add a **Parent Note** (*For parents: ...*) at the end
+of each Blueprint sub-section. Chart-specific and practical — grounded in the placement just
+described. 1–3 sentences. Blueprint only; do not add to Deep Dive or Glossary.
+
 **Layer 2 — The Deep Dive** (13 sections):
 1. Core Energetic Signature
 2. Central Psychological Architecture
