@@ -94,10 +94,10 @@ end of you, let's keep going.* The lightness and the weight belong together.
 ## UI Copy
 
 ### Tagline / Header
-> "Six systems. One synthesis. Mostly confirming what you already suspected."
+> "Many systems. One report. A reflection that feels true to the core."
 
 ### Onboarding / Subhead
-> "Enter your birth data. We'll handle the rest — Western astrology, Human Design, Vedic,
+> "Enter your birth data. We'll handle the rest.... Western astrology, Human Design, Vedic,
 > BaZi, numerology, Gene Keys, and one Sabian Symbol that will probably make you pause."
 
 ### Loading States
