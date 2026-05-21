@@ -227,9 +227,13 @@ input,select,textarea{font:inherit;color:inherit}
    ───────────────────────────────────────────────────────────────── */
 
 /* ─── CONFIG — fill in your keys ─── */
+/* WARNING: This is a static client-side app. Any key written here is
+   visible to anyone who views the page source. Use only with a key
+   that has a strict spend limit and is treated as throw-away, OR move
+   the API call behind a server-side proxy before deploying publicly. */
 const CONFIG = {
-  anthropicKey: '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',
-  hdKey: 'hd_live_p4iju7CYNmXfBn69ge-ItjV4BvmvNqlt9cwbJ0E69Ak',   // optional — humandesignhub.app free key (100 charts/mo)
+  anthropicKey: 'YOUR_ANTHROPIC_KEY_HERE',
+  hdKey: '',   // optional — humandesignhub.app free key (100 charts/mo)
   model: 'claude-sonnet-4-6',
   maxTokens: 8000,
 };
@@ -654,23 +658,211 @@ function lookupSabian(lon) {
   return { sign: signName, degree, symbol: entry[0], keyword: entry[1] };
 }
 
-/* ─── Sun longitude (Meeus Astronomical Algorithms, Ch.25) ─── */
+/* ─── Astronomy (Meeus Astronomical Algorithms + JPL low-precision elements) ─── */
+const D2R = Math.PI / 180, R2D = 180 / Math.PI;
+function norm360(x) { return ((x % 360) + 360) % 360; }
 function julianDay(y, m, d, hourUT) {
   if (m <= 2) { y -= 1; m += 12; }
   const A = Math.trunc(y / 100);
   const B = 2 - A + Math.trunc(A / 4);
   return Math.trunc(365.25 * (y + 4716)) + Math.trunc(30.6001 * (m + 1)) + d + hourUT / 24 + B - 1524.5;
 }
-function norm360(x) { return ((x % 360) + 360) % 360; }
-function sunLongitude(y, m, d, hourUT) {
-  const JD = julianDay(y, m, d, hourUT);
+function meanObliquity(T) {
+  // Meeus Eq. 22.2 — good to ~1″ for ±2000 years
+  return 23.4392911 - 0.0130042 * T - 1.64e-7 * T*T + 5.04e-7 * T*T*T;
+}
+function gmst(JD) {
+  // Greenwich Mean Sidereal Time in degrees, Meeus Eq. 12.4
   const T = (JD - 2451545.0) / 36525.0;
-  const M = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T * T) * Math.PI / 180;
-  const e = 0.016708634 - 0.000042037 * T;
-  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M)
+  const g = 280.46061837 + 360.98564736629 * (JD - 2451545.0)
+          + 0.000387933 * T*T - T*T*T / 38710000.0;
+  return norm360(g);
+}
+
+/* Sun ecliptic longitude (Meeus Ch. 25) — accurate to ~0.01° */
+function sunLongitudeFromJD(JD) {
+  const T = (JD - 2451545.0) / 36525.0;
+  const M = norm360(357.52911 + 35999.05029 * T - 0.0001537 * T*T) * D2R;
+  const C = (1.914602 - 0.004817 * T - 0.000014 * T*T) * Math.sin(M)
           + (0.019993 - 0.000101 * T) * Math.sin(2 * M)
           + 0.000289 * Math.sin(3 * M);
-  return norm360(280.46646 + 36000.76983 * T + 0.0003032 * T * T + C);
+  return norm360(280.46646 + 36000.76983 * T + 0.0003032 * T*T + C);
+}
+function sunLongitude(y, m, d, hourUT) { return sunLongitudeFromJD(julianDay(y, m, d, hourUT)); }
+
+/* Moon ecliptic longitude (Meeus Ch. 47, top 20 terms in longitude) — accurate to ~0.3° */
+function moonLongitudeFromJD(JD) {
+  const T = (JD - 2451545.0) / 36525.0;
+  const Lp = norm360(218.3164477 + 481267.88123421 * T - 0.0015786 * T*T + T*T*T/538841 - T*T*T*T/65194000);
+  const D  = norm360(297.8501921 + 445267.1114034 * T - 0.0018819 * T*T + T*T*T/545868) * D2R;
+  const M  = norm360(357.5291092 + 35999.0502909 * T - 0.0001536 * T*T) * D2R;
+  const Mp = norm360(134.9633964 + 477198.8675055 * T + 0.0087414 * T*T) * D2R;
+  const F  = norm360(93.2720950  + 483202.0175233 * T - 0.0036539 * T*T) * D2R;
+  const E  = 1 - 0.002516 * T - 0.0000074 * T*T;
+  const terms = [
+    [6288774, 0, 0, 1, 0],
+    [1274027, 2, 0,-1, 0],
+    [ 658314, 2, 0, 0, 0],
+    [ 213618, 0, 0, 2, 0],
+    [-185116, 0, 1, 0, 0],
+    [-114332, 0, 0, 0, 2],
+    [  58793, 2, 0,-2, 0],
+    [  57066, 2,-1,-1, 0],
+    [  53322, 2, 0, 1, 0],
+    [  45758, 2,-1, 0, 0],
+    [ -40923, 0, 1,-1, 0],
+    [ -34720, 1, 0, 0, 0],
+    [ -30383, 0, 1, 1, 0],
+    [  15327, 2, 0, 0,-2],
+    [ -12528, 0, 0, 1, 2],
+    [  10980, 0, 0, 1,-2],
+    [  10675, 4, 0,-1, 0],
+    [  10034, 0, 0, 3, 0],
+    [   8548, 4, 0,-2, 0],
+    [  -7888, 2, 1,-1, 0],
+  ];
+  let sum = 0;
+  for (const [amp, dD, dM, dMp, dF] of terms) {
+    const arg = dD*D + dM*M + dMp*Mp + dF*F;
+    const Efac = Math.abs(dM) === 1 ? E : (Math.abs(dM) === 2 ? E*E : 1);
+    sum += amp * Efac * Math.sin(arg);
+  }
+  return norm360(Lp + sum / 1000000);
+}
+
+/* Planetary geocentric longitudes — JPL low-precision Keplerian elements (1800–2050).
+   Accurate to a few arc-minutes — more than enough for sign placement. */
+const PLANET_ELEMENTS = {
+  // [a, e, I, L, longPeri, longNode] and rates per century
+  Mercury: { a:[0.38709927, 0.00000037], e:[0.20563593, 0.00001906], I:[7.00497902,-0.00594749],
+             L:[252.25032350, 149472.67411175], lp:[77.45779628, 0.16047689], ln:[48.33076593,-0.12534081] },
+  Venus:   { a:[0.72333566, 0.00000390], e:[0.00677672,-0.00004107], I:[3.39467605,-0.00078890],
+             L:[181.97909950, 58517.81538729], lp:[131.60246718, 0.00268329], ln:[76.67984255,-0.27769418] },
+  Earth:   { a:[1.00000261, 0.00000562], e:[0.01671123,-0.00004392], I:[-0.00001531,-0.01294668],
+             L:[100.46457166, 35999.37244981], lp:[102.93768193, 0.32327364], ln:[0.0, 0.0] },
+  Mars:    { a:[1.52371034, 0.00001847], e:[0.09339410, 0.00007882], I:[1.84969142,-0.00813131],
+             L:[-4.55343205, 19140.30268499], lp:[-23.94362959, 0.44441088], ln:[49.55953891,-0.29257343] },
+};
+function solveKepler(M, e) {
+  // Newton's method, M in radians
+  let E = M + e * Math.sin(M);
+  for (let i = 0; i < 8; i++) {
+    const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+    E -= dE;
+    if (Math.abs(dE) < 1e-10) break;
+  }
+  return E;
+}
+function heliocentricEcliptic(planet, T) {
+  const p = PLANET_ELEMENTS[planet];
+  const a  = p.a[0]  + p.a[1]  * T;
+  const e  = p.e[0]  + p.e[1]  * T;
+  const I  = (p.I[0] + p.I[1]  * T) * D2R;
+  const L  = norm360(p.L[0]  + p.L[1]  * T);
+  const lp = norm360(p.lp[0] + p.lp[1] * T);
+  const ln = norm360(p.ln[0] + p.ln[1] * T);
+  const omega = (lp - ln) * D2R;       // argument of perihelion
+  const Omega = ln * D2R;
+  const M = norm360(L - lp) * D2R;     // mean anomaly
+  const E = solveKepler(M, e);
+  const xp = a * (Math.cos(E) - e);
+  const yp = a * Math.sqrt(1 - e*e) * Math.sin(E);
+  const cw = Math.cos(omega), sw = Math.sin(omega);
+  const cO = Math.cos(Omega), sO = Math.sin(Omega);
+  const cI = Math.cos(I),     sI = Math.sin(I);
+  const x = (cw*cO - sw*sO*cI)*xp + (-sw*cO - cw*sO*cI)*yp;
+  const y = (cw*sO + sw*cO*cI)*xp + (-sw*sO + cw*cO*cI)*yp;
+  const z = (sw*sI)*xp + (cw*sI)*yp;
+  return { x, y, z };
+}
+function planetGeoLongitude(planet, JD) {
+  const T = (JD - 2451545.0) / 36525.0;
+  const p = heliocentricEcliptic(planet, T);
+  const e = heliocentricEcliptic('Earth', T);
+  return norm360(Math.atan2(p.y - e.y, p.x - e.x) * R2D);
+}
+
+/* Ascendant — Meeus Ch. 13, given JD (UT) and observer lat/lon */
+function ascendantLongitude(JD, latDeg, lonDegEast) {
+  const T = (JD - 2451545.0) / 36525.0;
+  const eps = meanObliquity(T) * D2R;
+  const lst = (gmst(JD) + lonDegEast) * D2R;
+  const phi = latDeg * D2R;
+  // λ_ASC = atan2( cos(LST), -(sin(LST)*cos(ε) + tan(φ)*sin(ε)) )
+  const lam = Math.atan2(Math.cos(lst), -(Math.sin(lst)*Math.cos(eps) + Math.tan(phi)*Math.sin(eps)));
+  return norm360(lam * R2D);
+}
+
+/* Vedic — Lahiri ayanamsha (degrees), approx. linear formula */
+function lahiriAyanamsha(JD) {
+  // Lahiri reference: 23°15'00" on 21 Mar 1956 (JD 2435553), increases ~50.3″/yr
+  const refJD = 2435553.0, refAyan = 23.25;
+  return refAyan + (JD - refJD) / 365.25 * (50.29 / 3600);
+}
+const NAKSHATRAS_27 = ['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'];
+function nakshatraFromSidereal(siderealLon) {
+  const span = 360 / 27; // 13°20'
+  const idx = Math.floor(norm360(siderealLon) / span);
+  const pada = Math.floor((norm360(siderealLon) % span) / (span / 4)) + 1;
+  return { name: NAKSHATRAS_27[idx], pada };
+}
+
+/* Gene Keys / Human Design Rave I'Ching wheel — gate from ecliptic longitude */
+const RAVE_WHEEL = [41,19,13,49,30,55,37,63,22,36,25,17,21,51,42,3,27,24,2,23,8,20,16,35,45,12,15,52,39,53,62,56,31,33,7,4,29,59,40,64,47,6,46,18,48,57,32,50,28,44,1,43,14,34,9,5,26,11,10,58,38,54,61,60];
+function geneKeysGate(lonDeg) {
+  // Gate 41 starts at 2°00' Aquarius = 302° tropical
+  const offset = ((lonDeg - 302) % 360 + 360) % 360;
+  const idx = Math.floor(offset / (360 / 64));
+  return RAVE_WHEEL[idx];
+}
+function geneKeysQuartet(sunLon) {
+  // Personality: Sun and Earth at birth. Design: ~88° earlier in Sun's path.
+  return {
+    lifesWork: geneKeysGate(sunLon),
+    evolution: geneKeysGate(sunLon + 180),
+    radiance:  geneKeysGate(sunLon - 88),
+    purpose:   geneKeysGate(sunLon - 88 + 180),
+  };
+}
+
+/* BaZi Four Pillars */
+const BAZI_STEMS  = ['Jia','Yi','Bing','Ding','Wu','Ji','Geng','Xin','Ren','Gui'];
+const BAZI_STEM_ELEMENTS = ['Yang Wood','Yin Wood','Yang Fire','Yin Fire','Yang Earth','Yin Earth','Yang Metal','Yin Metal','Yang Water','Yin Water'];
+const BAZI_BRANCHES = ['Zi','Chou','Yin','Mao','Chen','Si','Wu','Wei','Shen','You','Xu','Hai'];
+const BAZI_ANIMALS  = ['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'];
+function baziPillarFromIndex(idx) {
+  const s = ((idx % 10) + 10) % 10, b = ((idx % 12) + 12) % 12;
+  return { stem: BAZI_STEMS[s], stemElement: BAZI_STEM_ELEMENTS[s], branch: BAZI_BRANCHES[b], animal: BAZI_ANIMALS[b], stemIdx: s, branchIdx: b };
+}
+function baziDayPillar(JD_localNoon) {
+  // Anchor: JD 2415021 (1 Jan 1900 12:00 UT) is a Jiǎ-Zǐ day (idx 0 in the 60-day cycle).
+  return baziPillarFromIndex(Math.round(JD_localNoon - 2415021));
+}
+function baziYearPillar(year, sunLonAtBirth, monthOfBirth) {
+  // BaZi year boundary is Lichun (sun at 315°). If sun longitude < 315° and month <= 2, the BaZi year is previous.
+  let baziYear = year;
+  if (monthOfBirth <= 2 && sunLonAtBirth < 315) baziYear -= 1;
+  // 1984 was Jia-Zi (index 0).
+  const idx = baziYear - 1984;
+  return baziPillarFromIndex(idx);
+}
+function baziMonthPillar(sunLon, yearStemIdx) {
+  // Tiger month begins at sun 315° (Lichun). Each branch covers 30° of sun longitude.
+  const offset = ((sunLon - 315) % 360 + 360) % 360;
+  const monthIdx = Math.floor(offset / 30);          // 0 = Tiger
+  const branchIdx = (monthIdx + 2) % 12;
+  // Five Tigers rule: month-of-Tiger stem from year stem
+  const tigerStem = (yearStemIdx * 2 + 2) % 10;
+  const stemIdx = (tigerStem + monthIdx) % 10;
+  return { stem: BAZI_STEMS[stemIdx], stemElement: BAZI_STEM_ELEMENTS[stemIdx], branch: BAZI_BRANCHES[branchIdx], animal: BAZI_ANIMALS[branchIdx], stemIdx, branchIdx };
+}
+function baziHourPillar(localHour, dayStemIdx) {
+  // 2-hour blocks. Zi covers 23:00–01:00 → branch 0.
+  const branchIdx = Math.floor(((localHour + 1) % 24) / 2) % 12;
+  // Five Rats rule
+  const ziStem = (dayStemIdx * 2) % 10;
+  const stemIdx = (ziStem + branchIdx) % 10;
+  return { stem: BAZI_STEMS[stemIdx], stemElement: BAZI_STEM_ELEMENTS[stemIdx], branch: BAZI_BRANCHES[branchIdx], animal: BAZI_ANIMALS[branchIdx], stemIdx, branchIdx };
 }
 
 /* ─── Synthesis system prompt ─── */
@@ -871,19 +1063,6 @@ const SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio
 const ELEMENTS = {Aries:'fire',Leo:'fire',Sagittarius:'fire',Taurus:'earth',Virgo:'earth',Capricorn:'earth',Gemini:'air',Libra:'air',Aquarius:'air',Cancer:'water',Scorpio:'water',Pisces:'water'};
 const MODALITY = {Aries:'cardinal',Cancer:'cardinal',Libra:'cardinal',Capricorn:'cardinal',Taurus:'fixed',Leo:'fixed',Scorpio:'fixed',Aquarius:'fixed',Gemini:'mutable',Virgo:'mutable',Sagittarius:'mutable',Pisces:'mutable'};
 
-/* ─── Seeded random (for placeholder placements) ─── */
-function seededRand(seed) {
-  let h = 2166136261;
-  for (let i = 0; i < seed.length; i++) { h ^= seed.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return () => {
-    h += 0x6D2B79F5;
-    let t = h;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
 /* ─── Numerology ─── */
 function reduceNumber(n, allowMaster = true) {
   while (n > 9 && !(allowMaster && (n === 11 || n === 22 || n === 33))) {
@@ -907,17 +1086,6 @@ function nameNumerology(name) {
   return { expression: reduceNumber(expression,true), soul: reduceNumber(soul,true), personality: reduceNumber(personality,true) };
 }
 
-/* ─── Chinese zodiac ─── */
-const CHINESE_ANIMALS = ['Rat','Ox','Tiger','Rabbit','Dragon','Snake','Horse','Goat','Monkey','Rooster','Dog','Pig'];
-const CHINESE_ELEMENTS_LIST = ['Wood','Wood','Fire','Fire','Earth','Earth','Metal','Metal','Water','Water'];
-function chineseZodiac(y, m, d) {
-  let year = y;
-  if (m === 1 || (m === 2 && d < 4)) year -= 1;
-  const animal = CHINESE_ANIMALS[(year - 4) % 12];
-  const stemIdx = (year - 4) % 10;
-  return { animal, element: CHINESE_ELEMENTS_LIST[stemIdx], polarity: stemIdx % 2 === 0 ? 'Yang' : 'Yin' };
-}
-
 /* ─── HD API fetch (optional) ─── */
 async function fetchHD(form, utcOffset) {
   if (!CONFIG.hdKey || form.timeUnknown || !form.time) return null;
@@ -939,62 +1107,74 @@ async function fetchHD(form, utcOffset) {
 }
 
 /* ─── Compute chart ─── */
+function signOf(lon) { return SIGNS[Math.floor(norm360(lon) / 30)]; }
+function degInSign(lon) { return norm360(lon) % 30; }
+
 function computeChart(form, hdApiData) {
   const [y, m, d] = form.date.split('-').map(Number);
-  // Estimate UTC offset from geocoded longitude (±1hr accuracy, fine for Sun)
+  // Estimate UTC offset from geocoded longitude. This is the largest known
+  // inaccuracy — political timezones and historical DST aren't captured.
+  // Accurate to ±1 hour for most places, which is fine for Sun/planets and
+  // usually fine for Moon sign, but can shift Ascendant by ~15°.
   const estOffset = form.geo ? Math.round(form.geo.lon / 15) : 0;
-  let hourUT = 12; // noon default if time unknown
+  let hourUT = 12, hourLocal = 12;
   if (!form.timeUnknown && form.time) {
     const [h, min] = form.time.split(':').map(Number);
-    hourUT = h + min / 60 - estOffset;
+    hourLocal = h + min / 60;
+    hourUT = hourLocal - estOffset;
   }
+  const JD_UT = julianDay(y, m, d, hourUT);
+  const JD_localNoon = julianDay(y, m, d, 12 - estOffset);
 
-  // Real Sun longitude (Meeus)
-  const sunLon = sunLongitude(y, m, d, hourUT);
-  const sunSignIdx = Math.floor(sunLon / 30);
-  const sunDegInSign = sunLon % 30;
-  const sunSignName = SIGNS[sunSignIdx];
+  // Sun, Moon, Inner planets — all calculated from JD
+  const sunLon = sunLongitudeFromJD(JD_UT);
+  const moonLon = moonLongitudeFromJD(JD_UT);
+  const mercuryLon = planetGeoLongitude('Mercury', JD_UT);
+  const venusLon = planetGeoLongitude('Venus', JD_UT);
+  const marsLon = planetGeoLongitude('Mars', JD_UT);
+
+  const sunSignName = signOf(sunLon);
   const sunSabian = lookupSabian(sunLon);
 
-  // Seeded random for placeholder placements (Moon, Rising, other planets)
-  const rand = seededRand(`${form.name}|${form.date}|${form.time}|${form.city}`);
-  const moonSign = SIGNS[Math.floor(rand() * 12)];
-  const moonDeg = Math.floor(rand() * 30);
-  const rising = form.timeUnknown ? null : SIGNS[Math.floor(rand() * 12)];
-  const risingLon = form.timeUnknown ? null : (SIGNS.indexOf(rising) * 30 + Math.floor(rand() * 30));
-  const ascSabian = risingLon != null ? lookupSabian(risingLon) : null;
-  const venus = SIGNS[Math.floor(rand() * 12)];
-  const mars = SIGNS[Math.floor(rand() * 12)];
-  const mercury = SIGNS[Math.floor(rand() * 12)];
-
-  const NAKSHATRAS = ['Ashwini','Bharani','Krittika','Rohini','Mrigashira','Ardra','Punarvasu','Pushya','Ashlesha','Magha','Purva Phalguni','Uttara Phalguni','Hasta','Chitra','Swati','Vishakha','Anuradha','Jyeshtha','Mula','Purva Ashadha','Uttara Ashadha','Shravana','Dhanishta','Shatabhisha','Purva Bhadrapada','Uttara Bhadrapada','Revati'];
-  const nakshatra = NAKSHATRAS[Math.floor(rand() * NAKSHATRAS.length)];
-  const vedicMoon = SIGNS[Math.floor(rand() * 12)];
-
-  const HD_TYPES = ['Generator','Manifesting Generator','Projector','Manifestor','Reflector'];
-  const HD_AUTHS = ['Sacral','Emotional','Splenic','Self-Projected','Ego','Mental','Lunar'];
-  const HD_PROFILES = ['1/3','1/4','2/4','2/5','3/5','3/6','4/6','4/1','5/1','5/2','6/2','6/3'];
-  const STEMS = ['Jia (Yang Wood)','Yi (Yin Wood)','Bing (Yang Fire)','Ding (Yin Fire)','Wu (Yang Earth)','Ji (Yin Earth)','Geng (Yang Metal)','Xin (Yin Metal)','Ren (Yang Water)','Gui (Yin Water)'];
-
-  // Use HD API data if available, otherwise seeded placeholder
-  let hdType, hdAuthority, hdProfile, hdCross, hdChannels, hdGates;
-  if (hdApiData) {
-    hdType = hdApiData.type || hdApiData.energy_type;
-    hdAuthority = hdApiData.authority || hdApiData.inner_authority;
-    hdProfile = hdApiData.profile;
-    hdCross = hdApiData.incarnation_cross || hdApiData.cross;
-    hdChannels = (hdApiData.channels_short || []).join(', ');
-    hdGates = (hdApiData.gates || []).join(', ');
-  } else if (!form.timeUnknown) {
-    hdType = HD_TYPES[Math.floor(rand() * HD_TYPES.length)];
-    hdAuthority = HD_AUTHS[Math.floor(rand() * HD_AUTHS.length)];
-    hdProfile = HD_PROFILES[Math.floor(rand() * HD_PROFILES.length)];
-    hdCross = `Gate ${Math.floor(rand()*64)+1}/${Math.floor(rand()*64)+1}`;
-    hdChannels = null;
-    hdGates = null;
+  // Ascendant — only computable with both time and coordinates
+  let rising = null, risingLon = null, ascSabian = null;
+  if (!form.timeUnknown && form.time && form.geo) {
+    risingLon = ascendantLongitude(JD_UT, form.geo.lat, form.geo.lon);
+    rising = { sign: signOf(risingLon), deg: degInSign(risingLon) };
+    ascSabian = lookupSabian(risingLon);
   }
 
-  const ch = chineseZodiac(y, m, d);
+  // Vedic — sidereal longitudes via Lahiri ayanamsha
+  const ayan = lahiriAyanamsha(JD_UT);
+  const sidMoonLon = norm360(moonLon - ayan);
+  const sidSunLon = norm360(sunLon - ayan);
+  const nakshatra = nakshatraFromSidereal(sidMoonLon);
+  const vedicMoon = signOf(sidMoonLon);
+  const vedicSun = signOf(sidSunLon);
+  const vedicLagna = rising ? signOf(norm360(risingLon - ayan)) : null;
+
+  // BaZi — real day pillar from JD; year/month from sun longitude; hour from local time
+  const dayPillar = baziDayPillar(JD_localNoon);
+  const yearPillar = baziYearPillar(y, sunLon, m);
+  const monthPillar = baziMonthPillar(sunLon, yearPillar.stemIdx);
+  const hourPillar = (!form.timeUnknown && form.time) ? baziHourPillar(hourLocal, dayPillar.stemIdx) : null;
+
+  // Gene Keys — real gates from Sun longitude
+  const gk = geneKeysQuartet(sunLon);
+
+  // Human Design — only from API; without it, leave null (don't fabricate)
+  let humanDesign = null;
+  if (hdApiData) {
+    humanDesign = {
+      type:       hdApiData.type || hdApiData.energy_type,
+      authority:  hdApiData.authority || hdApiData.inner_authority,
+      profile:    hdApiData.profile,
+      cross:      hdApiData.incarnation_cross || hdApiData.cross,
+      channels:   (hdApiData.channels_short || []).join(', ') || null,
+      gates:      (hdApiData.gates || []).join(', ') || null,
+    };
+  }
+
   const numName = nameNumerology(form.name);
   const lp = lifePath(y, m, d);
 
@@ -1007,68 +1187,89 @@ function computeChart(form, hdApiData) {
 
   return {
     age, audience,
+    estOffset,
     western: {
-      sun: { sign: sunSignName, deg: Math.floor(sunDegInSign * 10) / 10, element: ELEMENTS[sunSignName], modality: MODALITY[sunSignName], sabian: sunSabian },
-      moon: { sign: moonSign, deg: moonDeg, element: ELEMENTS[moonSign] },
-      rising: rising ? { sign: rising, sabian: ascSabian } : null,
-      mercury: { sign: mercury }, venus: { sign: venus }, mars: { sign: mars },
+      sun:     { sign: sunSignName, deg: Math.round(degInSign(sunLon)*10)/10, lon: sunLon, element: ELEMENTS[sunSignName], modality: MODALITY[sunSignName], sabian: sunSabian },
+      moon:    { sign: signOf(moonLon), deg: Math.round(degInSign(moonLon)*10)/10, lon: moonLon, element: ELEMENTS[signOf(moonLon)] },
+      rising,
+      mercury: { sign: signOf(mercuryLon), deg: Math.round(degInSign(mercuryLon)*10)/10, lon: mercuryLon },
+      venus:   { sign: signOf(venusLon),   deg: Math.round(degInSign(venusLon)*10)/10,   lon: venusLon },
+      mars:    { sign: signOf(marsLon),    deg: Math.round(degInSign(marsLon)*10)/10,    lon: marsLon },
     },
-    vedic: { moonSign: vedicMoon, nakshatra },
-    humanDesign: (form.timeUnknown && !hdApiData) ? null : { type: hdType, authority: hdAuthority, profile: hdProfile, cross: hdCross, channels: hdChannels, gates: hdGates },
-    bazi: { dayMaster: STEMS[Math.floor(rand() * 10)], yearPillar: `${ch.element} ${ch.animal}`, animal: ch.animal, element: ch.element },
+    vedic: { moonSign: vedicMoon, sunSign: vedicSun, lagna: vedicLagna, nakshatra: nakshatra.name, nakshatraPada: nakshatra.pada, ayanamsha: Math.round(ayan*100)/100 },
+    humanDesign,
+    bazi: {
+      year:  `${yearPillar.stem} ${yearPillar.branch} (${yearPillar.stemElement} ${yearPillar.animal})`,
+      month: `${monthPillar.stem} ${monthPillar.branch} (${monthPillar.stemElement} ${monthPillar.animal})`,
+      day:   `${dayPillar.stem} ${dayPillar.branch} (${dayPillar.stemElement} ${dayPillar.animal})`,
+      hour:  hourPillar ? `${hourPillar.stem} ${hourPillar.branch} (${hourPillar.stemElement} ${hourPillar.animal})` : null,
+      dayMaster: `${dayPillar.stem} (${dayPillar.stemElement})`,
+      animal: yearPillar.animal,
+    },
     numerology: { lifePath: lp, expression: numName.expression, soul: numName.soul, personality: numName.personality, birthdayNum: d > 9 ? reduceNumber(d, true) : d },
-    geneKeys: { lifesWork: Math.floor(rand()*64)+1, evolution: Math.floor(rand()*64)+1, radiance: Math.floor(rand()*64)+1, purpose: Math.floor(rand()*64)+1 },
+    geneKeys: gk,
     enneagram: form.enneagramType ? { type: form.enneagramType, wing: form.enneagramWing || null, instinct: form.enneagramInstinct || null } : null,
   };
 }
 
 /* ─── Chart facts string for prompts ─── */
 function chartFacts(chart, form) {
+  const w = chart.western, v = chart.vedic, b = chart.bazi, gk = chart.geneKeys;
   const lines = [];
   lines.push(`Name: ${form.name}`);
   lines.push(`Birth date: ${form.date}`);
-  lines.push(form.timeUnknown ? `Birth time: unknown` : `Birth time: ${form.time}`);
+  lines.push(form.timeUnknown ? `Birth time: unknown` : `Birth time: ${form.time} local (UTC${chart.estOffset>=0?'+':''}${chart.estOffset} estimated from longitude)`);
   lines.push(`Birth city: ${form.geo?.display || form.city}${form.geo ? ` (${form.geo.lat.toFixed(2)}°, ${form.geo.lon.toFixed(2)}°)` : ''}`);
   lines.push(`Age: ${chart.age} | Audience mode: ${chart.audience}`);
   lines.push('');
-  lines.push('WESTERN ASTROLOGY:');
-  lines.push(`  Sun ${chart.western.sun.deg.toFixed(1)}° ${chart.western.sun.sign} (${chart.western.sun.element}, ${chart.western.sun.modality})`);
-  lines.push(`  Sabian Symbol (Sun ${chart.western.sun.sabian.degree}° ${chart.western.sun.sabian.sign}): "${chart.western.sun.sabian.symbol}" — Keyword: ${chart.western.sun.sabian.keyword}`);
-  lines.push(`  Moon ~${chart.western.moon.deg}° ${chart.western.moon.sign} (${chart.western.moon.element}) [approximate — birth time based]`);
-  if (chart.western.rising) {
-    lines.push(`  Rising: ${chart.western.rising.sign}`);
-    if (chart.western.rising.sabian) lines.push(`  Sabian Symbol (ASC): "${chart.western.rising.sabian.symbol}" — Keyword: ${chart.western.rising.sabian.keyword}`);
+  lines.push('WESTERN ASTROLOGY (tropical):');
+  lines.push(`  Sun ${w.sun.deg.toFixed(1)}° ${w.sun.sign} (${w.sun.element}, ${w.sun.modality})`);
+  lines.push(`  Sabian Symbol (Sun ${w.sun.sabian.degree}° ${w.sun.sabian.sign}): "${w.sun.sabian.symbol}" — Keyword: ${w.sun.sabian.keyword}`);
+  lines.push(`  Moon ${w.moon.deg.toFixed(1)}° ${w.moon.sign} (${w.moon.element})`);
+  if (w.rising) {
+    lines.push(`  Ascendant ${w.rising.deg.toFixed(1)}° ${w.rising.sign}`);
+    if (w.rising.sabian) lines.push(`  Sabian Symbol (ASC ${w.rising.sabian.degree}° ${w.rising.sabian.sign}): "${w.rising.sabian.symbol}" — Keyword: ${w.rising.sabian.keyword}`);
+  } else if (!form.timeUnknown) {
+    lines.push(`  Ascendant: not computable (geocoding failed)`);
   }
-  lines.push(`  Mercury: ${chart.western.mercury.sign} | Venus: ${chart.western.venus.sign} | Mars: ${chart.western.mars.sign} [approximate]`);
+  lines.push(`  Mercury ${w.mercury.deg.toFixed(1)}° ${w.mercury.sign} | Venus ${w.venus.deg.toFixed(1)}° ${w.venus.sign} | Mars ${w.mars.deg.toFixed(1)}° ${w.mars.sign}`);
   lines.push('');
-  lines.push('VEDIC / JYOTISH:');
-  lines.push(`  Moon sign (sidereal): ${chart.vedic.moonSign} | Nakshatra: ${chart.vedic.nakshatra} [approximate]`);
+  lines.push('VEDIC / JYOTISH (sidereal, Lahiri ayanamsha):');
+  lines.push(`  Moon: ${v.moonSign} | Sun: ${v.sunSign}${v.lagna?' | Lagna (Ascendant): '+v.lagna:''}`);
+  lines.push(`  Nakshatra: ${v.nakshatra} (pada ${v.nakshatraPada}) | Ayanamsha used: ${v.ayanamsha}°`);
   lines.push('');
   if (chart.humanDesign) {
     lines.push('HUMAN DESIGN:');
     lines.push(`  Type: ${chart.humanDesign.type} | Authority: ${chart.humanDesign.authority} | Profile: ${chart.humanDesign.profile}`);
-    lines.push(`  Incarnation Cross: ${chart.humanDesign.cross}`);
+    if (chart.humanDesign.cross) lines.push(`  Incarnation Cross: ${chart.humanDesign.cross}`);
     if (chart.humanDesign.channels) lines.push(`  Channels: ${chart.humanDesign.channels}`);
     if (chart.humanDesign.gates) lines.push(`  Gates: ${chart.humanDesign.gates}`);
     lines.push('');
+  } else {
+    lines.push('HUMAN DESIGN: not available (requires Human Design API key configured in CONFIG.hdKey). Omit the Human Design sections of the synthesis entirely — do not approximate Type, Authority, Profile, or Cross.');
+    lines.push('');
   }
   lines.push('BAZI FOUR PILLARS:');
-  lines.push(`  Day Master: ${chart.bazi.dayMaster} | Year Pillar: ${chart.bazi.yearPillar} [year animal is accurate; other pillars approximate]`);
+  lines.push(`  Day Master: ${b.dayMaster}`);
+  lines.push(`  Year:  ${b.year}`);
+  lines.push(`  Month: ${b.month}`);
+  lines.push(`  Day:   ${b.day}`);
+  if (b.hour) lines.push(`  Hour:  ${b.hour}`); else lines.push(`  Hour:  (unknown — birth time required)`);
   lines.push('');
   lines.push('NUMEROLOGY:');
   lines.push(`  Life Path: ${chart.numerology.lifePath} | Expression: ${chart.numerology.expression} | Soul Urge: ${chart.numerology.soul} | Personality: ${chart.numerology.personality}`);
   lines.push(`  Birthday Number: ${chart.numerology.birthdayNum}`);
   lines.push('');
-  lines.push('GENE KEYS (primary quartet):');
-  lines.push(`  Life's Work: Gate ${chart.geneKeys.lifesWork} | Evolution: Gate ${chart.geneKeys.evolution} | Radiance: Gate ${chart.geneKeys.radiance} | Purpose: Gate ${chart.geneKeys.purpose} [approximate]`);
+  lines.push('GENE KEYS (primary quartet, from Rave I\'Ching wheel):');
+  lines.push(`  Life's Work: Gate ${gk.lifesWork} | Evolution: Gate ${gk.evolution} | Radiance: Gate ${gk.radiance} | Purpose: Gate ${gk.purpose}`);
   lines.push('');
   if (chart.enneagram) {
-    lines.push('ENNEAGRAM:');
+    lines.push('ENNEAGRAM (self-identified):');
     const ennStr = `${chart.enneagram.type}${chart.enneagram.wing ? 'w' + chart.enneagram.wing : ''}${chart.enneagram.instinct ? ' ' + chart.enneagram.instinct : ''}`;
-    lines.push(`  ${ennStr} (self-identified)`);
+    lines.push(`  ${ennStr}`);
     lines.push('');
   }
-  lines.push('NOTE: Placements marked [approximate] use seeded deterministic estimates. The Sun longitude and numerology are calculated accurately. HD data is from the API if a key is configured.');
+  lines.push('NOTE: All placements above are computed from real astronomy and the standard correspondences (Meeus algorithms for Sun/Moon, JPL low-precision elements for inner planets, Lahiri ayanamsha for Vedic, Rave wheel for Gene Keys gates). The UTC offset is estimated from longitude (±1hr); for Ascendant near a sign boundary this is a known caveat — say so honestly rather than overreaching.');
   return lines.join('\n');
 }
 
@@ -1123,12 +1324,12 @@ Output only the prose. No heading. No preamble. Begin directly.`;
 
 function glossaryPrompt(chart, form, system) {
   const dataNote = {
-    western: 'Include: Sun, Moon (note approximate), Rising (if time known), Mercury, Venus, Mars. Then key aspects if notable.',
-    human: chart.humanDesign ? 'Include: Type, Authority, Profile, Incarnation Cross, defined centers/channels if available.' : 'NOTE: Human Design data was not available for this chart. Write a brief note that HD data requires birth time and an API key.',
-    vedic: 'Include: Moon sign sidereal, Nakshatra (note approximate). Current Mahadasha if calculable.',
-    bazi: 'Include: Day Master, Year Pillar/animal. Note which values are approximate.',
+    western: 'Include: Sun, Moon, Rising (if time known), Mercury, Venus, Mars. Then key aspects if notable.',
+    human: chart.humanDesign ? 'Include: Type, Authority, Profile, Incarnation Cross, defined centers/channels if available.' : 'NOTE: Human Design data was not available for this chart. Write one short sentence noting that HD requires a birth time and the Human Design API key configured in CONFIG.hdKey.',
+    vedic: 'Include: sidereal Moon sign, Nakshatra (with pada). Current Mahadasha if calculable.',
+    bazi: 'Include: Day Master (the central pillar), Year/Month/Day/Hour pillars with their stem-branch and element-animal pairing.',
     numerology: 'Include: Life Path, Expression, Soul Urge, Personality, Birthday Number.',
-    gene_keys: 'Include: Life\'s Work gate, Evolution gate, Radiance gate, Purpose gate. Note these are approximate.',
+    gene_keys: 'Include: Life\'s Work gate, Evolution gate, Radiance gate, Purpose gate.',
     enneagram: chart.enneagram ? `Include: Type, Wing, Instinct. All three if provided. Core fear, core desire, integration/disintegration paths.` : 'Enneagram was not provided — skip this section.',
   }[system.id] || '';
 
@@ -1252,7 +1453,7 @@ function renderForm() {
     formErr.classList.remove('show');
     startReading();
   });
-  shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Sun longitude and numerology calculated accurately. Other placements are seeded estimates. Synthesis generated via Claude API.')));
+  shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Real astronomy (Meeus + JPL elements) · Synthesis generated via Claude API. UTC offset estimated from longitude — accurate to ±1hr.')));
 }
 
 function field({id, label, labelTrail, help, helpEl, input}) {
@@ -1352,7 +1553,7 @@ function sysSummary(id) {
     case 'western': return `Sun ${c.western.sun.deg.toFixed(0)}° ${c.western.sun.sign} · Moon ${c.western.moon.sign}${c.western.rising?' · Rising '+c.western.rising.sign:''}`;
     case 'vedic': return `Moon ${c.vedic.moonSign} · ${c.vedic.nakshatra}`;
     case 'human': return c.humanDesign ? `${c.humanDesign.type} · ${c.humanDesign.profile} · ${c.humanDesign.authority}` : '';
-    case 'bazi': return `${c.bazi.yearPillar} · ${c.bazi.dayMaster.split(' ')[0]} Day`;
+    case 'bazi': return `${c.bazi.dayMaster} Day · ${c.bazi.animal} Year`;
     case 'numerology': return `Life Path ${c.numerology.lifePath} · Expression ${c.numerology.expression}`;
     case 'gene_keys': return `Life's Work Gate ${c.geneKeys.lifesWork} · Evolution Gate ${c.geneKeys.evolution}`;
     case 'enneagram': return c.enneagram ? `${c.enneagram.type}${c.enneagram.wing?'w'+c.enneagram.wing:''}${c.enneagram.instinct?' '+c.enneagram.instinct:''}` : '';
