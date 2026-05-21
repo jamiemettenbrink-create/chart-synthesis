@@ -1162,6 +1162,7 @@ function computeChart(form, hdApiData) {
       cross:      hdApiData.incarnation_cross || hdApiData.cross,
       channels:   (hdApiData.channels_short || []).join(', ') || null,
       gates:      (hdApiData.gates || []).join(', ') || null,
+      centers:    (hdApiData.centers || []).join(', ') || null,
     };
   }
 
@@ -1232,6 +1233,7 @@ function chartFacts(chart, form) {
     lines.push('HUMAN DESIGN:');
     lines.push(`  Type: ${chart.humanDesign.type} | Authority: ${chart.humanDesign.authority} | Profile: ${chart.humanDesign.profile}`);
     if (chart.humanDesign.cross) lines.push(`  Incarnation Cross: ${chart.humanDesign.cross}`);
+    if (chart.humanDesign.centers) lines.push(`  Defined Centers: ${chart.humanDesign.centers}`);
     if (chart.humanDesign.channels) lines.push(`  Channels: ${chart.humanDesign.channels}`);
     if (chart.humanDesign.gates) lines.push(`  Gates: ${chart.humanDesign.gates}`);
     lines.push('');
@@ -1315,7 +1317,7 @@ Output only the prose. No heading. No preamble. Begin directly.`;
 function glossaryPrompt(chart, form, system) {
   const dataNote = {
     western: 'Include: Sun, Moon, Rising (if time known), Mercury, Venus, Mars. Then key aspects if notable.',
-    human: chart.humanDesign ? 'Include: Type, Authority, Profile, Incarnation Cross, defined centers/channels if available.' : 'NOTE: Human Design data was not available for this chart. Write one short sentence noting that HD requires a birth time and the HD_API_KEY secret configured on the Worker proxy.',
+    human: chart.humanDesign ? 'Include: Type, Authority, Profile, Incarnation Cross, defined centers (and which are undefined by inference from the standard 9), channels, key gates. One entry per item.' : 'NOTE: Human Design data was not available for this chart. Write one short sentence noting that HD requires a birth time and the HD_API_KEY secret configured on the Worker proxy.',
     vedic: 'Include: sidereal Moon sign, Nakshatra (with pada). Current Mahadasha if calculable.',
     bazi: 'Include: Day Master (the central pillar), Year/Month/Day/Hour pillars with their stem-branch and element-animal pairing.',
     numerology: 'Include: Life Path, Expression, Soul Urge, Personality, Birthday Number.',
