@@ -227,6 +227,28 @@ See `references/synthesis-guide-addendum-v2.1.md` for full structure and tone gu
 
 ---
 
+## STEP 7: SAVE OUTPUT TO FILE
+
+After the synthesis is complete, always save the full reading to a file.
+
+**File location:** `outputs/`
+
+**Filename convention:** `{firstname}-{lastname}.md` (lowercase, hyphenated, no special characters).
+Examples: `jae-verde-jarman.md`, `jamie-smith.md`, `leo-rae-jarman.md`
+
+**File header (first 4 lines):**
+```
+# [Full Name]
+### An Integrated Reading · [Month] [Day], [Year] · [Time] [TZ] · [City], [State/Country]
+
+*Systems used: [list only systems with confirmed data]*
+```
+
+**After saving:** Confirm the file path in your response so the user knows where to find it.
+The file should be committed and pushed if running in a git-tracked environment.
+
+---
+
 ## QUALITY STANDARDS
 
 Every statement must trace to a specific placement, gate, number, or pillar.
