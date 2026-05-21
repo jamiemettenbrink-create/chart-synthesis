@@ -1,4 +1,4 @@
-# Natal Chart Synthesis — HTML Page Design Brief
+# Natal Chart Synthesis — HTML Page Specification
 
 ## What This Is
 
@@ -60,7 +60,7 @@ header as a compact profile summary, so the reading takes over the screen.
 - A small edit affordance (pencil icon or "Edit" link) sits at the right edge
 - Tapping anywhere on the summary re-expands the full form above the reading
 - The Generate button reappears when the form is expanded; hidden otherwise
-- Transition: form slides up and fades into the header (~250ms); smooth, not abrupt
+- Transition: form slides up and fades into the header; smooth, not abrupt
 
 **Fields:**
 
@@ -75,7 +75,7 @@ header as a compact profile summary, so the reading takes over the screen.
 **Form UX notes:**
 - "Time unknown" toggle should visually disable the time field
 - City field should show a subtle loading state while geocoding
-- Form validation inline, not on submit — gold underline for active field, red for error
+- Form validation inline, not on submit — highlight active field, red for error
 - On mobile, fields stack single-column; labels above fields (not floating)
 
 ---
@@ -83,7 +83,6 @@ header as a compact profile summary, so the reading takes over the screen.
 ## Generate Button
 
 - Full-width on mobile, centered with generous padding on desktop
-- Gold background (`#c9a96e`), dark text, no border radius (or very slight — 2px max)
 - Label: **"Generate Reading"**
 - Loading state: label changes to "Calculating..." during JS calculations, then
   "Writing your reading..." during API stream
@@ -102,12 +101,10 @@ header as a compact profile summary, so the reading takes over the screen.
 
 - Appears immediately when streaming begins — don't wait for the full response
 - Full-width, no accordion — this is the primary deliverable, always visible
-- Blueprint heading in gold, small caps
 - Four sub-sections rendered as they stream: **The Core Pattern**, **What You're Here to Do**,
   **The Central Challenge**, **Right Now**
-- Sabian Symbol one-liner (in Core Pattern) in italics, slightly indented
-- Integrated Alignment Statement at the end: set apart visually — centered, slightly larger
-  text, a thin gold rule above and below
+- Sabian Symbol one-liner (in Core Pattern) slightly indented
+- Integrated Alignment Statement at the end: set apart visually — centered, slightly larger text
 - A blinking cursor at the stream position while generating
 
 ---
@@ -117,8 +114,8 @@ header as a compact profile summary, so the reading takes over the screen.
 13 sections, all collapsed by default when they arrive.
 
 **Accordion behavior:**
-- Section header: gold chevron (▶) + section title; full row is tappable
-- Chevron rotates 90° on expand (smooth CSS transition, ~200ms)
+- Section header: chevron (▶) + section title; full row is tappable
+- Chevron rotates 90° on expand
 - Content expands with a smooth height transition — not a jump
 - Multiple sections can be open simultaneously
 - Section titles (from the synthesis):
@@ -135,11 +132,6 @@ header as a compact profile summary, so the reading takes over the screen.
   11. The Chapter You're In
   12. How to Actually Live This
   13. The Seal on the Sun *(Sabian Symbol)*
-
-**Section header design:**
-- Thin gold rule above each section
-- Section number in muted gold, small and right-aligned
-- Title in warm off-white, Georgia serif
 
 ---
 
@@ -163,7 +155,7 @@ Within each open system section, entries are formatted:
 **Moon 4° Scorpio, House 7** — One to two sentences of personalized meaning.
 ```
 
-Term in bold/gold, em-dash, then the sentence(s) in regular weight.
+Term in bold, em-dash, then the sentence(s) in regular weight.
 
 ---
 
@@ -173,7 +165,6 @@ Term in bold/gold, em-dash, then the sentence(s) in regular weight.
 - Label: **"Copy Full Reading"**
 - On click: copies Blueprint + all Deep Dive sections + Glossary as plain text
 - Confirmation: button label briefly changes to "Copied ✓" for 2 seconds
-- Same styling as Generate button but secondary — outlined gold, not filled
 
 ---
 
@@ -205,20 +196,20 @@ Term in bold/gold, em-dash, then the sentence(s) in regular weight.
 
 - Not a dashboard — no charts, graphs, or data visualizations
 - Not a SaaS product — no accounts, no saved readings, no pricing
-- Not generic — the output is deeply personal; the design should feel the same way
+- Not generic — the output is deeply personal
 - Not responsive-as-afterthought — mobile is the primary target
 
 ---
 
 ## Sample Content
 
-For the static mockup, use the Jamie Mettenbrink reading as placeholder content.
+For reference, use the Jamie Mettenbrink reading as placeholder content.
 Blueprint and all 13 Deep Dive sections + Glossary are in `references/synthesis-voice-sample.md`
 and the v2.1 additions (Section 13 + Glossary) are in `references/synthesis-guide-addendum-v2.1.md`.
 
 Use realistic content lengths — the Blueprint is ~600 words, each Deep Dive section
-is ~300-400 words, the Glossary entries are 1-2 sentences each. The design needs to
-handle this comfortably, not just look good with two lines of Lorem Ipsum.
+is ~300-400 words, the Glossary entries are 1-2 sentences each. The app needs to
+handle this comfortably, not just minimal placeholder content.
 
 ---
 
@@ -234,18 +225,3 @@ handle this comfortably, not just look good with two lines of Lorem Ipsum.
 - Current year auto-detected from the browser — not entered by user
 - App is private/personal use; keys are hardcoded for simplicity
 
----
-
-## Deliverable for the Design Step
-
-A single static HTML file with:
-- Full visual design implemented in CSS
-- All input form fields present and styled (non-functional) — 5 fields: name, date, time, city, Enneagram
-- Sample Blueprint content visible (hardcoded)
-- All 13 Deep Dive accordions present with hardcoded section titles and sample content
-- 6 Glossary accordions present with hardcoded sample entries (Enneagram included as example of conditional render)
-- Working accordion expand/collapse behavior (JS)
-- Copy button present (non-functional in mockup)
-- Mobile-responsive layout
-
-No calculation logic, no API calls. Design only.
