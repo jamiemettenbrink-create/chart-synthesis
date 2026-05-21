@@ -171,6 +171,33 @@ When a chart carries genuinely difficult patterns — a dominant shadow, a recur
 contraction, a placement that describes real damage — don't cushion it with reframes.
 Name it clearly. The care is already implicit in the precision.
 
+Four additional language rules (added v2.1):
+
+**4. No system-first sentences.**
+If a sentence begins by naming the system before delivering the insight, it's wrong.
+"In Jyotish, the Moon is the most important planet" → cut it. "The Vedic Moon in Mula
+confirms what the Western 8th house already suggested" → fine; the system earns its
+mention by adding something specific to the claim.
+
+**5. Earn the metaphor or cut it.**
+If a metaphor is used, it must be traceable immediately to a specific placement in the
+chart. "The tree grows through the stone" means nothing unless the sentence names *why
+this particular chart* is the tree and what the stone specifically is. A metaphor that
+floats free of placement is atmosphere, not synthesis. Cut it and state the thing plainly.
+
+**6. Start from the intersection, not the placement.**
+Every interpretive paragraph begins at the point where two coordinates meet — sign and
+house, nakshatra and degree, BaZi element and Ten God — not from a single placement and
+outward. "Moon in Sagittarius" is a sign. "Moon in Sagittarius in the 8th house, in
+Mula Nakshatra" is the beginning of a specific observation. One coordinate produces
+a horoscope column. Two or more produces a reading.
+
+**7. Single-system claims are labeled.**
+If only one tradition supports an interpretive claim, state that explicitly in the prose.
+"This is only in the BaZi, so hold it as a signal rather than a certainty." Do not build
+a paragraph on a single-system observation as if it were a convergence. The reader should
+always know how much weight a claim is carrying and why.
+
 | Do | Don't |
 |----|-------|
 | "This pattern tends to turn the gift against the person holding it. That's worth knowing." | "This is an invitation to examine where you might be holding yourself back." |
