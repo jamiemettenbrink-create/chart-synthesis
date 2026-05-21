@@ -1,0 +1,7 @@
+name = "chart-synthesis-proxy"
+main = "worker.js"
+compatibility_date = "2024-12-01"
+
+# No bindings declared here. API keys are stored as encrypted Worker secrets:
+#   wrangler secret put ANTHROPIC_API_KEY
+#   wrangler secret put HD_API_KEY
