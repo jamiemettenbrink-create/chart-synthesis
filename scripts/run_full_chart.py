@@ -101,13 +101,31 @@ def run_full_chart(year, month, day, hour, minute, utc_offset, lat, lng,
         'name': name,
         'full_name': full_name,
         'birth': f"{month}/{day}/{year} {hour:02d}:{minute:02d}",
+        'birth_year': year,
+        'birth_month': month,
+        'birth_day': day,
         'utc_offset': utc_offset,
         'lat': lat,
         'lng': lng,
         'current_year': current_year,
     }
-    
+
     return results
+
+def _compute_age(year, month, day, current_year):
+    """Return fractional age in years relative to current_year Jan 1 approximation,
+    and a more precise integer age as of today's date."""
+    try:
+        from datetime import date
+        today = date.today()
+        # Override year only if current_year differs from actual year (for testing)
+        ref = date(current_year, today.month, today.day)
+        birth = date(year, month, day)
+        age = ref.year - birth.year - ((ref.month, ref.day) < (birth.month, birth.day))
+        return age
+    except Exception:
+        return current_year - year
+
 
 def format_full_chart(results):
     """
@@ -116,7 +134,15 @@ def format_full_chart(results):
     """
     sections = []
     meta = results['meta']
-    
+
+    # --- Compute age and audience flag ---
+    age = _compute_age(
+        meta['birth_year'],
+        meta['birth_month'],
+        meta['birth_day'],
+        meta.get('current_year', datetime.now().year),
+    )
+
     sections.append('=' * 70)
     sections.append(f"FULL MULTI-SYSTEM NATAL CHART")
     sections.append(f"Name: {meta['name']}")
@@ -124,7 +150,34 @@ def format_full_chart(results):
         sections.append(f"Full birth name: {meta['full_name']}")
     sections.append(f"Birth: {meta['birth']} | UTC{'+' if meta['utc_offset'] >= 0 else ''}{meta['utc_offset']}")
     sections.append(f"Location: lat={meta['lat']}, lng={meta['lng']}")
+    sections.append(f"Subject age: {age} years old")
+
+    # Audience framing instruction
+    if age < 13:
+        sections.append(f"AUDIENCE: Subject is {age} years old — write in THIRD PERSON throughout.")
+        sections.append(f"          Use '{meta['name'].split()[0]}' and 'their', not 'you'/'your'.")
+        sections.append(f"          Integrated Alignment Statement: first person, marked 'for {meta['name'].split()[0]} to read when older'.")
+    elif age < 18:
+        sections.append(f"AUDIENCE: Subject is {age} years old — write in second person with a framing")
+        sections.append(f"          note at the top stating this is written to {meta['name'].split()[0]} and for parents to read as portrait.")
+
     sections.append('=' * 70)
+
+    # --- Data quality audit ---
+    dq_warnings = []
+    if not results.get('hd'):
+        dq_warnings.append("Human Design: NOT PROVIDED — omit HD section and Gene Keys section entirely.")
+        dq_warnings.append("  Gene Keys analysis requires the confirmed HD gate list. Do not estimate gates.")
+    if not (results.get('enneagram') and results['enneagram'].get('type')):
+        dq_warnings.append("Enneagram: NOT PROVIDED — omit entirely. Do not note its absence in the synthesis.")
+    if not results.get('numerology'):
+        dq_warnings.append("Numerology: NOT PROVIDED (no full birth name given) — omit numerology section.")
+
+    if dq_warnings:
+        sections.append('\nDATA QUALITY — SECTIONS TO OMIT:')
+        for w in dq_warnings:
+            sections.append(f"  ⚠ {w}")
+        sections.append('')
     
     # Western Chart
     if results['western']:

@@ -55,6 +55,11 @@ Optional but valuable:
 - Enneagram type (e.g. "2w3" or "Type 4, Social subtype") — if not provided, omit all Enneagram content from synthesis and glossary
 - Current year (for Personal Year numerology; auto-detected — no input required)
 
+**Compute subject age immediately.** Age determines the synthesis framing (see
+`references/synthesis-guide-v2.md` — AUDIENCE DETECTION). Under 13: third person
+throughout. 13–17: second person with framing note. 18+: standard second person.
+The script will flag this automatically when `--current_year` is passed.
+
 ---
 
 ## STEP 2: GEOCODE AND DETERMINE UTC OFFSET
@@ -139,16 +144,21 @@ Body: {"datetime": "YYYY-MM-DDTHH:MM:SS±HH:MM"}
 Cost: 1 credit (100/month free). Returns: type, strategy, authority, profile,
 definition, incarnation_cross, centers, undefined_centers, channels_short, gates.
 
+**If the HD API call fails or is skipped:** The HD section and Gene Keys section are
+both omitted from the synthesis entirely. Gene Keys analysis requires the confirmed gate
+list from the HD API — do not estimate gates from planetary longitudes. See
+`references/synthesis-guide-v2.md` — MISSING DATA PROTOCOL.
+
 ---
 
 ## STEP 4: READ REFERENCE FILES
 
 Before writing synthesis, read these files:
-- `references/synthesis-guide-v2.md` — section structure, tone, convergence weighting
+- `references/synthesis-guide-v2.md` — section structure, tone, convergence weighting, audience detection, missing data protocol
 - `references/synthesis-guide-addendum-v2.1.md` — Section 13 (Sabian Deep Dive) + Glossary instructions
 - `references/sabian-symbols.md` — all 360 degrees, symbol names, keywords, lookup convention
-- `references/hd-guide.md` — HD types, authorities, profiles, incarnation crosses
-- `references/gene-keys-complete.md` — all 64 gates shadow/gift/siddhi
+- `references/hd-guide.md` — HD types, authorities, profiles, incarnation crosses *(skip if no HD data)*
+- `references/gene-keys-complete.md` — all 64 gates shadow/gift/siddhi *(skip if no HD gate list)*
 - `references/bazi-guide.md` — Day Master meanings, Ten Gods, clashes
 - `references/vedic-guide.md` — Lagna, Nakshatras, Dasha interpretation
 - `references/enneagram-guide.md` — types, wings, instincts (if Enneagram provided)
@@ -176,12 +186,19 @@ Weight independent cross-tradition confirmations more heavily than same-traditio
 
 ## STEP 6: WRITE THE SYNTHESIS
 
+**Before writing a single word:** Check the AUDIENCE DETECTION and MISSING DATA PROTOCOL
+sections in `references/synthesis-guide-v2.md`. Determine the person (second vs. third),
+and audit which sections have confirmed data vs. gaps. Sections with absent data are
+omitted with a one-line note in the header — not approximated.
+
 ### Two-Layer Format
 
 **Layer 1 — The Blueprint** (~500-700 words):
 Four sub-sections: Core Pattern | What You're Here to Do | The Central Challenge | Current Phase
 In **Core Pattern**, include one line: the Sabian Symbol for the Sun degree (name + keyword only).
-End with the Integrated Alignment Statement (4-6 sentences, first person).
+End with the Integrated Alignment Statement (4-6 sentences; first person for adult and teen
+subjects; for child subjects, first person marked explicitly as written for the child to read
+when older).
 
 **Layer 2 — The Deep Dive** (13 sections):
 1. Core Energetic Signature
@@ -209,9 +226,11 @@ See `references/synthesis-guide-addendum-v2.1.md` for full structure and tone gu
 ## QUALITY STANDARDS
 
 Every statement must trace to a specific placement, gate, number, or pillar.
-The cross-system test: does any other system confirm this claim?
-The specificity test: could this sentence have been written about a different chart?
+The cross-system test: does any other system confirm this claim? If yes, name it. If no, label it as single-system.
+The specificity test: could this sentence have been written about a different chart? If yes, add a second coordinate (sign + house, nakshatra + degree, BaZi element + Ten God) until it can't.
 The depth test: does this paragraph make the person feel seen, or just catalogued?
+The conjunction test: are planets described as conjunct actually within orb? (8° personal planets, 5° angles) If not, use "co-present in [sign/house]."
+The missing data test: is every section in the output supported by confirmed data? If not, that section is omitted, not approximated.
 
 ---
 
