@@ -1,4 +1,4 @@
-# Natal Chart Synthesis — HTML Page Design Brief
+# Natal Chart Synthesis — HTML Page Specification
 
 ## What This Is
 
@@ -39,7 +39,7 @@ from the browser.
 │   ...                       │
 │   ▶ Section 13              │
 ├─────────────────────────────┤
-│      CHART GLOSSARY         │  6–7 collapsible system sections
+│  YOUR CHART AT A GLANCE    │  6–7 collapsible system sections
 │   ▶ Western Astrology       │  All collapsed by default
 │   ▶ Human Design            │
 │   ...                       │
@@ -60,7 +60,7 @@ header as a compact profile summary, so the reading takes over the screen.
 - A small edit affordance (pencil icon or "Edit" link) sits at the right edge
 - Tapping anywhere on the summary re-expands the full form above the reading
 - The Generate button reappears when the form is expanded; hidden otherwise
-- Transition: form slides up and fades into the header (~250ms); smooth, not abrupt
+- Transition: form slides up and fades into the header; smooth, not abrupt
 
 **Fields:**
 
@@ -68,14 +68,15 @@ header as a compact profile summary, so the reading takes over the screen.
 |-------|------|-------|
 | Full legal birth name | Text | For numerology; labeled "name at birth" |
 | Birth date | Date picker | |
-| Birth time | Time input | Include "Time unknown" toggle — disables ASC/MC/houses when checked |
+| Birth time | Time input | Include "Time unknown" toggle — disables ASC/MC/houses and omits Human Design from output when checked |
 | Birth city | Text with autocomplete | Geocoded via Nominatim (OpenStreetMap, no API key needed) |
 | Enneagram type | Dropdown | Optional. Format: "Type 1" ... "Type 9"; second dropdown for wing (optional); third for instinct SP/SX/SO (optional). If left blank, Enneagram section is omitted from output entirely. |
 
 **Form UX notes:**
-- "Time unknown" toggle should visually disable the time field
+- "Time unknown" toggle should visually disable the time field; tooltip reads: "No birth time? No problem — you'll lose the Ascendant, houses, and Human Design, but the rest holds."
 - City field should show a subtle loading state while geocoding
-- Form validation inline, not on submit — gold underline for active field, red for error
+- Enneagram field tooltip: "Self-identified only. If you're not sure, skip it — a wrong type does more damage than a missing one."
+- Form validation inline, not on submit — highlight active field, red for error
 - On mobile, fields stack single-column; labels above fields (not floating)
 
 ---
@@ -83,10 +84,10 @@ header as a compact profile summary, so the reading takes over the screen.
 ## Generate Button
 
 - Full-width on mobile, centered with generous padding on desktop
-- Gold background (`#c9a96e`), dark text, no border radius (or very slight — 2px max)
 - Label: **"Generate Reading"**
-- Loading state: label changes to "Calculating..." during JS calculations, then
-  "Writing your reading..." during API stream
+- Loading state (calculation phase): "Running your chart across six systems. This takes a moment. The planets were doing their thing long before instant gratification existed."
+- Loading state (API stream phase): "Writing your reading. This is the long part. Worth it."
+- On completion: "Done."
 - Disabled state while already generating
 - Hidden after first generation; reappears only when the form is re-expanded via Edit
 
@@ -98,16 +99,26 @@ header as a compact profile summary, so the reading takes over the screen.
 
 ---
 
+## Output: Audience Detection
+
+Birth date is used to detect if the chart subject is a minor. This changes the synthesis output — no UI flag is needed; detection is automatic from the birth date.
+
+| Age at generation | Output mode |
+|---|---|
+| Under 13 | Third person, addressed to the parent/guardian ("Leo has a Moon in…") |
+| 13–17 | Second person with a brief framing note at the top of the reading |
+| 18+ | Standard second person, no age-specific modification |
+
+---
+
 ## Output: The Blueprint
 
 - Appears immediately when streaming begins — don't wait for the full response
 - Full-width, no accordion — this is the primary deliverable, always visible
-- Blueprint heading in gold, small caps
 - Four sub-sections rendered as they stream: **The Core Pattern**, **What You're Here to Do**,
   **The Central Challenge**, **Right Now**
-- Sabian Symbol one-liner (in Core Pattern) in italics, slightly indented
-- Integrated Alignment Statement at the end: set apart visually — centered, slightly larger
-  text, a thin gold rule above and below
+- Sabian Symbol one-liner (in Core Pattern) slightly indented; optional second line for Ascendant degree if birth time is known
+- Integrated Alignment Statement at the end: set apart visually — centered, slightly larger text
 - A blinking cursor at the stream position while generating
 
 ---
@@ -117,10 +128,11 @@ header as a compact profile summary, so the reading takes over the screen.
 13 sections, all collapsed by default when they arrive.
 
 **Accordion behavior:**
-- Section header: gold chevron (▶) + section title; full row is tappable
-- Chevron rotates 90° on expand (smooth CSS transition, ~200ms)
+- Section header: chevron (▶) + section title; full row is tappable
+- Chevron rotates 90° on expand
 - Content expands with a smooth height transition — not a jump
 - Multiple sections can be open simultaneously
+- Each section header optionally shows a one-line intro beneath the title (see `references/voice-guide.md` — "Section Intros" for the approved copy per section)
 - Section titles (from the synthesis):
   1. The Mountain and the River
   2. The Tension That Runs Everything
@@ -136,14 +148,11 @@ header as a compact profile summary, so the reading takes over the screen.
   12. How to Actually Live This
   13. The Seal on the Sun *(Sabian Symbol)*
 
-**Section header design:**
-- Thin gold rule above each section
-- Section number in muted gold, small and right-aligned
-- Title in warm off-white, Georgia serif
-
 ---
 
-## Output: The Chart Glossary
+## Output: Your Chart at a Glance
+
+Section header copy: "Everything above is the synthesis. This is the map behind it — every placement, every system, what each one means for you. Come back here when you want to know where a specific insight came from."
 
 Same accordion pattern as Deep Dive, but grouped by system (6–7 accordions):
 
@@ -163,17 +172,16 @@ Within each open system section, entries are formatted:
 **Moon 4° Scorpio, House 7** — One to two sentences of personalized meaning.
 ```
 
-Term in bold/gold, em-dash, then the sentence(s) in regular weight.
+Term in bold, em-dash, then the sentence(s) in regular weight.
 
 ---
 
 ## Copy Button
 
 - Appears below the Glossary once the full reading has streamed
-- Label: **"Copy Full Reading"**
+- Label: **"Copy full reading"**
 - On click: copies Blueprint + all Deep Dive sections + Glossary as plain text
-- Confirmation: button label briefly changes to "Copied ✓" for 2 seconds
-- Same styling as Generate button but secondary — outlined gold, not filled
+- Confirmation: button label briefly changes to "Copied" for 2 seconds, then reverts
 
 ---
 
@@ -186,6 +194,19 @@ Term in bold/gold, em-dash, then the sentence(s) in regular weight.
 - A subtle "writing..." indicator (animated ellipsis or blinking cursor) at the active
   stream position
 - On completion: "writing..." disappears, Copy button appears
+
+---
+
+## Error States
+
+All error messages inline, no modal. Copy from `references/voice-guide.md`.
+
+| Trigger | Message |
+|---|---|
+| Geocoding fails | "Couldn't find that city. Try adding the country, or use coordinates." |
+| Human Design API error | "Human Design API returned an error. Check your key, or enter your HD data manually below." |
+| Claude API error | "The synthesis didn't complete. This is usually an API key issue or a timeout on a long response. Try again." |
+| Time field empty on submit | "Birth time is empty. If you don't know it, use the toggle above — don't guess." |
 
 ---
 
@@ -205,20 +226,20 @@ Term in bold/gold, em-dash, then the sentence(s) in regular weight.
 
 - Not a dashboard — no charts, graphs, or data visualizations
 - Not a SaaS product — no accounts, no saved readings, no pricing
-- Not generic — the output is deeply personal; the design should feel the same way
+- Not generic — the output is deeply personal
 - Not responsive-as-afterthought — mobile is the primary target
 
 ---
 
 ## Sample Content
 
-For the static mockup, use the Jamie Mettenbrink reading as placeholder content.
+For reference, use the Jamie Mettenbrink reading as placeholder content.
 Blueprint and all 13 Deep Dive sections + Glossary are in `references/synthesis-voice-sample.md`
 and the v2.1 additions (Section 13 + Glossary) are in `references/synthesis-guide-addendum-v2.1.md`.
 
-Use realistic content lengths — the Blueprint is ~600 words, each Deep Dive section
-is ~300-400 words, the Glossary entries are 1-2 sentences each. The design needs to
-handle this comfortably, not just look good with two lines of Lorem Ipsum.
+Use realistic content lengths — the Blueprint is ~500–700 words, each Deep Dive section
+is ~300-400 words, the Glossary entries are 1-2 sentences each. The app needs to
+handle this comfortably, not just minimal placeholder content.
 
 ---
 
@@ -227,6 +248,7 @@ handle this comfortably, not just look good with two lines of Lorem Ipsum.
 - Single self-contained HTML file (HTML + CSS + JS, no build step)
 - No external CSS frameworks (no Bootstrap, no Tailwind CDN)
 - No external JS libraries except: optionally a lightweight markdown renderer
+- All calculation logic implemented in JavaScript. The Python scripts in `/scripts/` (calculate_chart.py, calculate_bazi.py, calculate_vedic.py, calculate_numerology.py, sabian_lookup.py) are the canonical reference implementation to port from — they define the expected inputs, outputs, and calculation logic for each system
 - Nominatim for geocoding (free, no key)
 - timeapi.io for timezone lookup
 - Human Design Hub API for HD data (key pre-configured in source — not entered by user)
@@ -234,18 +256,3 @@ handle this comfortably, not just look good with two lines of Lorem Ipsum.
 - Current year auto-detected from the browser — not entered by user
 - App is private/personal use; keys are hardcoded for simplicity
 
----
-
-## Deliverable for the Design Step
-
-A single static HTML file with:
-- Full visual design implemented in CSS
-- All input form fields present and styled (non-functional) — 5 fields: name, date, time, city, Enneagram
-- Sample Blueprint content visible (hardcoded)
-- All 13 Deep Dive accordions present with hardcoded section titles and sample content
-- 6 Glossary accordions present with hardcoded sample entries (Enneagram included as example of conditional render)
-- Working accordion expand/collapse behavior (JS)
-- Copy button present (non-functional in mockup)
-- Mobile-responsive layout
-
-No calculation logic, no API calls. Design only.
