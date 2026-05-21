@@ -79,7 +79,7 @@ async function proxyHumanDesign(request, env, origin) {
     });
   }
   const body = await request.arrayBuffer();
-  const upstream = await fetch('https://api.humandesignhub.app/v1/bodygraph', {
+  const upstream = await fetch('https://api.humandesignhub.app/v1/simple-bodygraph', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
