@@ -19,6 +19,47 @@ agreeing on the same theme. Weight cross-tradition confirmations more heavily.
 
 ---
 
+## AUDIENCE DETECTION
+
+Before writing anything, determine who will read this synthesis.
+
+**Adult subject (18+):** Write in second person throughout ("you", "your"). Standard approach.
+
+**Child subject (under 13):** Write in third person throughout using the subject's name
+("Leo", "their"). The parent is the actual reader. Do not pretend otherwise by using "you"
+— the awkwardness compounds over a long document. Exception: the Integrated Alignment
+Statement may be written in first person, clearly marked as something written *for the
+subject to read when older*.
+
+**Teen subject (13–17):** Second person with a brief framing note at the top stating that
+the reading is written directly to the subject and also intended for the parent to read as a portrait.
+
+**The framing note (child and teen charts only):** Place at the very top of the document,
+before the placement tables. State plainly: who the subject is, their age, and that the
+reading is written as a portrait intended for the parent now and the subject later.
+
+---
+
+## MISSING DATA PROTOCOL
+
+Before writing, audit what data is actually present and what is absent.
+
+**Missing system (no HD data, no Enneagram):**
+Omit the section entirely. One line in the document header names what is absent and what
+data would complete it. No placeholder content, no approximate substitution. A clean gap
+is more honest than a padded one.
+
+**Uncertain calculation (estimated Gene Key gate without confirmed HD gate list):**
+Gene Keys analysis requires the confirmed gate list from the HD API. Manual estimation
+from longitude introduces enough error that gate-level interpretation should not be built
+on it. If the gate list is unavailable, omit the Gene Keys section. Do not estimate.
+
+**The principle:** Missing data has a correct representation, and that representation is
+*absence*, not approximation dressed as content. A reader who knows a section is missing
+can seek the data. A reader who received estimated content cannot know to question it.
+
+---
+
 ## OUTPUT STRUCTURE
 
 ### Two-Layer Format
@@ -358,6 +399,7 @@ Day Master + Strength + Dominant/Missing Elements
 - When systems contradict, explore the tension rather than hiding it
 - Weight convergences explicitly: "Three independent systems agree here..."
 - Write the alignment statement as something true enough to be slightly uncomfortable
+- Start interpretive paragraphs from the intersection of at least two coordinates, not from a single placement
 
 **If Enneagram is not provided:** Omit all Enneagram content from the synthesis and
 glossary entirely. Do not note its absence. Proceed as if the system inventory is
@@ -371,12 +413,26 @@ Western + Human Design + Vedic + BaZi + Numerology + Gene Keys + Sabian Symbols.
 - Describe any placement in isolation
 - Make the reading feel encyclopedic — it should feel like being seen
 - More than one bullet list per section (use prose)
+- Begin a sentence by describing what a system says before delivering the interpretation
+- Claim planets are conjunct or clustered when their orb exceeds 8° (personal planets) or 5° (angles); use "co-present in [sign/house]" instead
+- Build a paragraph on a single-system observation as if it were a convergence
+- Use a metaphor that cannot be immediately traced to a specific placement
 
 **Length:** Full deep-dive readings are long. Earn every sentence with specificity.
 The Blueprint layer should be readable in 5 minutes. The Deep Dive is for return visits.
 
-**The test:** Could this paragraph have been written about someone with a different chart?
-If yes, make it more specific or cut it.
+**The specificity test:** Could this paragraph have been written about someone with a
+different chart? If yes, rewrite it to include at least two specific coordinates
+simultaneously — the sign AND the house, the nakshatra AND the degree, the BaZi element
+AND the Ten God relationship. One coordinate produces a horoscope. Two or more produces
+a reading.
 
 **The cross-system test:** For every major claim, ask: does any other system confirm this?
-If yes, name the convergence. If no, hold it lightly and say so.
+If yes, name the convergence explicitly. If no, label it as a single-system observation
+and hold it proportionally lightly.
+
+**The conjunction discipline:** Before describing two or more planets as a conjunction,
+cluster, or stellium, verify the orb. Planets in the same sign and house but more than
+8° apart are "co-present in [sign] in the [Nth] house" — not conjunct, not a group.
+Name their co-presence accurately; don't compress it into a tighter configuration than
+the data shows.
