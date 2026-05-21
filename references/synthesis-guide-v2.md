@@ -79,8 +79,21 @@ in 5 minutes. Use section:
 End Layer 1 with the **Integrated Alignment Statement** (4-6 sentences, first person, poetic
 but specific, names actual placements and cross-system convergences).
 
+**For child charts (subject under 13): add a Parent Note at the end of each Blueprint
+sub-section.** Do not add Parent Notes to the Deep Dive or Glossary — Blueprint only.
+
+Format: a short italicized paragraph beginning with *For parents:* Immediately following
+the sub-section body, before the next heading. 1–3 sentences. Rules:
+- Chart-specific, not generic parenting advice. If the note could apply to any child,
+  rewrite it or cut it.
+- Grounded in the placement or convergence just described in that sub-section.
+- Practical — something a parent can actually do or watch for, not a reframe.
+- Proportional — the note should not exceed the sub-section it follows in weight or length.
+
 **LAYER 2: THE DEEP DIVE** (full section-by-section)
 Each section expands a theme introduced in the Blueprint. The reader can go as deep as they want.
+Parent Notes do not appear here — the Deep Dive speaks to the subject directly (third person
+for child charts) and is the reference layer for when the child is older.
 
 ---
 

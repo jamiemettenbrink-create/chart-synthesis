@@ -85,6 +85,8 @@ Every system that examines this chart arrives at the same word through a differe
 
 The Sabian Symbol for Leo's Sun — Virgo 22°, "A royal coat of arms" — Prerogative. The symbol of recognized lineage, of a claim that doesn't need to be argued because it is simply what it is. And the Ascendant's symbol answers it: Taurus 25°, "A large well-kept public park" — Recreation. The face shown to the world is a held, beautiful space that others can enter and feel rested in.
 
+*For parents: The precision instinct is constitutional — Leo arrived with it. What looks like pickiness or sensitivity to "wrongness" is the analytical instrument running correctly, not a problem to be smoothed out. What helps is consistency and accuracy in your own communications: when something is true, say it plainly; when something changes, say so. Leo will notice the gap between what was said and what is, and the gap costs more than the honesty would.*
+
 ## What Leo Is Here to Do
 
 The North Node in Gemini in the second house is one of the most quietly specific evolutionary directions in the zodiac: *put it into words.* Whatever is known, whatever is gathered, whatever is understood about how things actually work — the soul's trajectory runs through language, through the voice, through the collection and transmission of ideas. The second house adds the dimension of values: what does this information mean, what is it worth, what do we do with it.
@@ -92,6 +94,8 @@ The North Node in Gemini in the second house is one of the most quietly specific
 The Saturn conjunct the Midheaven in Aquarius is another layer of the same picture. Saturn on the MC in Aquarius means: earned structural authority in service of something collective. Not authority because of position — authority that was built deliberately, through rigor, through getting things right over time, that ends up serving a community or a field or a cause. The Jupiter sitting just behind Saturn in the same house adds something: there will be expansion here, even through what feels like limitation. The Great Conjunction generation — born in the slipstream of the Jupiter-Saturn alignment of December 2020 — carries the question of how to build new structures without just recreating the old ones.
 
 Taken together: Leo is here to become someone who understands complex systems precisely enough to explain them in ways that matter to people, and to eventually hold the structural authority to make those systems better.
+
+*For parents: The North Node in Gemini is asking for a language-rich environment — not formal instruction, but genuine conversation and questions taken seriously. Leo builds toward the Saturn-on-the-MC authority through early, repeated exposure to how ideas work. That means answering the "why" in full, not shortcutting explanations, and treating Leo's curiosity about how systems function as the developmental work it actually is.*
 
 ## The Central Challenge
 
@@ -101,6 +105,8 @@ The challenge is that home can become hiding. The Sagittarian South Node in the 
 
 The BaZi pattern confirms this tension from a different angle. Yang Wood under dominant Metal pressure means the tree is growing through stone. There's real constraint here — external structure, the weight of authority and discipline bearing down on the growing thing. The gift is that the wood grows stronger for the resistance. The risk is becoming bent by it, or growing rigid against it, rather than finding the line between discipline and constriction.
 
+*For parents: The BaZi Metal pressure is already ambient in Leo's environment — the world has standards and correctness baked in. The risk is compounding that pressure with parental standards that add more rigor on top of what the chart already carries internally. The job here is to actively protect space for lightness, play, and unstructured curiosity — not because Leo can't handle rigor, but because the rigor is already there and the lightness needs the deliberate invitation.*
+
 ## Current Phase
 
 Leo is four years old in 2026 — and the chart's timing systems are already running. The Vedic Venus Mahadasha began at birth and runs the full first twenty years of life (2021–2041). Venus sits in Libra in the sixth house in the sidereal chart — in its own sign, strong and refined, but in the house of daily work, health, skill development, and what has to be sustained over time. The Venus chapter gives the first two decades a particular flavor: beauty as discipline, developing eye for what is made well, learning that aesthetics and rigor are not opposites. The sixth house also carries the lesson that things worth having require tending.
@@ -108,6 +114,8 @@ Leo is four years old in 2026 — and the chart's timing systems are already run
 Numerology's current year 2026 is a Personal Year 5 — freedom, movement, new inputs. Early childhood, by definition, is the most concentrated experience of encountering an entirely new world. The 5-year energy suits it.
 
 The Pinnacle running from birth to approximately age 27 is a 4 — structure, foundation, the slow patient building of something real. The whole of childhood and young adulthood is calibrated toward learning how things actually work, not how they appear to work. This isn't a chart that will get bored by rigor early. It's a chart that will eventually be grateful for it.
+
+*For parents: Venus in the sixth house ruling the first twenty years means routine is more formative than it appears. What is practiced daily — the rhythm of the day, the quality of the environment, the consistency of how care is given — does real developmental work in this chart. This isn't a child who primarily learns through peak experiences; the ordinary texture of daily life is the curriculum. A home that is genuinely calm, aesthetically considered, and reliably structured is not incidental — it's the container the Venus chapter is built inside.*
 
 ---
 
