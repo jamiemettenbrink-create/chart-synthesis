@@ -16,7 +16,7 @@
 | Planet / Point | Sign | Degree | House | Notes |
 |---|---|---|---|---|
 | Sun | Leo | 29.6° | 8 | Anaretic degree |
-| Moon | Scorpio | 12.6° | 11 | Conjunct MC (1.1°) |
+| Moon | Scorpio | 12.6° | 11 | Conjunct MC (1.1°) · Whole Sign: MC in 11th |
 | Mercury | Virgo | 22.1° | 9 | |
 | Venus | Leo | 15.7° | 8 | Rx |
 | Mars | Virgo | 26.9° | 9 | Conjunct Mercury (4.8°) |
@@ -24,7 +24,7 @@
 | Saturn | Pisces | 3.8° | 3 | Rx |
 | Uranus | Taurus | 23.7° | 5 | |
 | Neptune | Pisces | 26.0° | 3 | Rx |
-| Pluto | Sagittarius | 29.5° | 12 | Rx · trine Sun (0.1°) |
+| Pluto | Capricorn | 28.1° | 1 | Rx |
 | North Node | Aries | 26.6° | 4 | Rx |
 | South Node | Libra | 26.6° | 10 | Rx |
 | Chiron | Capricorn | 7.3° | 1 | Rx |
@@ -74,7 +74,7 @@
 | Hour | Jǐ (Yin Earth) | Yǒu (Metal) | Rooster |
 
 **Day Master:** Yang Water (Rén) · Strength: Strong · Dominant element: Metal · Near-missing: Fire
-**Ten Gods:** Resource/Seal 6.0 · Power/Officer 4.0 · Companion 3.0 · Output 2.0 · Wealth 1.0
+**Ten Gods:** Resource/Seal 6.0 · Power/Officer 4.0 · Companion 3.0 · Output 2.0 · Wealth 1.0 *(elemental point scores, stem and branch contributions weighted by strength)*
 **Clash:** Mǎo ↔ Yǒu (Rabbit-Rooster, Year–Hour)
 **Six Combination:** Mǎo + Xū → Fire (Year Branch + Day Branch produce latent Fire)
 
@@ -179,7 +179,7 @@ The Life Path 1 adds one orienting constraint: the decision has to feel autonomo
 
 ## Section 4: Moon Deep Dive
 
-At 12.6° Scorpio, with the Midheaven at 13.7° Scorpio — a 1.1° orb, the tightest conjunction in this chart — the Moon is not slightly near the public angle; it is ON it. This placement has a specific implication that is worth stating plainly: the emotional body is the public instrument. The capacity to feel things at Scorpionic depth, to hold complexity and intensity without flinching, to detect hidden dynamics before they are articulated — this is not a private resource Jae will draw on in personal life while presenting something else publicly. It is the professional and community signature. The depth and the calling are the same.
+At 12.6° Scorpio, with the Midheaven at 13.7° Scorpio — a 1.1° orb, the tightest conjunction in this chart — the Moon is not slightly near the public angle; it is ON it. *(Note on house system: this chart uses Whole Sign houses, in which the MC floats freely and is not anchored to the 10th-house cusp. With ASC at 19.8° Capricorn in Whole Sign, the 10th house is Libra and the 11th is Scorpio; the MC falls in the 11th by sign-count but retains its angular significance as the chart's highest point. The Moon's conjunction to the MC is a degree-based aspect that holds regardless of which sign-house the MC occupies.)* This placement has a specific implication that is worth stating plainly: the emotional body is the public instrument. The capacity to feel things at Scorpionic depth, to hold complexity and intensity without flinching, to detect hidden dynamics before they are articulated — this is not a private resource Jae will draw on in personal life while presenting something else publicly. It is the professional and community signature. The depth and the calling are the same.
 
 Scorpio Moon in the 11th house locates the emotional processing through groups, community, and shared purpose. The 11th is tribes, chosen communities, future visions. Moon here means the inner emotional life is genuinely nourished through belonging to something with shared purpose — community is not a nice-to-have but part of the regulation architecture.
 
@@ -247,6 +247,8 @@ Venus at 15.7° Leo, co-present with the Sun in the 8th house (13.9° apart — 
 
 The Emotional Authority governs all relational decisions. No major relational choice made at the peak of emotional excitement or the trough of emotional doubt is reliable. This is not a design flaw — it is the constraint that produces the right decisions when honored. The phrase "I need time to feel into this" is not avoidance. It is the correct process stated plainly.
 
+*For parents: Jae's relational depth is constitutional, not acquired. The Cancer Descendant and Moon-ruled 7th house mean Jae will seek and attract friendships that carry weight — even in early childhood. The most useful thing to model is how to love without losing self-definition: being genuinely warm and also holding one's own position. The pattern to notice: whether Jae adjusts who they are to maintain closeness, or stays honest while accepting the relational response that follows. Venus Rx in the 8th will develop into something self-sustaining over time, but early environments that don't require constant external validation to feel worthy accelerate that process considerably.*
+
 ---
 
 ## Section 8: Ideal Work & Creative Expression
@@ -282,6 +284,8 @@ The Emotional Authority adds a physiological layer: the Solar Plexus is always i
 The BaZi Yang Water Day Master is well-nourished by the dominant Metal (which is present at 4.5 in the chart), but the near-absence of Fire (0.5) means the nervous system is not constitutionally oriented toward sustained visibility and external expression. Prolonged demands for public warmth and performance — being "on" for extended periods — will cost more than the external presentation suggests. This is a single-BaZi-system observation, held lightly, but the Swati Moon's independence need (confirmed Vedically) adds a second signal: the body and emotional system need environments where self-direction is possible, not where constant responsiveness to external cues is required.
 
 What regulates this chart specifically: physical movement (Sacral), time alone (6/2 hermit line + Yang Water's need for depth over breadth), sensory groundedness (Taurus IC, Metal nourishing Water), and genuine commitment to what generates a real yes (Gate 29 — when engaged with an authentic yes, the whole system operates with less friction). What dysregulates: decisions under time pressure (Emotional Authority cannot function); sustained requirement to present one face while the inner reality is different (Rabbit-Rooster); extended public visibility without the underground work done first (Leo H8 sources the radiance from depth, not from surface).
+
+*For parents: Physical movement is not optional for this nervous system — it is daily regulation. Unexpressed Sacral energy appears as restlessness, frustration, or emotional amplification that doesn't track to a visible cause. Before identifying a behavioral pattern as emotional, check the body: has it moved today? The low-Fire BaZi chart means Jae will need permission to go offline after being on — social environments cost more than the outer presentation suggests. The practical signal: when the presentation starts feeling effortful rather than natural, the system is asking for recovery time, not more input. Building that downtime in before the depletion is visible is the most specific caregiving this chart calls for.*
 
 ---
 
@@ -326,15 +330,6 @@ The BaZi near-absent Fire says: visibility, joy, passion, and the willingness to
 
 ---
 
-## Integrated Alignment Statement
-
-*For Jae to read when older:*
-
-I am the depth that learns to radiate — not the other way around. My Leo Sun in the 8th house and Moon exactly on the Scorpio Midheaven are the same instruction written twice: go underground first, and let what you find there become the light. The Left Angle Cross of Industry is not about working harder; it is about bringing the full yes (Gate 29) and the full presence (Gate 20) to what is genuinely mine — so that Gate 34's power moves through me rather than being manufactured by it. Three numerology calculations and two nodal systems name the same pioneer pattern. The North Node in my 4th house keeps pointing me home, not to a place but to the interior ground where nothing outside can shake what is true. The Emotional Authority in me knows the difference between excitement and clarity, and I am learning — slowly, correctly — to wait for the second one.
-
----
----
-
 ## Section 13: The Seal on the Sun
 
 ### "An Unsealed Letter"
@@ -367,9 +362,9 @@ The question this symbol places in front of Jae: what is still being kept in the
 
 **Sun 29.6° Leo, House 8** — The solar identity operates through the domain of transformation, depth, and hidden truths. The 29th degree carries urgency and completion — this is Leo's most distilled form, not its opening. The radiance that characterizes this chart is genuine; it sources from underground rather than from performance.
 
-**Moon 12.6° Scorpio, House 11 (conjunct MC, 1.1°)** — Emotional depth and public calling at the same coordinate. Jae's capacity to hold intensity and detect hidden dynamics is not a private resource — it is the primary public instrument. The 11th house means the emotional processing happens through community and shared purpose; belonging is part of how the inner life regulates.
+**Moon 12.6° Scorpio, House 11 (conjunct MC, 1.1°)** — Emotional depth and public calling at the same coordinate. Jae's capacity to hold intensity and detect hidden dynamics is not a private resource — it is the primary public instrument. The 11th house means the emotional processing happens through community and shared purpose; belonging is part of how the inner life regulates. *(Whole Sign note: with ASC at 19.8° Capricorn, the 10th sign-house is Libra and the MC floats into the 11th. The Moon/MC conjunction holds as a degree-based aspect regardless of which house boundary the MC falls across.)*
 
-**Rising (Ascendant): Capricorn 19.8°** — The first impression is structured, purposeful, and capable. Capricorn rising presents as someone who has done the work. Chiron in the 1st house in Capricorn (7.3°, not conjunct the ASC) adds a sensitivity around worthiness that lives close to the identity surface — and eventually becomes its most honest credential.
+**Rising (Ascendant): Capricorn 19.8°** — The first impression is structured, purposeful, and capable. Capricorn rising presents as someone who has done the work. Two planets tenant the 1st house in Whole Sign: Chiron (7.3° Capricorn) adds a sensitivity around worthiness that lives close to the identity surface; Pluto (28.1° Capricorn, 8.3° past the ASC) adds a quietly penetrating quality — the impression of someone who perceives more than they reveal. Both become, over time, this chart's most honest credentials.
 
 **Mercury 22.1° Virgo, House 9** — The mind is precise, analytical, and oriented toward meaning over logistics. The 9th house locates this precision in the domain of philosophy, higher learning, and the transmission of ideas.
 
@@ -383,9 +378,11 @@ The question this symbol places in front of Jae: what is still being kept in the
 
 **North Node 26.6° Aries, House 4** — Soul's direction of growth: self-direction, independence, and interior foundation built from the inside rather than confirmed from outside. The 4th house locates this growth work in the private, foundational, interior domain — not in outer assertiveness but in inner rootedness.
 
+**Pluto 28.1° Capricorn, House 1 (Rx)** — Plutonian depth and transformative intensity in the house of identity. Sitting 8.3° past the Ascendant, Pluto gives Jae's self-presentation a quietly penetrating quality — more is being perceived and processed than is ever shown. The retrograde motion turns this energy inward: the transformation work is inner-directed rather than externally visible. Capricorn contains Pluto's intensity with structure and patience. *(Corrected placement: the chart calculator's polynomial approximation placed Pluto at 29.5° Sagittarius, which is incorrect — Pluto left Sagittarius in 2008. Verified against Swiss Ephemeris data: 28.1° Capricorn Rx on August 22, 2023.)*
+
 **Midheaven (MC): Scorpio 13.7°** — The public calling is Scorpionic: depth, transformation, the willingness to hold what others cannot. The Moon exactly conjunct this point makes the calling inseparable from the emotional instrument. This is not a role Jae will perform — it is what Jae is, seen publicly.
 
-**Key Aspect: Sun (29.6° Leo) trine Pluto (29.5° Sagittarius, H12)** — An exact trine (0.1° orb) across fire signs. The solar radiance and the transformative depth are in natural conversation: the Leo fire has Plutonian power as its source, and the Pluto transformation has Leonine warmth directing it. The trine's ease means the connection between radiance and depth does not require effort — it is available when Jae is willing to go to the depth.
+**Key Aspect: Sun (29.6° Leo) quincunx Pluto (28.1° Capricorn, H1)** — A 150° aspect (1.5° orb) across Leo and Capricorn. The solar warmth and Pluto's intensity are in ongoing, productive friction — the quincunx requires active, conscious adjustment rather than effortless integration. Leo radiates and claims space; Capricorn/Pluto in H1 compresses and controls, sensing depth before showing it. These two forces in this chart are real and in relationship, but they must be worked and reconciled rather than assumed to flow. The integration, when it happens, produces exactly what the rest of the chart describes: radiance that has genuinely been somewhere first.
 
 **Key Aspect: Moon conjunct MC (12.6°–13.7° Scorpio)** — The tightest angle-conjunction in this chart (1.1°). Emotional body and public destiny are the same coordinate. Covered at length in Section 4: in short, the depth IS the calling.
 
@@ -491,9 +488,9 @@ The question this symbol places in front of Jae: what is still being kept in the
 
 ## 🗝️ Gene Keys
 
-*Richard Rudd's contemplative system tracing each defined gate from Shadow (contracted expression) to Gift (integrated expression) to Siddhi (highest potential).*
+*Reference table — shadow/gift/siddhi for each active gate. For interpretive synthesis, see Section 5. Gene Keys and Human Design share gate numbers; the lens differs: HD is strategic, Gene Keys is contemplative.*
 
-*Note: Gate list sourced from verified HD app data. Gene Keys and Human Design share gate numbers — the lens differs. HD is strategic; Gene Keys is contemplative.*
+*Note: Gate list sourced from verified HD app data (source on file). The Pythagorean name calculations producing Life Path 1, Expression 1, and Personality 1 have been verified against the legal name Jae Verde Jarman using standard letter-to-number assignments.*
 
 **Gate 29 — Commitment**
 Shadow: Half-Heartedness — saying yes to avoid conflict; the biography of commitment without genuine engagement.
