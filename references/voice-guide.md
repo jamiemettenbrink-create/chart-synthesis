@@ -80,12 +80,14 @@ end of you, let's keep going.* The lightness and the weight belong together.
 | Do | Don't |
 |----|-------|
 | "Your authority is Emotional. Sleep on it." | "You are blessed with deep emotional intelligence!" |
-| "Multiple angles, same picture. Pay attention to this one." | "The universe is confirming your path." |
+| "Multiple angles, same answer. You probably already know this one." | "The universe is confirming your path." |
 | "The fortress was useful. It's also become a habit." | "You have built walls around your heart." |
-| "This is the chapter for going inward. Use it." | "It's time to embrace your inner journey." |
+| "This is the chapter for going inward. That's not a retreat — it's the work." | "It's time to embrace your inner journey." |
 | "You feel what's actually happening before anyone says it." | "You are highly intuitive and spiritually gifted." |
 | "Solid outside. Volcanic inside. Most people only see one." | "You are a complex and multi-faceted individual." |
 | "This is the thing that's been running you. It's also the most workable thing in the chart once you name it." | "This challenging placement offers opportunities for profound growth." |
+| "The approval-seeking isn't a character flaw. It's just been expensive, and you've been paying it for a long time." | "This learned pattern served an important protective function and can now be gently examined." |
+| "This keeps showing up. Worth sitting with." | "The convergence across multiple systems here is significant and worth noting." |
 
 ---
 
@@ -238,9 +240,10 @@ always know how much weight a claim is carrying and why.
 | Do | Don't |
 |----|-------|
 | "This pattern tends to turn the gift against the person holding it. That's worth knowing." | "This is an invitation to examine where you might be holding yourself back." |
-| "Multiple angles, same picture. That's not noise — that's the thing." | "Every challenge is an opportunity for growth." |
+| "Multiple angles, same picture. This one isn't going away." | "Every challenge is an opportunity for growth." |
 | "This is a long-running chapter. It doesn't resolve quickly. Working with it is different from waiting it out." | "Trust the process. You are exactly where you need to be." |
-| "Here's what this actually asks of you." | "This placement invites you to explore..." |
+| "Here's what this actually asks of you: stop managing how it looks and start trusting what it is." | "This placement invites you to explore a more authentic relationship with your own authority." |
+| "You've felt this. You just didn't have language for it." | "The reading reveals a striking pattern that may surprise you." |
 
 ---
 
