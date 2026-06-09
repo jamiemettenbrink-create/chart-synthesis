@@ -1399,6 +1399,11 @@ function computeChart(form, hdApiData) {
   const numName = nameNumerology(form.name);
   const lp = lifePath(y, m, d);
 
+  // Mean lunar node (Rahu / Ketu karmic axis) — Meeus mean ascending node
+  const T_node = (JD_UT - 2451545.0) / 36525;
+  const northNodeLon = norm360(125.04452 - 1934.136261*T_node + 0.0020708*T_node*T_node + (T_node*T_node*T_node)/450000);
+  const southNodeLon = norm360(northNodeLon + 180);
+
   // Age and audience
   const today = new Date();
   const birth = new Date(`${form.date}T00:00:00`);
@@ -1416,6 +1421,8 @@ function computeChart(form, hdApiData) {
       mercury: { sign: signOf(mercuryLon), deg: Math.round(degInSign(mercuryLon)*10)/10, lon: mercuryLon },
       venus:   { sign: signOf(venusLon),   deg: Math.round(degInSign(venusLon)*10)/10,   lon: venusLon },
       mars:    { sign: signOf(marsLon),    deg: Math.round(degInSign(marsLon)*10)/10,    lon: marsLon },
+      northNode: { sign: signOf(northNodeLon), deg: Math.round(degInSign(northNodeLon)*10)/10, lon: northNodeLon },
+      southNode: { sign: signOf(southNodeLon), deg: Math.round(degInSign(southNodeLon)*10)/10, lon: southNodeLon },
     },
     vedic: { moonSign: vedicMoon, sunSign: vedicSun, lagna: vedicLagna, nakshatra: nakshatra.name, nakshatraPada: nakshatra.pada, ayanamsha: Math.round(ayan*100)/100 },
     humanDesign,
@@ -1676,6 +1683,61 @@ function relationalHints(inter, composite){
   return hints;
 }
 
+/* ─── Cross-system relational contributors (plug into SYNASTRY_CONTRIBUTORS) ─── */
+const FIVE_ELEMENTS = ['Wood','Fire','Earth','Metal','Water']; // generating cycle order
+function baziElementOf(dayMaster){
+  const m = String(dayMaster || '').match(/(Wood|Fire|Earth|Metal|Water)/);
+  return m ? m[1] : null;
+}
+// BaZi Day Master interaction via the Five-Element cycle: produces (+1), controls (+2).
+function baziInteraction(chartA, chartB){
+  const ea = baziElementOf(chartA.bazi && chartA.bazi.dayMaster);
+  const eb = baziElementOf(chartB.bazi && chartB.bazi.dayMaster);
+  if (!ea || !eb) return null;
+  const ia = FIVE_ELEMENTS.indexOf(ea), ib = FIVE_ELEMENTS.indexOf(eb);
+  let hint;
+  if (ia === ib) hint = `ELEMENTAL RESONANCE: both core natures are ${ea} — instant recognition and sameness, with the shared risk of one note and no counterbalance.`;
+  else if ((ia+1)%5 === ib) hint = `ELEMENTAL SUPPORT (one-way): A's ${ea} feeds B's ${eb} — A naturally nourishes and energizes B; watch for A over-giving and running dry.`;
+  else if ((ib+1)%5 === ia) hint = `ELEMENTAL SUPPORT (one-way): B's ${eb} feeds A's ${ea} — B naturally nourishes and energizes A; watch for B over-giving and running dry.`;
+  else if ((ia+2)%5 === ib) hint = `ELEMENTAL CONTROL (one-way): A's ${ea} checks B's ${eb} — A tends to discipline, contain, or correct B; steadying in small doses, controlling in large ones.`;
+  else hint = `ELEMENTAL CONTROL (one-way): B's ${eb} checks A's ${ea} — B tends to discipline, contain, or correct A; steadying in small doses, controlling in large ones.`;
+  return { facts: [`BaZi Day Masters: A is ${ea}, B is ${eb} (Five-Element relationship drives the dynamic above).`], hints: [hint] };
+}
+// Numerology Life Path interaction — light touch, only when it converges.
+function lifePathInteraction(chartA, chartB){
+  const la = chartA.numerology && chartA.numerology.lifePath;
+  const lb = chartB.numerology && chartB.numerology.lifePath;
+  if (la == null || lb == null) return null;
+  const facts = [`Numerology Life Paths: A is ${la}, B is ${lb}.`];
+  const hints = [];
+  if (la === lb) hints.push(`SHARED ROAD: both walk Life Path ${la} — the same core lesson, which means deep mutual understanding and the risk of sharing one blind spot.`);
+  return { facts, hints };
+}
+// Vedic / lunar nodal overlap — one chart's Rahu/Ketu axis landing on the other's personal planets.
+function nodalOverlap(chartA, chartB){
+  if (!chartA.western.northNode || !chartB.western.northNode) return null;
+  const targets = ['sun','moon','venus','mars'];
+  const hits = [];
+  const check = (nodeLon, nodeName, chart, who) => {
+    for (const t of targets){
+      const lon = planetLon(chart, t);
+      if (lon == null) continue;
+      const sep = Math.abs(((((nodeLon - lon) % 360) + 540) % 360) - 180);
+      if (sep <= 6) hits.push(`${who}'s ${nodeName} on the other's ${PLANET_LABEL[t]} (orb ${Math.round(sep*10)/10}°)`);
+    }
+  };
+  check(chartB.western.northNode.lon, 'North Node', chartA, 'B');
+  check(chartB.western.southNode.lon, 'South Node', chartA, 'B');
+  check(chartA.western.northNode.lon, 'North Node', chartB, 'A');
+  check(chartA.western.southNode.lon, 'South Node', chartB, 'A');
+  if (!hits.length) return null;
+  return {
+    facts: ['Karmic (lunar nodal) axis contacts: ' + hits.join('; ') + '.'],
+    hints: [`KARMIC AXIS: the lunar nodes bind the two charts (${hits.slice(0,2).join('; ')}) — a fated, sticky quality; the relationship feels less optional than chosen and carries a pull toward growth that is hard to walk away from.`],
+  };
+}
+SYNASTRY_CONTRIBUTORS.push(baziInteraction, lifePathInteraction, nodalOverlap);
+
 /* ─── Relational synthesis prompts ─── */
 function westernSummaryLine(chart){
   const w = chart.western;
@@ -1710,7 +1772,7 @@ function relationalFacts(){
   syn.hints.forEach(h => L.push(`  - ${h}`));
   if (syn.extraFacts.length){ L.push(''); L.push('ADDITIONAL SYSTEM SIGNALS:'); syn.extraFacts.forEach(f => L.push(`  ${f}`)); }
   L.push('');
-  L.push('SYSTEMS NOTE: this reading computes the Western layer only (synastry + composite). Do not invent Human Design, BaZi, Vedic, or Numerology relational content.');
+  L.push('SYSTEMS NOTE: this reading computes Western synastry + composite, BaZi Day Master interaction, Numerology Life Path, and the Vedic/lunar nodal axis (see signals above). Human Design connection theory is not yet computed — do not invent HD relational content.');
   return L.join('\n');
 }
 function relBlueprintPrompt(){
