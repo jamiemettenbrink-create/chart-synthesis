@@ -7,7 +7,8 @@ Add this to `synthesis-guide-v2.md` as an extension of the Deep Dive and a new c
 
 ## BLUEPRINT UPDATE (Layer 1)
 
-In the **Core Pattern** sub-section, after the Sun description, add one line:
+In the **Who you are when no one's watching** sub-section (the renamed Core Pattern beat),
+after the Sun description, add one line:
 
 > *The Sabian Symbol for your [degree]° [Sign] Sun: "[Symbol Name]" — Keyword: [Keyword].*
 
