@@ -2089,6 +2089,25 @@ function ddJob(id) {
   return ddJobs[id];
 }
 
+// Mode-aware glue so the single-chart and relational Deep Dives share ONE job
+// system (dedup, prefetch, instant-ready reveal, background fill). The only
+// per-mode differences are the prompt, where the text is stored, and the list
+// of sections — everything else (ddJobs, deepDiveAccordion, prefetch) is shared.
+function activeDeepDiveSections() {
+  return state.mode === 'relational'
+    ? REL_TYPE_CONFIG[state.relationship.type].sections
+    : DEEP_DIVE_SECTIONS;
+}
+function ddPromptFor(section) {
+  return state.mode === 'relational'
+    ? relDeepDivePrompt(section)
+    : deepDivePrompt(state.chart, state.form, section);
+}
+function ddStore(section, text) {
+  if (state.mode === 'relational') state.relReading.deepDive[section.id] = text;
+  else state.reading.deepDive[section.id] = text;
+}
+
 // Generate one section, deduplicated. Safe to call from both prefetch and
 // expand — concurrent callers share the same in-flight promise.
 function ensureDeepDive(section) {
@@ -2098,10 +2117,10 @@ function ensureDeepDive(section) {
   job.status = 'loading';
   job.promise = (async () => {
     try {
-      const text = await llmText(deepDivePrompt(state.chart, state.form, section));
+      const text = await llmText(ddPromptFor(section));
       job.text = text;
       job.status = 'ready';
-      state.reading.deepDive[section.id] = text;
+      ddStore(section, text);
       if (job.render) job.render(text); // fill the section if it's open and waiting
     } catch (e) {
       job.status = 'error';
@@ -2112,11 +2131,13 @@ function ensureDeepDive(section) {
   return job.promise;
 }
 
-// Background driver: race the reader by generating early sections ahead of time.
+// Background driver: race the reader by generating early sections of whichever
+// reading is active (single-chart or relational), ahead of time.
 async function prefetchDeepDive() {
-  const n = Math.min(CONFIG.deepDivePrefetch, DEEP_DIVE_SECTIONS.length);
+  const sections = activeDeepDiveSections();
+  const n = Math.min(CONFIG.deepDivePrefetch, sections.length);
   for (let i = 0; i < n; i++) {
-    try { await ensureDeepDive(DEEP_DIVE_SECTIONS[i]); }
+    try { await ensureDeepDive(sections[i]); }
     catch (_) { /* stay silent in the background; surfaced if the user expands */ }
   }
 }
@@ -2261,6 +2282,7 @@ async function copyFullReading(){
 async function startRelationalReading(){
   state.mode = 'relational';
   state.relReading = { blueprint:'', deepDive:{} };
+  ddInit();                              // share the single-chart job system, cleared per reading
   state.generating = true;
   // Persist both people to the roster (the data model is real even with no roster screen),
   // then read their deterministic derived charts from the cache.
@@ -2269,11 +2291,14 @@ async function startRelationalReading(){
   state.chart    = derivedChartFor(self);
   state.chartB   = derivedChartFor(other);
   state.synastry = computeSynastry(state.chart, state.chartB);
+  // Navigate the moment the charts are ready — block only on the Blueprint.
   renderRelationalReading();
   await streamRelBlueprint();
   state.generating = false;
   const copyBtn = $('#copy-btn');
   if (copyBtn) copyBtn.classList.add('show');
+  // Same hybrid generation as the single-chart flow: race the reader.
+  prefetchDeepDive();
 }
 
 function renderRelationalReading(){
@@ -2310,9 +2335,9 @@ function renderRelHeader(){
 function renderRelDeepDive(){
   const cfg = REL_TYPE_CONFIG[state.relationship.type];
   const wrap = el('section',{class:'deep-dive'}, el('p',{class:'eyebrow'},'§ The Deep Dive'));
-  cfg.sections.forEach((s,i) => {
-    wrap.appendChild(accordion({id:'rd-'+s.id, idx:i+1, title:s.title, intro:s.intro, onExpand:elBody=>loadRelDeepDive(s,elBody)}));
-  });
+  // Reuse the shared deep-dive accordion so relational sections get the same
+  // prefetch / instant-ready / background-fill behavior as the single chart.
+  cfg.sections.forEach((s,i) => wrap.appendChild(deepDiveAccordion(s, i+1)));
   return wrap;
 }
 
@@ -2327,14 +2352,6 @@ async function streamRelBlueprint(){
     body.innerHTML = `<p class="err-inline">The synthesis didn't complete. ${e.message || 'Check the connection and try again.'}</p>`;
     throw e;
   }
-}
-
-async function loadRelDeepDive(section, container){
-  const text = await llmText(relDeepDivePrompt(section));
-  state.relReading.deepDive[section.id] = text;
-  container.innerHTML = renderMd(text);
-  container.style.opacity = '0'; container.style.transform = 'translateY(6px)';
-  requestAnimationFrame(() => { container.style.transition='opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)'; container.style.opacity='1'; container.style.transform='translateY(0)'; });
 }
 
 function copyRelReading(){
