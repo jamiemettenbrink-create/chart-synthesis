@@ -250,6 +250,32 @@ input,select,textarea{font:inherit;color:inherit}
 .saved-forget{background:transparent;border:1px solid var(--slate-soft);color:var(--pewter-soft);font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 9px;cursor:pointer;transition:color 150ms ease-out,border-color 150ms ease-out;white-space:nowrap}
 .saved-forget:hover{color:var(--rust);border-color:var(--rust)}
 @media(min-width:720px){.ps-name.dual{font-size:22px}}
+/* ───────── Roster ("Your People") ───────── */
+.roster-title{font-family:var(--display);font-weight:500;font-size:34px;line-height:1.05;color:var(--parchment);margin:0;letter-spacing:-0.01em}
+.roster-sub{font-family:var(--display);font-style:italic;font-size:18px;color:var(--auric);margin:6px 0 0;line-height:1.3}
+.roster-sectlabel{font-family:var(--ui);font-weight:500;font-size:12.5px;letter-spacing:0.09em;text-transform:uppercase;color:var(--pewter);margin:38px 0 14px}
+.roster-sectlabel:first-of-type{margin-top:8px}
+.person-card{display:flex;align-items:center;gap:14px;width:100%;background:var(--iron-soft);border:1px solid var(--slate-soft);padding:15px 16px;text-align:left;transition:border-color 150ms ease-out,background 150ms ease-out;min-height:62px}
+.person-card+.person-card{margin-top:10px}
+.person-card.self{border-color:var(--auric-faint);background:rgba(200,169,110,0.05)}
+.pc-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.pc-name{font-family:var(--display);font-weight:500;font-size:20px;color:var(--parchment);line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-meta{font-family:var(--ui);font-size:13px;color:var(--pewter);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-actions{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.pc-chip{font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:var(--pewter);background:transparent;border:1px solid var(--slate-soft);padding:8px 11px;cursor:pointer;transition:color 150ms ease-out,border-color 150ms ease-out,background 150ms ease-out;white-space:nowrap;min-height:38px}
+.pc-chip:hover{color:var(--parchment);border-color:var(--slate)}
+.pc-chip.gold{color:var(--auric);border-color:var(--auric-dim)}
+.pc-chip.gold:hover{color:var(--void);background:var(--auric)}
+.pc-chip.danger:hover{color:var(--rust);border-color:var(--rust)}
+.roster-empty{font-family:var(--display);font-size:19px;font-style:italic;color:var(--pewter);line-height:1.5;max-width:44ch;margin:24px 0}
+.roster-actions{margin-top:40px;display:flex;flex-direction:column;gap:12px}
+.nav-link{display:inline-flex;align-items:center;gap:7px;background:transparent;border:0;padding:6px 0;cursor:pointer;font-family:var(--ui);font-weight:500;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--pewter);transition:color 150ms ease-out}
+.nav-link:hover{color:var(--auric)}
+.relpick-head{margin-bottom:18px}
+.relpick-head .eyebrow{margin-bottom:6px}
+.relpick-q{font-family:var(--display);font-size:21px;color:var(--parchment);margin:0;line-height:1.3}
+.relpick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+@media(min-width:720px){.roster-title{font-size:42px}.pc-name{font-size:22px}}
 </style>
 </head>
 <body>
@@ -1161,9 +1187,34 @@ function derivedChartFor(person){
   derivedCache[person.id] = c;
   return c;
 }
-// Complete deletion: person record + any cached derived chart.
-function deletePerson(id){ saveRoster(loadRoster().filter(p => p.id !== id)); delete derivedCache[id]; }
-function clearRoster(){ saveRoster([]); for (const k in derivedCache) delete derivedCache[k]; }
+// Complete deletion: person record + cached derived chart (+ clear the "you" pointer if it was them).
+function deletePerson(id){ saveRoster(loadRoster().filter(p => p.id !== id)); delete derivedCache[id]; if (getSelfId() === id) clearSelfId(); }
+function clearRoster(){ saveRoster([]); for (const k in derivedCache) delete derivedCache[k]; clearSelfId(); }
+
+/* ─── "You" identity + roster queries ─── */
+const SELF_KEY = 'uncharted.self.v1';
+function getSelfId(){ try { return localStorage.getItem(SELF_KEY) || null; } catch(_){ return null; } }
+function setSelfId(id){ try { localStorage.setItem(SELF_KEY, id); } catch(_){} }
+function clearSelfId(){ try { localStorage.removeItem(SELF_KEY); } catch(_){} }
+function getPerson(id){ return loadRoster().find(p => p.id === id) || null; }
+function getSelf(){ const id = getSelfId(); return id ? getPerson(id) : null; }
+function savedOthers(){ const sid = getSelfId(); return loadRoster().filter(p => p.id !== sid); }
+// Save the form-filler and, if no "you" is set yet, claim them as you. Returns the stored person.
+function upsertSelf(f){
+  const p = upsertPerson(f, 'self');
+  if (!getSelfId()) setSelfId(p.id);
+  return p;
+}
+// Overwrite a stored person's birth data in place (used by roster Edit). Invalidates its derived cache.
+function updatePerson(id, f){
+  const list = loadRoster();
+  const i = list.findIndex(p => p.id === id);
+  if (i < 0) return null;
+  list[i] = Object.assign(formToPerson(f, list[i].added_by), { id, added_at: list[i].added_at });
+  saveRoster(list);
+  delete derivedCache[id];
+  return list[i];
+}
 
 /* ─── Relationship type config — mirrors references/relationship-type-config.md (canonical source) ─── */
 const REL_TYPE_CONFIG = {
@@ -1830,6 +1881,7 @@ function renderForm() {
     ),
     el('p', {class:'tagline'}, 'The map no one else saw coming.'),
   ));
+  if (loadRoster().length) shell.appendChild(navLink());
   shell.appendChild(el('p', {class:'lede'}, 'Seven frameworks. One pattern. The through line tells the story.'));
   const form = el('form', {class:'form', novalidate:true});
   shell.appendChild(form);
@@ -1901,8 +1953,8 @@ function renderForm() {
     // async work starts, so silence never reads as breakage.
     generateBtn.disabled = true;
     generateBtn.textContent = state.relationship.enabled ? 'Reading the relationship…' : 'Reading the chart…';
-    if (state.relationship.enabled) startRelationalReading();
-    else startReading();
+    if (state.relationship.enabled) { startRelationalReading(); }
+    else { upsertSelf(state.form); startReading(); }   // the form-filler is "you"
   });
   shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Real astronomy (Meeus + JPL elements) · Synthesis generated via Claude API. UTC offset estimated from longitude — accurate to ±1hr.')));
   const saved = renderSavedManage();
@@ -1978,7 +2030,10 @@ function renderHeaderSummary() {
   editPath.setAttribute('d','M11 4H4v16h16v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z');
   editSvg.appendChild(editPath);
   return el('header',{class:'app-header app-header--reading'},
-    el('span',{class:'mk-only'}, markEl({ariaLabel:'un/charted'})),
+    el('div',{style:'display:flex;align-items:center;justify-content:space-between;gap:12px'},
+      el('span',{class:'mk-only'}, markEl({ariaLabel:'un/charted'})),
+      navLink(),
+    ),
     el('button',{class:'profile-summary',type:'button',onclick:editForm,'aria-label':'Edit birth data'},
       el('span',{class:'ps-line'},el('span',{class:'ps-name'},f.name),metaRow),
       el('span',{class:'edit-link'},editSvg,'Edit'),
@@ -2284,9 +2339,9 @@ async function startRelationalReading(){
   state.relReading = { blueprint:'', deepDive:{} };
   ddInit();                              // share the single-chart job system, cleared per reading
   state.generating = true;
-  // Persist both people to the roster (the data model is real even with no roster screen),
-  // then read their deterministic derived charts from the cache.
-  const self  = upsertPerson(state.form, 'self');
+  // Persist both people to the roster, then read their deterministic derived charts.
+  // The form-filler is "you"; the second person is added by you.
+  const self  = upsertSelf(state.form);
   const other = upsertPerson(state.form2, self.id);
   state.chart    = derivedChartFor(self);
   state.chartB   = derivedChartFor(other);
@@ -2321,7 +2376,10 @@ function renderRelHeader(){
   const a = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
   const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
   return el('header',{class:'app-header app-header--reading'},
-    el('span',{class:'mk-only'}, markEl({ariaLabel:'un/charted'})),
+    el('div',{style:'display:flex;align-items:center;justify-content:space-between;gap:12px'},
+      el('span',{class:'mk-only'}, markEl({ariaLabel:'un/charted'})),
+      navLink(),
+    ),
     el('button',{class:'profile-summary',type:'button',onclick:()=>renderForm(),'aria-label':'Edit birth data'},
       el('span',{class:'ps-line'},
         el('span',{class:'ps-name dual'}, a, el('span',{class:'ps-amp'},'&'), b),
@@ -2371,8 +2429,145 @@ function copyRelReading(){
   }).catch(() => alert("Couldn't copy. Your browser may be blocking clipboard access."));
 }
 
+/* ─── Roster ("Your People") ─── */
+function goForm(){ renderForm(); }
+function goRoster(){ renderRoster(); }
+function resetFormsForNew(){
+  state.form = BLANK_PERSON_FORM();
+  state.form2 = BLANK_PERSON_FORM();
+  state.relationship = { enabled:false, type:'romantic' };
+}
+function personMeta(p){
+  const dt = p.birth_date ? new Date(p.birth_date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}) : '—';
+  const place = (p.birth_place && (p.birth_place.display ? p.birth_place.display.split(',').slice(0,2).join(', ').trim() : p.birth_place.city)) || '';
+  const time = p.time_known ? p.birth_time : 'time unknown';
+  return [dt, time, place].filter(Boolean).join(' · ');
+}
+function navLink(){ return el('button',{type:'button',class:'nav-link',onclick:goRoster},'⌂ Your people'); }
+
+function renderRoster(){
+  const root = $('#app');
+  root.innerHTML = '';
+  root.appendChild(el('div',{class:'orbit-backdrop','aria-hidden':'true'},
+    el('div',{class:'ring r1'}),el('div',{class:'ring r2'}),el('div',{class:'ring r3'}),el('div',{class:'pt'})));
+  const shell = el('div',{class:'shell shell-form'});
+  root.appendChild(shell);
+  shell.appendChild(el('header',{class:'app-header app-header--form'},
+    el('span',{class:'lockup','aria-label':'un/charted'},
+      markEl({ariaLabel:null}),
+      el('span',{class:'wm'},el('span',{class:'prefix'},'un/'),el('span',{class:'resolve'},'charted')),
+    ),
+    el('p',{class:'tagline'},'The map no one else saw coming.'),
+  ));
+  shell.appendChild(el('h1',{class:'roster-title'},'Your people'));
+  shell.appendChild(el('p',{class:'roster-sub'},'Everyone whose chart lives on this device. Read any of them — or read them with you.'));
+
+  const self = getSelf();
+  const others = savedOthers();
+
+  shell.appendChild(el('p',{class:'roster-sectlabel'},'You'));
+  if (self) shell.appendChild(personCard(self, true));
+  else shell.appendChild(el('p',{class:'roster-empty'},'You haven’t set yourself yet. Start a reading and the chart you enter becomes you.'));
+
+  if (others.length){
+    shell.appendChild(el('p',{class:'roster-sectlabel'},'Saved people'));
+    others.forEach(p => shell.appendChild(personCard(p, false)));
+  }
+
+  const actions = el('div',{class:'roster-actions'});
+  actions.appendChild(el('button',{type:'button',class:'btn btn-primary btn-block',onclick:()=>{ resetFormsForNew(); goForm(); }},'New reading'));
+  if (loadRoster().length){
+    actions.appendChild(el('button',{type:'button',class:'btn btn-ghost btn-block',onclick:()=>{ if(confirm('Forget everyone stored on this device? This deletes their birth data from this browser.')){ clearRoster(); renderRoster(); } }},'Forget everyone'));
+  }
+  shell.appendChild(actions);
+  shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'Stored only on this device. Nothing is uploaded. Delete anyone, anytime.')));
+}
+
+function personCard(p, isSelf){
+  const actions = el('div',{class:'pc-actions'});
+  if (isSelf){
+    actions.appendChild(el('button',{type:'button',class:'pc-chip gold',onclick:()=>readPerson(p)},'Read'));
+    actions.appendChild(el('button',{type:'button',class:'pc-chip',onclick:()=>editPersonModal(p)},'Edit'));
+  } else {
+    actions.appendChild(el('button',{type:'button',class:'pc-chip gold',onclick:()=>readWithYou(p)},'With you'));
+    actions.appendChild(el('button',{type:'button',class:'pc-chip',onclick:()=>readPerson(p)},'Read'));
+    actions.appendChild(el('button',{type:'button',class:'pc-chip danger',onclick:()=>{ if(confirm(`Forget ${p.display_name||'this person'}? This deletes their birth data from this browser.`)){ deletePerson(p.id); renderRoster(); } }},'Forget'));
+  }
+  return el('div',{class:'person-card'+(isSelf?' self':'')},
+    el('div',{class:'pc-body'},
+      el('span',{class:'pc-name'}, p.display_name || 'Unnamed'),
+      el('span',{class:'pc-meta'}, personMeta(p)),
+    ),
+    actions,
+  );
+}
+
+// Read one person's single chart.
+function readPerson(p){
+  state.form = personToForm(p);
+  state.relationship.enabled = false;
+  startReading();
+}
+// Read a saved person against you — ask the relationship type first.
+function readWithYou(p){
+  const self = getSelf();
+  if (!self){ alert('Set yourself first: start a reading and the chart you enter becomes you.'); return; }
+  pickRelTypeModal(p, (type) => {
+    state.form = personToForm(self);
+    state.form2 = personToForm(p);
+    state.relationship = { enabled:true, type };
+    startRelationalReading();
+  });
+}
+
+// Edit a stored person's birth data in place (reuses the modal chrome + personFieldset).
+function editPersonModal(person){
+  if ($('#edit-modal')) return;
+  const tmp = personToForm(person);
+  const overlay = el('div',{id:'edit-modal',class:'edit-overlay'});
+  const sheet = el('div',{class:'edit-sheet'});
+  sheet.appendChild(el('div',{class:'edit-head'},el('p',{class:'eyebrow'},'Edit birth data'),el('button',{class:'edit-close',type:'button','aria-label':'Close',onclick:closeEditModal},'×')));
+  const form = el('form',{class:'form',novalidate:true});
+  sheet.appendChild(form);
+  personFieldset(tmp,'edit').forEach(n => form.appendChild(n));
+  const errLine = el('p',{class:'form-err'});
+  form.appendChild(errLine);
+  form.appendChild(el('div',{class:'edit-actions'},
+    el('button',{type:'button',class:'btn btn-ghost',onclick:closeEditModal},'Cancel'),
+    el('button',{type:'submit',class:'btn btn-primary'},'Save'),
+  ));
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const errs = validatePerson(tmp, 'This person');
+    if (errs.length){ errLine.textContent = errs[0]; errLine.classList.add('show'); return; }
+    updatePerson(person.id, tmp);
+    closeEditModal();
+    renderRoster();
+  });
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>overlay.classList.add('show'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeEditModal(); });
+}
+
+// "Who is this person to you?" — pick a relationship type, then read.
+function pickRelTypeModal(person, onPick){
+  if ($('#edit-modal')) return;
+  const overlay = el('div',{id:'edit-modal',class:'edit-overlay'});
+  const sheet = el('div',{class:'edit-sheet'});
+  sheet.appendChild(el('div',{class:'edit-head'},el('p',{class:'eyebrow'},'Read with you'),el('button',{class:'edit-close',type:'button','aria-label':'Close',onclick:closeEditModal},'×')));
+  sheet.appendChild(el('div',{class:'relpick-head'}, el('p',{class:'relpick-q'},`Who is ${person.display_name || 'this person'} to you?`)));
+  const grid = el('div',{class:'relpick-grid'});
+  REL_TYPE_ORDER.forEach(t => grid.appendChild(el('button',{type:'button',class:'rel-type-opt',onclick:()=>{ closeEditModal(); onPick(t); }}, REL_TYPE_CONFIG[t].label)));
+  sheet.appendChild(grid);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+  requestAnimationFrame(()=>overlay.classList.add('show'));
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeEditModal(); });
+}
+
 /* ─── Boot ─── */
-document.addEventListener('DOMContentLoaded', ()=>{ renderForm(); });
+document.addEventListener('DOMContentLoaded', ()=>{ loadRoster().length ? renderRoster() : renderForm(); });
 </script>
 </body>
 </html>
