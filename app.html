@@ -247,6 +247,11 @@ const CONFIG = {
   hdEnabled: true,    // set false if you don't have a Human Design API key configured
   model: 'claude-sonnet-4-6',
   maxTokens: 8000,
+  // How many Deep Dive sections to generate in the background after the
+  // Blueprint renders, in display order. Sections past this stay truly lazy
+  // (generated on first expand). Tune for feel-vs-spend: higher = more expands
+  // feel instant, more sections generated that may never be read.
+  deepDivePrefetch: 4,
 };
 
 /* ─── DOM helpers ─── */
@@ -1504,6 +1509,10 @@ function renderForm() {
     const errs = validate();
     if (errs.length) { formErr.textContent=errs[0]; formErr.classList.add('show'); return; }
     formErr.classList.remove('show');
+    // Immediate, synchronous acknowledgment — the click registers before any
+    // async work starts, so silence never reads as breakage.
+    generateBtn.disabled = true;
+    generateBtn.textContent = 'Reading the chart…';
     startReading();
   });
   shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Real astronomy (Meeus + JPL elements) · Synthesis generated via Claude API. UTC offset estimated from longitude — accurate to ±1hr.')));
@@ -1528,16 +1537,22 @@ function validate() {
 /* ─── Reading lifecycle ─── */
 async function startReading() {
   state.reading = { blueprint:'', deepDive:{}, glossary:{} };
+  ddInit();
   state.generating = true;
   // Try HD API if key configured
   const estOffset = state.form.geo ? Math.round(state.form.geo.lon / 15) : 0;
   state.hdData = await fetchHD(state.form, estOffset);
   state.chart = computeChart(state.form, state.hdData);
+  // Navigate the moment chart data is ready — block only on the Blueprint,
+  // never on the Deep Dive.
   renderReading();
   await streamBlueprint();
   state.generating = false;
   const copyBtn = $('#copy-btn');
   if (copyBtn) copyBtn.classList.add('show');
+  // Race the reader: prefetch Deep Dive sections in display order so expands
+  // land on ready content. Fire-and-forget — never blocks the screen.
+  prefetchDeepDive();
 }
 
 function renderReading() {
@@ -1582,7 +1597,7 @@ function renderHeaderSummary() {
 function renderDeepDive() {
   const wrap = el('section',{class:'deep-dive'},el('p',{class:'eyebrow'},'§ The Deep Dive'));
   DEEP_DIVE_SECTIONS.forEach((s,i) => {
-    wrap.appendChild(accordion({id:'dd-'+s.id, idx:i+1, title:s.title, intro:s.intro, onExpand:elBody=>loadDeepDive(s,elBody)}));
+    wrap.appendChild(deepDiveAccordion(s, i+1));
   });
   return wrap;
 }
@@ -1645,30 +1660,112 @@ function accordion({id, idx, title, intro, eyebrow, onExpand}) {
 async function streamBlueprint() {
   const body = $('#blueprint-body');
   body.innerHTML = '';
-  body.appendChild(el('div',{class:'bp-loading'}, markEl({size:26,loading:true}), el('span',{id:'bp-msg'}, 'Running your chart across six systems. This takes a moment. The planets were doing their thing long before instant gratification existed.')));
-  const msgSwap = setTimeout(() => {
+  body.appendChild(el('div',{class:'bp-loading'}, markEl({size:26,loading:true}), el('span',{id:'bp-msg'}, 'Calculating positions across six systems.')));
+  // Staged progress mapped to real work, in case streaming is slow to start.
+  // The stream clears this the moment the first words arrive.
+  const stages = [[1500,'Cross-referencing the systems.'],[3200,'Finding the convergences.']];
+  const timers = stages.map(([ms,txt]) => setTimeout(() => {
     const t = $('#bp-msg');
-    if (t) { t.style.transition='opacity 240ms ease-out'; t.style.opacity='0'; setTimeout(()=>{ t.textContent='Writing your reading. This is the long part. Worth it.'; t.style.opacity='1'; },240); }
-  }, 1800);
+    if (t) { t.style.transition='opacity 240ms ease-out'; t.style.opacity='0'; setTimeout(()=>{ t.textContent=txt; t.style.opacity='1'; },240); }
+  }, ms));
+  const clearTimers = () => timers.forEach(clearTimeout);
   try {
     const prompt = blueprintPrompt(state.chart, state.form);
-    clearTimeout(msgSwap);
     const text = await streamToElement(prompt, body);
+    clearTimers();
     state.reading.blueprint = text;
   } catch (e) {
-    clearTimeout(msgSwap);
+    clearTimers();
     body.innerHTML = `<p class="err-inline">The synthesis didn't complete. ${e.message || 'Check your API key and try again.'}</p>`;
     throw e;
   }
 }
 
-async function loadDeepDive(section, container) {
-  const prompt = deepDivePrompt(state.chart, state.form, section);
-  const text = await llmText(prompt);
-  state.reading.deepDive[section.id] = text;
-  container.innerHTML = renderMd(text);
-  container.style.opacity = '0'; container.style.transform = 'translateY(6px)';
-  requestAnimationFrame(() => { container.style.transition='opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)'; container.style.opacity='1'; container.style.transform='translateY(0)'; });
+/* ─── Deep Dive: hybrid generation (background prefetch + lazy fallback) ───
+   Each section has a job tracking its generation status. The Blueprint never
+   blocks on these. After the Blueprint renders, prefetchDeepDive() generates
+   the first CONFIG.deepDivePrefetch sections in display order; the rest stay
+   lazy. Expanding a section either reveals ready content instantly or expands
+   straight into an honest loading state — never into an empty container. */
+const ddJobs = {}; // sectionId -> { status:'idle'|'loading'|'ready'|'error', text, promise, render, renderError }
+
+function ddInit() {
+  for (const k in ddJobs) delete ddJobs[k];
+}
+function ddJob(id) {
+  if (!ddJobs[id]) ddJobs[id] = { status:'idle', text:'', promise:null, render:null, renderError:null };
+  return ddJobs[id];
+}
+
+// Generate one section, deduplicated. Safe to call from both prefetch and
+// expand — concurrent callers share the same in-flight promise.
+function ensureDeepDive(section) {
+  const job = ddJob(section.id);
+  if (job.status === 'ready') return Promise.resolve();
+  if (job.status === 'loading') return job.promise;
+  job.status = 'loading';
+  job.promise = (async () => {
+    try {
+      const text = await llmText(deepDivePrompt(state.chart, state.form, section));
+      job.text = text;
+      job.status = 'ready';
+      state.reading.deepDive[section.id] = text;
+      if (job.render) job.render(text); // fill the section if it's open and waiting
+    } catch (e) {
+      job.status = 'error';
+      if (job.renderError) job.renderError();
+      throw e;
+    }
+  })();
+  return job.promise;
+}
+
+// Background driver: race the reader by generating early sections ahead of time.
+async function prefetchDeepDive() {
+  const n = Math.min(CONFIG.deepDivePrefetch, DEEP_DIVE_SECTIONS.length);
+  for (let i = 0; i < n; i++) {
+    try { await ensureDeepDive(DEEP_DIVE_SECTIONS[i]); }
+    catch (_) { /* stay silent in the background; surfaced if the user expands */ }
+  }
+}
+
+function deepDiveAccordion(section, idx) {
+  const job = ddJob(section.id);
+  const body = el('div',{class:'acc-body',id:'dd-'+section.id+'-body'});
+  let open = false;
+
+  const showLoading = () => {
+    body.innerHTML = '';
+    body.appendChild(el('div',{class:'acc-loading'}, markEl({size:22,loading:true}), el('span',{},'Drawing this out.')));
+  };
+  const reveal = (text) => {
+    body.innerHTML = renderMd(text);
+    body.style.opacity='0'; body.style.transform='translateY(6px)';
+    requestAnimationFrame(() => { body.style.transition='opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)'; body.style.opacity='1'; body.style.transform='translateY(0)'; });
+  };
+  const showError = () => { body.innerHTML = '<p class="err-inline">The synthesis didn\'t complete. This is usually an API key issue or a timeout. Try again.</p>'; };
+
+  // Let a background completion fill this section if it's open and waiting.
+  job.render = (text) => { if (open) reveal(text); };
+  job.renderError = () => { if (open) showError(); };
+
+  const header = el('button',{type:'button',class:'acc-header','aria-expanded':'false',onclick:()=>{
+    open = header.classList.toggle('is-open');
+    header.setAttribute('aria-expanded', open?'true':'false');
+    body.classList.toggle('is-open', open);
+    if (!open) return;
+    if (job.status === 'ready') { reveal(job.text); return; }   // common case — instant, no fetch
+    showLoading();                                              // never an empty box
+    if (job.status !== 'loading') ensureDeepDive(section).catch(()=>{}); // lazy/retry; render hooks handle UI
+  }},
+    el('span',{class:'acc-num'},String(idx).padStart(2,'0')),
+    el('span',{class:'acc-text'},
+      el('span',{class:'acc-title'},section.title),
+      el('span',{class:'acc-intro'},section.intro),
+    ),
+    el('span',{class:'acc-chevron','aria-hidden':'true'}),
+  );
+  return el('div',{class:'acc'},header,body);
 }
 
 async function loadGlossary(system, container) {
@@ -1735,9 +1832,11 @@ async function regenerateInPlace(){
   state.hdData = await fetchHD(state.form, estOffset);
   state.chart = computeChart(state.form, state.hdData);
   state.reading = {blueprint:'',deepDive:{},glossary:{}};
+  ddInit();
   await new Promise(r=>setTimeout(r,600));
   renderReading();
   await streamBlueprint();
+  prefetchDeepDive();
 }
 
 /* ─── Copy ─── */
