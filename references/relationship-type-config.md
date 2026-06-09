@@ -43,8 +43,9 @@ specific over comprehensive, dry-credible voice.
 End with a short first-person-plural alignment statement ("We tend to…") — only
 for the types marked yes above (romantic, child, parent).
 
-> **OPEN TASTE CALL (Jamie to finalize):** these four beat headings are
-> first-draft framings from the spec. Implemented as written; flagged for Jamie.
+> **DECIDED (Jamie, final):** these four beat headings are confirmed as written —
+> "What this is, underneath" / "Where the current runs" / "Where it snags" /
+> "How to move through it." No change.
 
 ---
 
@@ -53,13 +54,12 @@ for the types marked yes above (romantic, child, parent).
 The same pair read from opposite ends is the same computation framed two ways.
 The framing word keys off **which direction the reader is looking**.
 
-> **DECIDED FOR THE SLICE:** the reader is the form-filler. Person A (the primary
+> **DECIDED (Jamie, final):** the reader is the form-filler. Person A (the primary
 > chart, the form) is addressed as "you." Person B (the added second person) is
 > the relation named by the framing word — "your child," "your parent," etc.
-> One fixed direction. A later task can let the reader flip ends.
->
-> **OPEN TASTE CALL (Jamie):** confirm this default, or switch to a
-> reader-selectable direction.
+> One fixed direction, confirmed — no reader-selectable direction. (If that
+> changes later, it's a new task; the synthesis is direction-agnostic underneath,
+> so only the framing/UX would need wiring.)
 
 ---
 
