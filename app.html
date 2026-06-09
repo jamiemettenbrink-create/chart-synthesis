@@ -227,6 +227,29 @@ input,select,textarea{font:inherit;color:inherit}
   .app-header--form .lockup{font-size:64px}
   .lede{font-size:28px;max-width:36ch}
 }
+/* ───────── Relationship feature ───────── */
+.rel-toggle-field{margin-top:2px}
+.rel-block{display:flex;flex-direction:column;gap:22px;max-height:0;overflow:hidden;opacity:0;transition:max-height 460ms var(--ease-reveal),opacity 360ms ease-out,margin 460ms var(--ease-reveal)}
+.rel-block.is-on{max-height:2200px;opacity:1;margin-top:8px;padding-top:24px;border-top:1px dashed var(--slate-soft)}
+.rel-block-head{display:flex;flex-direction:column;gap:6px}
+.rel-block-title{font-family:var(--display);font-weight:500;font-size:24px;color:var(--parchment);margin:0;letter-spacing:-0.005em}
+.rel-block-sub{font-family:var(--mono);font-size:12px;color:var(--pewter);letter-spacing:0.03em;margin:0;line-height:1.5}
+.rel-type-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.rel-type-opt{font-family:var(--ui);font-weight:500;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;padding:13px 6px;border:1px solid var(--slate);background:var(--void);color:var(--pewter);cursor:pointer;text-align:center;transition:color 150ms ease-out,border-color 150ms ease-out,background 150ms ease-out;min-height:46px}
+.rel-type-opt:hover{color:var(--parchment)}
+.rel-type-opt.is-sel{color:var(--void);background:var(--auric);border-color:var(--auric)}
+.ps-name.dual{white-space:normal;font-size:19px;line-height:1.2}
+.ps-amp{color:var(--auric);font-style:italic;padding:0 0.18em}
+.rel-tag{font-family:var(--mono);font-size:11px;color:var(--auric);letter-spacing:0.12em;text-transform:uppercase}
+.saved-manage{margin-top:20px}
+.saved-toggle{background:transparent;border:0;padding:6px 0;cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--pewter-soft);transition:color 150ms ease-out}
+.saved-toggle:hover{color:var(--pewter)}
+.saved-list{list-style:none;margin:10px 0 0;padding:0;display:none;flex-direction:column;gap:8px}
+.saved-list.is-on{display:flex}
+.saved-item{display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--ui);font-size:13px;color:var(--pewter);border-bottom:1px dashed var(--slate-soft);padding-bottom:8px}
+.saved-forget{background:transparent;border:1px solid var(--slate-soft);color:var(--pewter-soft);font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 9px;cursor:pointer;transition:color 150ms ease-out,border-color 150ms ease-out;white-space:nowrap}
+.saved-forget:hover{color:var(--rust);border-color:var(--rust)}
+@media(min-width:720px){.ps-name.dual{font-size:22px}}
 </style>
 </head>
 <body>
@@ -1070,13 +1093,112 @@ async function llmText(userPrompt) {
 }
 
 /* ─── App state ─── */
+const BLANK_PERSON_FORM = () => ({ name:'', date:'', time:'', timeUnknown:false, city:'', geo:null, enneagramType:'', enneagramWing:'', enneagramInstinct:'' });
 const state = {
-  form: { name:'', date:'', time:'', timeUnknown:false, city:'', geo:null, enneagramType:'', enneagramWing:'', enneagramInstinct:'' },
+  form: BLANK_PERSON_FORM(),
+  form2: BLANK_PERSON_FORM(),                 // the second person (relational mode)
+  relationship: { enabled:false, type:'romantic' },
+  mode: 'single',                             // 'single' | 'relational'
   chart: null,
+  chartB: null,
+  synastry: null,
   hdData: null,
   reading: { blueprint:'', deepDive:{}, glossary:{} },
+  relReading: { blueprint:'', deepDive:{} },
   generating: false,
 };
+
+/* ─── People graph (Person = saved entity in localStorage; DerivedChart = recomputable cache) ───
+   The reading is never stored — only inputs (Person) and a deterministic derived-chart cache.
+   Birth data never changes, so the derived chart is a pure function of it; we recompute on demand
+   and memoize in `derivedCache`. Complete deletion removes the person AND its cached chart. */
+const ROSTER_KEY = 'uncharted.people.v1';
+const derivedCache = {};
+function loadRoster(){ try { return JSON.parse(localStorage.getItem(ROSTER_KEY) || '[]'); } catch(_){ return []; } }
+function saveRoster(list){ try { localStorage.setItem(ROSTER_KEY, JSON.stringify(list)); } catch(_){} }
+function personSignature(p){
+  return [p.birth_date, p.time_known ? p.birth_time : '?', (p.birth_place && p.birth_place.display) || (p.birth_place && p.birth_place.city) || '', (p.full_legal_name || p.display_name || '').toLowerCase().trim()].join('|');
+}
+function formToPerson(f, addedBy){
+  return {
+    id: 'p_' + Math.random().toString(36).slice(2,10),
+    display_name: (f.name || '').trim().split(/\s+/)[0] || (f.name || '').trim(),
+    full_legal_name: f.name || null,
+    birth_date: f.date,
+    birth_time: f.timeUnknown ? null : f.time,
+    time_known: !f.timeUnknown && !!f.time,
+    birth_place: f.geo ? { lat:f.geo.lat, lng:f.geo.lon, display:f.geo.display, city:f.city } : { lat:null, lng:null, display:null, city:f.city },
+    enneagram: f.enneagramType ? { type:f.enneagramType, wing:f.enneagramWing||null, instinct:f.enneagramInstinct||null } : null,
+    added_by: addedBy || 'self',
+    added_at: new Date().toISOString(),
+  };
+}
+function personToForm(p){
+  return {
+    name: p.full_legal_name || p.display_name || '',
+    date: p.birth_date,
+    time: p.birth_time || '',
+    timeUnknown: !p.time_known,
+    city: (p.birth_place && p.birth_place.city) || '',
+    geo: (p.birth_place && p.birth_place.lat != null) ? { lat:p.birth_place.lat, lon:p.birth_place.lng, display:p.birth_place.display } : null,
+    enneagramType: (p.enneagram && p.enneagram.type) || '', enneagramWing: (p.enneagram && p.enneagram.wing) || '', enneagramInstinct: (p.enneagram && p.enneagram.instinct) || '',
+  };
+}
+// Save a person, de-duped by birth signature. Returns the stored (or pre-existing) person.
+function upsertPerson(f, addedBy){
+  const list = loadRoster();
+  const candidate = formToPerson(f, addedBy);
+  const sig = personSignature(candidate);
+  const existing = list.find(p => personSignature(p) === sig);
+  if (existing) return existing;
+  list.push(candidate);
+  saveRoster(list);
+  return candidate;
+}
+function derivedChartFor(person){
+  if (derivedCache[person.id]) return derivedCache[person.id];
+  const c = computeChart(personToForm(person), null);   // Western path; HD is not used for synastry in this slice
+  derivedCache[person.id] = c;
+  return c;
+}
+// Complete deletion: person record + any cached derived chart.
+function deletePerson(id){ saveRoster(loadRoster().filter(p => p.id !== id)); delete derivedCache[id]; }
+function clearRoster(){ saveRoster([]); for (const k in derivedCache) delete derivedCache[k]; }
+
+/* ─── Relationship type config — mirrors references/relationship-type-config.md (canonical source) ─── */
+const REL_TYPE_CONFIG = {
+  romantic: { label:'Romantic', framing:'partner', leads:'magnetism and emotional rhythm', plural:true, sections:[
+    { id:'attraction', title:'Attraction',          intro:'The pull — what draws and what charges between you.' },
+    { id:'emotional',  title:'Emotional weather',   intro:'The daily climate of being together.' },
+    { id:'friction',   title:'Long-term friction',  intro:'The snag that recurs once the novelty wears off.' },
+    { id:'repair',     title:'Repair',              intro:'How you find your way back after a rupture.' },
+  ]},
+  child: { label:'Child', framing:'your child', leads:'who they are versus who you assume them to be', plural:true, sections:[
+    { id:'nature',  title:'Their nature',             intro:'Who they actually are, underneath your hopes for them.' },
+    { id:'clash',   title:'Where you clash',          intro:'The places your wiring and theirs grind.' },
+    { id:'need',    title:'What they need from you',  intro:'The specific thing this child needs you to provide.' },
+    { id:'letting', title:'Letting go',               intro:'What you will eventually have to release.' },
+  ]},
+  parent: { label:'Parent', framing:'your parent', leads:'inherited patterns and the old role', plural:true, sections:[
+    { id:'inherited',  title:'Inherited patterns',      intro:'What came down the line to you.' },
+    { id:'olddynamic', title:'The old dynamic',         intro:'The shape the relationship took early and kept.' },
+    { id:'triggers',   title:'Triggers',                intro:'What still reliably sets it off.' },
+    { id:'remeeting',  title:'Re-meeting as adults',    intro:'The relationship that becomes possible now.' },
+  ]},
+  coworker: { label:'Coworker', framing:'colleague', leads:'who initiates versus who sustains', plural:false, sections:[
+    { id:'decision',   title:'Decision friction',       intro:'Where your decision styles collide.' },
+    { id:'complement', title:'Complementary energy',    intro:'What each of you covers that the other does not.' },
+    { id:'clash',      title:'How you clash',           intro:'The recurring professional snag.' },
+    { id:'trust',      title:'Trust',                   intro:'What builds it and what erodes it between you.' },
+  ]},
+  friend: { label:'Friend', framing:'friend', leads:'ease versus effort', plural:false, sections:[
+    { id:'ease',     title:'Natural ease',                intro:'Where it flows without trying.' },
+    { id:'recharge', title:'What recharges vs. drains',   intro:'When the friendship feeds you and when it costs.' },
+    { id:'loyalty',  title:'Loyalty shape',               intro:'The particular way you show up for each other.' },
+    { id:'drift',    title:'Drift risk',                  intro:'How this fades if unattended, and what holds it.' },
+  ]},
+};
+const REL_TYPE_ORDER = ['romantic','child','parent','coworker','friend'];
 
 /* ─── Static content ─── */
 const DEEP_DIVE_SECTIONS = [
@@ -1405,6 +1527,188 @@ Each sentence must be specific to this person's chart — not generic definition
 Output only the entries. No heading. No intro line. No bullet markers except the **bold** format shown.`;
 }
 
+/* ─── Synastry engine (Western-only slice) ─── */
+// Extension point: later phases (BaZi Day Master, HD connection theory, Vedic nodal, Numerology)
+// push (chartA, chartB) => { facts:[...], hints:[...] } functions here. None in this slice.
+const SYNASTRY_CONTRIBUTORS = [];
+const SYN_ASPECTS = [
+  { name:'conjunction', angle:0,   orb:8 },
+  { name:'opposition',  angle:180, orb:7 },
+  { name:'trine',       angle:120, orb:6 },
+  { name:'square',      angle:90,  orb:6 },
+  { name:'sextile',     angle:60,  orb:4 },
+];
+const SYN_PLANETS = ['sun','moon','mercury','venus','mars'];
+const PLANET_LABEL = { sun:'Sun', moon:'Moon', mercury:'Mercury', venus:'Venus', mars:'Mars', rising:'Rising' };
+const ATTRACTION_PAIRS = new Set(['sun-moon','moon-sun','venus-mars','mars-venus','sun-venus','venus-sun','moon-mars','mars-moon','moon-venus','venus-moon']);
+
+function planetLon(chart, key){
+  const w = chart.western;
+  if (key === 'rising') return w.rising ? w.rising.lon : null;
+  return w[key] ? w[key].lon : null;
+}
+function aspectBetween(lonA, lonB){
+  if (lonA == null || lonB == null) return null;
+  const sep = Math.abs(((((lonA - lonB) % 360) + 540) % 360) - 180); // 0..180
+  for (const a of SYN_ASPECTS){
+    const orb = Math.abs(sep - a.angle);
+    if (orb <= a.orb) return { name:a.name, orb:Math.round(orb*10)/10 };
+  }
+  return null;
+}
+function circMidpoint(a, b){
+  const d = ((((b - a) % 360) + 540) % 360) - 180; // nearer signed gap
+  return norm360(a + d/2);
+}
+function fmtContact(x){ return `${PLANET_LABEL[x.a]}(A) ${x.aspect} ${PLANET_LABEL[x.b]}(B), orb ${x.orb}°`; }
+
+function computeSynastry(chartA, chartB){
+  const planets = SYN_PLANETS.slice();
+  const bothTimed = !!(chartA.western.rising && chartB.western.rising);
+  if (bothTimed) planets.push('rising');
+
+  // Inter-aspects: every ordered pair (A's planet → B's planet)
+  const inter = [];
+  for (const pa of planets){
+    for (const pb of planets){
+      const asp = aspectBetween(planetLon(chartA, pa), planetLon(chartB, pb));
+      if (asp) inter.push({ a:pa, b:pb, aspect:asp.name, orb:asp.orb });
+    }
+  }
+  inter.sort((x,y) => x.orb - y.orb);
+
+  // Composite chart (midpoint method) — the relationship as its own entity
+  const composite = {};
+  for (const key of SYN_PLANETS){
+    const la = planetLon(chartA, key), lb = planetLon(chartB, key);
+    if (la == null || lb == null) continue;
+    const lon = circMidpoint(la, lb);
+    const sign = signOf(lon);
+    composite[key] = { lon, sign, deg: Math.round(degInSign(lon)*10)/10, element: ELEMENTS[sign], modality: MODALITY[sign] };
+  }
+  if (bothTimed){
+    const lon = circMidpoint(chartA.western.rising.lon, chartB.western.rising.lon);
+    composite.rising = { lon, sign: signOf(lon), deg: Math.round(degInSign(lon)*10)/10 };
+  }
+  const compositeSabian = composite.sun ? lookupSabian(composite.sun.lon) : null;
+
+  const hints = relationalHints(inter, composite);
+  const extra = { facts:[], hints:[] };
+  for (const fn of SYNASTRY_CONTRIBUTORS){ try { const r = fn(chartA, chartB); if (r){ if (r.facts) extra.facts.push(...r.facts); if (r.hints) extra.hints.push(...r.hints); } } catch(_){} }
+
+  return { inter, composite, compositeSabian, hints: hints.concat(extra.hints), extraFacts: extra.facts, timeKnownBoth: bothTimed };
+}
+
+function relationalHints(inter, composite){
+  const hints = [];
+  const attraction = inter.filter(x => ATTRACTION_PAIRS.has(x.a+'-'+x.b) && ['conjunction','opposition','trine'].includes(x.aspect));
+  if (attraction.length >= 2) hints.push(`MAGNETISM (multiple attraction contacts converge): ${attraction.slice(0,3).map(fmtContact).join('; ')}.`);
+  else if (attraction.length === 1) hints.push(`Attraction signal — single contact, hold lightly: ${fmtContact(attraction[0])}.`);
+
+  const moonMoon = inter.find(x => x.a==='moon' && x.b==='moon');
+  if (moonMoon){
+    const easy = ['conjunction','trine','sextile'].includes(moonMoon.aspect);
+    hints.push(`EMOTIONAL RHYTHM: the two emotional baselines are in ${moonMoon.aspect} (orb ${moonMoon.orb}°) — ${easy ? 'they tend to regulate each other' : 'they run on different emotional clocks'}.`);
+  }
+
+  const easy = inter.filter(x => ['trine','sextile'].includes(x.aspect)).length;
+  const hard = inter.filter(x => ['square','opposition'].includes(x.aspect)).length;
+  if (easy || hard) hints.push(`EASE vs FRICTION: ${easy} flowing contact(s) vs ${hard} friction contact(s) — ${easy>hard ? 'the ground is mostly easy' : hard>easy ? 'this runs warm; friction is the texture' : 'evenly balanced between ease and grind'}.`);
+
+  const marsFriction = inter.filter(x => (x.a==='mars' || x.b==='mars') && ['square','opposition'].includes(x.aspect));
+  if (marsFriction.length) hints.push(`FRICTION FOCUS: the heat concentrates on ${marsFriction.slice(0,2).map(fmtContact).join('; ')}.`);
+
+  if (composite.sun){
+    const moon = composite.moon ? `, with a ${composite.moon.element} emotional baseline` : '';
+    hints.push(`THE THIRD ENTITY (composite): at its core the relationship is ${composite.sun.element}/${composite.sun.modality} (composite Sun in ${composite.sun.sign})${moon}.`);
+  }
+  return hints;
+}
+
+/* ─── Relational synthesis prompts ─── */
+function westernSummaryLine(chart){
+  const w = chart.western;
+  const r = w.rising ? `, Rising ${w.rising.sign}` : '';
+  return `Sun ${w.sun.deg.toFixed(1)}° ${w.sun.sign} (${w.sun.element}), Moon ${w.moon.deg.toFixed(1)}° ${w.moon.sign} (${w.moon.element})${r}, Mercury ${w.mercury.sign}, Venus ${w.venus.sign}, Mars ${w.mars.sign}`;
+}
+function relationalFacts(){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const A = state.chart, B = state.chartB, syn = state.synastry;
+  const nameA = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
+  const nameB = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
+  const L = [];
+  L.push(`RELATIONSHIP TYPE: ${cfg.label}. Framing word for person B: "${cfg.framing}".`);
+  L.push(`READER ORIENTATION: the reader is ${nameA} (person A) — address them as "you". Person B (${nameB}) is ${cfg.framing}. Write to ${nameA} about the relationship with ${nameB}.`);
+  L.push(`This reads the relationship as a THIRD ENTITY. No score, no percentage, no "should you" verdict. Describe the weather and how to move through it.`);
+  L.push('');
+  L.push(`PERSON A — ${nameA} (you): ${westernSummaryLine(A)}.`);
+  L.push(`PERSON B — ${nameB} (${cfg.framing}): ${westernSummaryLine(B)}.`);
+  if (!syn.timeKnownBoth) L.push(`NOTE: at least one birth time is unknown — Moon contacts are approximate and there is no composite Ascendant. Say so rather than overreaching.`);
+  L.push('');
+  L.push('INTER-ASPECTS (the chemistry — RECEIPTS for the Deep Dive, never named in the Blueprint):');
+  if (syn.inter.length) syn.inter.slice(0,14).forEach(x => L.push(`  ${fmtContact(x)}`));
+  else L.push('  (no major inter-aspects within orb — the connection is quiet on the personal planets)');
+  L.push('');
+  L.push('COMPOSITE CHART (the relationship as its own entity, midpoint method):');
+  ['sun','moon','mercury','venus','mars','rising'].forEach(k => {
+    if (syn.composite[k]) L.push(`  Composite ${PLANET_LABEL[k]}: ${syn.composite[k].deg.toFixed(1)}° ${syn.composite[k].sign}${syn.composite[k].element ? ` (${syn.composite[k].element})` : ''}`);
+  });
+  if (syn.compositeSabian) L.push(`  Composite Sun Sabian Symbol: "${syn.compositeSabian.symbol}" — Keyword: ${syn.compositeSabian.keyword}`);
+  L.push('');
+  L.push('RELATIONAL CONVERGENCE HINTS (set confidence and ordering — state convergences ONCE, jargon-free, in the Blueprint):');
+  syn.hints.forEach(h => L.push(`  - ${h}`));
+  if (syn.extraFacts.length){ L.push(''); L.push('ADDITIONAL SYSTEM SIGNALS:'); syn.extraFacts.forEach(f => L.push(`  ${f}`)); }
+  L.push('');
+  L.push('SYSTEMS NOTE: this reading computes the Western layer only (synastry + composite). Do not invent Human Design, BaZi, Vedic, or Numerology relational content.');
+  return L.join('\n');
+}
+function relBlueprintPrompt(){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const closer = cfg.plural
+    ? `Then on its own line, a short first-person-plural alignment statement prefixed exactly as shown:
+ALIGNMENT_STATEMENT: [one or two sentences, first person plural ("We tend to…"), no jargon — something the two of them would recognize as true about the pair]`
+    : `Do NOT write an alignment statement for this relationship type — a "we" statement reads odd here. End after the fourth section.`;
+  return `${relationalFacts()}
+
+Write THE RELATIONAL BLUEPRINT — the reading of this relationship as a third entity. Apply the Blueprint contract verbatim. Four hard rules:
+1. No system names or placements in the surface layer. No "Sun conjunct Moon," no "composite," no "Mars." Those are receipts for the Deep Dive. If a reader can tell which technique a sentence came from, it does not belong here.
+2. The relationship and the two people are the subject of every sentence — never the placement. Not "your composite Sun is earthy" but "this is a slow, durable thing that took its time becoming real."
+3. Write to the convergence, not the enumeration. When several signals agree on a theme, say it once as one sharp claim.
+4. Be specific and a little uncanny, not comprehensive. Make them go "that's exactly it." No verdict, no score, no "should you."
+
+Lead the reading with ${cfg.leads}. Use this exact structure with these exact headings:
+
+## What this is, underneath
+3–4 sentences. The one dynamic everything circles back to. Lead from the relationship's core nature (the third entity).
+
+## Where the current runs
+3–4 sentences. The pull, chemistry, or ease — stated plainly. What moves easily between them.
+
+## Where it snags
+3–4 sentences. The recurring friction, named without judgment and without verdict.
+
+## How to move through it
+3–4 sentences. Practical, non-prescriptive navigation. Things to actually do, not a reframe.
+
+${closer}
+
+Output only the Blueprint. Begin with the ## heading.`;
+}
+function relDeepDivePrompt(section){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const nameA = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
+  return `${relationalFacts()}
+
+Write the relational Deep Dive section: "${section.title}".
+Section focus: "${section.intro}"
+
+This is the receipts layer — here you MAY name specific inter-aspects and composite placements in plain language (e.g. "her Moon sits right on your Mars"), because this is where someone goes to see why. Still write to ${nameA} as "you" about ${cfg.framing}.
+
+Length: 220–320 words. 3–4 paragraphs. Specific to THIS pair — nothing that could be said about any two people. No score, no verdict. End with one concrete observation or instruction.
+
+Output only the prose. No heading. No preamble. Begin directly.`;
+}
+
 /* ─── Markdown renderer ─── */
 function renderMd(src) {
   let s = src.trim();
@@ -1426,34 +1730,88 @@ function stripMd(s) {
   return s.replace(/^##\s+/gm,'').replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1').replace(/ALIGNMENT_STATEMENT:\s*/,'— ').trim();
 }
 
-/* ─── Geocoding ─── */
-let geocodeTimer = null, lastQuery = '';
-function setupGeocode(input, statusEl) {
+/* ─── Geocoding (parameterized by the form-state it writes into) ─── */
+function setupGeocode(input, statusEl) { setupGeocodeFor(input, statusEl, state.form); }
+function setupGeocodeFor(input, statusEl, fstate) {
+  let timer = null, last = '';
   input.addEventListener('input', () => {
-    state.form.city = input.value;
-    state.form.geo = null;
+    fstate.city = input.value;
+    fstate.geo = null;
     const q = input.value.trim();
     statusEl.textContent = '';
     statusEl.className = 'field-help';
-    if (geocodeTimer) clearTimeout(geocodeTimer);
-    if (q.length < 3) return;
-    if (q === lastQuery) return;
-    lastQuery = q;
+    if (timer) clearTimeout(timer);
+    if (q.length < 3 || q === last) return;
+    last = q;
     statusEl.textContent = 'Looking up…';
-    geocodeTimer = setTimeout(() => geocode(q, statusEl), 600);
+    timer = setTimeout(() => geocodeInto(q, statusEl, fstate), 600);
   });
 }
-async function geocode(q, statusEl) {
+async function geocodeInto(q, statusEl, fstate) {
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, { headers: {'Accept':'application/json'} });
     if (!res.ok) throw new Error();
     const data = await res.json();
     if (!data.length) { statusEl.textContent = "Couldn't find that city. Try adding the country, or use coordinates."; statusEl.className = 'field-help err'; return; }
     const r = data[0];
-    state.form.geo = { lat: parseFloat(r.lat), lon: parseFloat(r.lon), display: r.display_name };
+    fstate.geo = { lat: parseFloat(r.lat), lon: parseFloat(r.lon), display: r.display_name };
     statusEl.textContent = `${Number(r.lat).toFixed(2)}°${r.lat>=0?'N':'S'} · ${Number(r.lon).toFixed(2)}°${r.lon>=0?'E':'W'} · ${r.display_name.split(',').slice(-3).join(',').trim()}`;
     statusEl.className = 'field-help ok';
   } catch (_) { statusEl.textContent = "Couldn't reach the geocoder. Continuing without coordinates."; statusEl.className = 'field-help err'; }
+}
+
+/* ─── Reusable person fieldset (used for the second person) ─── */
+function personFieldset(fstate, prefix) {
+  const nodes = [];
+  nodes.push(field({id:prefix+'-name', label:'Name at birth', help:'Full legal name as given at birth. Used for numerology.', input:el('input',{id:prefix+'-name',type:'text',autocomplete:'off',value:fstate.name,oninput:e=>fstate.name=e.target.value})}));
+  nodes.push(field({id:prefix+'-date', label:'Birth date', input:el('input',{id:prefix+'-date',type:'date',value:fstate.date,oninput:e=>fstate.date=e.target.value})}));
+  const ti = el('input',{id:prefix+'-time',type:'time',value:fstate.time,disabled:fstate.timeUnknown,oninput:e=>fstate.time=e.target.value});
+  const td = el('span',{class:'dot'+(fstate.timeUnknown?' is-on':'')});
+  const tt = el('button',{type:'button',class:'time-toggle'+(fstate.timeUnknown?' is-on':''),onclick:()=>{fstate.timeUnknown=!fstate.timeUnknown;ti.disabled=fstate.timeUnknown;tt.classList.toggle('is-on',fstate.timeUnknown);td.classList.toggle('is-on',fstate.timeUnknown);}},td,'Time unknown');
+  nodes.push(field({id:prefix+'-time',label:'Birth time',labelTrail:tt,help:"If you don't know it, use the toggle — don't guess.",input:ti}));
+  const ch = el('p',{class:'field-help'});
+  if (fstate.geo){ ch.textContent=`${fstate.geo.lat.toFixed(2)}°${fstate.geo.lat>=0?'N':'S'} · ${fstate.geo.lon.toFixed(2)}°${fstate.geo.lon>=0?'E':'W'}`; ch.className='field-help ok'; }
+  const ci = el('input',{id:prefix+'-city',type:'text',placeholder:'City, country',value:fstate.city});
+  setupGeocodeFor(ci, ch, fstate);
+  nodes.push(field({id:prefix+'-city',label:'Birth city',input:ci,helpEl:ch}));
+  const er = el('div',{class:'ennea-row'});
+  er.appendChild(el('select',{onchange:e=>fstate.enneagramType=e.target.value},el('option',{value:''},'Type'),...[1,2,3,4,5,6,7,8,9].map(n=>el('option',{value:'Type '+n,selected:fstate.enneagramType==='Type '+n},'Type '+n))));
+  er.appendChild(el('select',{onchange:e=>fstate.enneagramWing=e.target.value},el('option',{value:''},'Wing'),...[1,2,3,4,5,6,7,8,9].map(n=>el('option',{value:n,selected:fstate.enneagramWing==n},'w'+n))));
+  er.appendChild(el('select',{onchange:e=>fstate.enneagramInstinct=e.target.value},el('option',{value:''},'Instinct'),...['SP','SX','SO'].map(s=>el('option',{value:s,selected:fstate.enneagramInstinct===s},s))));
+  nodes.push(field({id:prefix+'-type',label:'Enneagram',labelTrail:el('span',{class:'field-aside'},'optional'),input:er}));
+  return nodes;
+}
+function validatePerson(f, who) {
+  const e = [];
+  if (!f.name || f.name.trim().length < 2) e.push(`${who}: name is empty.`);
+  if (!f.date) e.push(`${who}: birth date is empty.`);
+  if (!f.timeUnknown && !f.time) e.push(`${who}: birth time is empty — use the toggle if it's unknown.`);
+  if (!f.city || f.city.trim().length < 2) e.push(`${who}: birth city is empty.`);
+  return e;
+}
+// Minimal privacy control: lets the user see and delete people stored on this device.
+// (Not the roster screen — that's the next task. This only honors the deletion obligation.)
+function renderSavedManage() {
+  if (!loadRoster().length) return null;
+  const list = el('ul',{class:'saved-list'});
+  const wrap = el('div',{class:'saved-manage'});
+  const toggle = el('button',{type:'button',class:'saved-toggle',onclick:()=>list.classList.toggle('is-on')}, `${loadRoster().length} saved on this device · manage`);
+  const rebuild = () => {
+    const ppl = loadRoster();
+    if (!ppl.length){ wrap.remove(); return; }
+    toggle.textContent = `${ppl.length} saved on this device · manage`;
+    list.innerHTML = '';
+    ppl.forEach(p => list.appendChild(el('li',{class:'saved-item'},
+      el('span',{},`${p.display_name||'Unnamed'} · ${p.birth_date||'?'}`),
+      el('button',{type:'button',class:'saved-forget',onclick:()=>{deletePerson(p.id);rebuild();}},'Forget'),
+    )));
+    list.appendChild(el('li',{class:'saved-item',style:'border-bottom:0'},
+      el('span',{}), el('button',{type:'button',class:'saved-forget',onclick:()=>{clearRoster();wrap.remove();}},'Forget all'),
+    ));
+  };
+  rebuild();
+  wrap.appendChild(toggle); wrap.appendChild(list);
+  return wrap;
 }
 
 /* ─── Form ─── */
@@ -1500,22 +1858,55 @@ function renderForm() {
   enneaRow.appendChild(el('select',{onchange:e=>state.form.enneagramInstinct=e.target.value},el('option',{value:''},'Instinct'),...['SP','SX','SO'].map(s=>el('option',{value:s,selected:state.form.enneagramInstinct===s},s))));
   form.appendChild(field({id:'f-type',label:'Enneagram',labelTrail:el('span',{class:'field-aside'},'optional'),help:"Self-identified only. If you're not sure, skip it — a wrong type does more damage than a missing one.",input:enneaRow,rawInput:true}));
 
+  // ── Relationship: add a second person ──
+  const relBlock = el('div',{class:'rel-block'+(state.relationship.enabled?' is-on':''),id:'rel-block'});
+  const relDot = el('span',{class:'dot'+(state.relationship.enabled?' is-on':'')});
+  const relToggle = el('button',{type:'button',class:'time-toggle'+(state.relationship.enabled?' is-on':''),title:'Read the relationship between you and someone else.',onclick:()=>{
+    state.relationship.enabled = !state.relationship.enabled;
+    relToggle.classList.toggle('is-on',state.relationship.enabled);
+    relDot.classList.toggle('is-on',state.relationship.enabled);
+    relBlock.classList.toggle('is-on',state.relationship.enabled);
+    generateBtn.textContent = state.relationship.enabled ? 'Generate Relationship Reading' : 'Generate Reading';
+  }},relDot,'Add a second person');
+  form.appendChild(el('div',{class:'field rel-toggle-field'},relToggle));
+
+  const typeGrid = el('div',{class:'rel-type-grid'});
+  REL_TYPE_ORDER.forEach(t => {
+    const opt = el('button',{type:'button',class:'rel-type-opt'+(state.relationship.type===t?' is-sel':''),onclick:()=>{
+      state.relationship.type = t;
+      typeGrid.querySelectorAll('.rel-type-opt').forEach(o=>o.classList.remove('is-sel'));
+      opt.classList.add('is-sel');
+    }}, REL_TYPE_CONFIG[t].label);
+    typeGrid.appendChild(opt);
+  });
+  relBlock.appendChild(el('div',{class:'rel-block-head'},
+    el('p',{class:'rel-block-title'},'The second person'),
+    el('p',{class:'rel-block-sub'},'Same details as yours. The reading describes the relationship between you — the weather, not a verdict.'),
+  ));
+  relBlock.appendChild(field({id:'rel-type',label:'Relationship',input:typeGrid}));
+  personFieldset(state.form2,'p').forEach(n => relBlock.appendChild(n));
+  form.appendChild(relBlock);
+
   const formErr = el('p',{id:'form-err',class:'form-err'});
   form.appendChild(formErr);
-  const generateBtn = el('button',{type:'submit',class:'btn btn-primary btn-block'},'Generate Reading');
+  const generateBtn = el('button',{type:'submit',class:'btn btn-primary btn-block'}, state.relationship.enabled ? 'Generate Relationship Reading' : 'Generate Reading');
   form.appendChild(generateBtn);
   form.addEventListener('submit', e => {
     e.preventDefault();
     const errs = validate();
+    if (state.relationship.enabled) errs.push(...validatePerson(state.form2,'Second person'));
     if (errs.length) { formErr.textContent=errs[0]; formErr.classList.add('show'); return; }
     formErr.classList.remove('show');
     // Immediate, synchronous acknowledgment — the click registers before any
     // async work starts, so silence never reads as breakage.
     generateBtn.disabled = true;
-    generateBtn.textContent = 'Reading the chart…';
-    startReading();
+    generateBtn.textContent = state.relationship.enabled ? 'Reading the relationship…' : 'Reading the chart…';
+    if (state.relationship.enabled) startRelationalReading();
+    else startReading();
   });
   shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Real astronomy (Meeus + JPL elements) · Synthesis generated via Claude API. UTC offset estimated from longitude — accurate to ±1hr.')));
+  const saved = renderSavedManage();
+  if (saved) shell.appendChild(saved);
 }
 
 function field({id, label, labelTrail, help, helpEl, input}) {
@@ -1536,6 +1927,7 @@ function validate() {
 
 /* ─── Reading lifecycle ─── */
 async function startReading() {
+  state.mode = 'single';
   state.reading = { blueprint:'', deepDive:{}, glossary:{} };
   ddInit();
   state.generating = true;
@@ -1863,6 +2255,103 @@ async function copyFullReading(){
     btn.textContent='Copied';
     setTimeout(()=>{btn.textContent=orig;},2000);
   } catch(_){alert("Couldn't copy. Your browser may be blocking clipboard access.");}
+}
+
+/* ─── Relational reading lifecycle ─── */
+async function startRelationalReading(){
+  state.mode = 'relational';
+  state.relReading = { blueprint:'', deepDive:{} };
+  state.generating = true;
+  // Persist both people to the roster (the data model is real even with no roster screen),
+  // then read their deterministic derived charts from the cache.
+  const self  = upsertPerson(state.form, 'self');
+  const other = upsertPerson(state.form2, self.id);
+  state.chart    = derivedChartFor(self);
+  state.chartB   = derivedChartFor(other);
+  state.synastry = computeSynastry(state.chart, state.chartB);
+  renderRelationalReading();
+  await streamRelBlueprint();
+  state.generating = false;
+  const copyBtn = $('#copy-btn');
+  if (copyBtn) copyBtn.classList.add('show');
+}
+
+function renderRelationalReading(){
+  const root = $('#app');
+  root.innerHTML = '';
+  const shell = el('div',{class:'shell shell-reading'});
+  root.appendChild(shell);
+  shell.appendChild(renderRelHeader());
+  shell.appendChild(el('section',{class:'blueprint'},
+    el('p',{class:'eyebrow'},'§ The Relationship'),
+    el('div',{class:'blueprint-body',id:'blueprint-body'}),
+  ));
+  shell.appendChild(renderRelDeepDive());
+  shell.appendChild(el('div',{class:'copy-wrap'},el('button',{id:'copy-btn',class:'btn btn-line btn-block',onclick:copyRelReading},'Copy full reading')));
+  shell.appendChild(el('footer',{class:'reading-footer'},el('p',{class:'end'},'The map no one else saw coming.')));
+}
+
+function renderRelHeader(){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const a = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
+  const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
+  return el('header',{class:'app-header app-header--reading'},
+    el('span',{class:'mk-only'}, markEl({ariaLabel:'un/charted'})),
+    el('button',{class:'profile-summary',type:'button',onclick:()=>renderForm(),'aria-label':'Edit birth data'},
+      el('span',{class:'ps-line'},
+        el('span',{class:'ps-name dual'}, a, el('span',{class:'ps-amp'},'&'), b),
+        el('span',{class:'ps-meta-row'}, el('span',{class:'rel-tag'}, cfg.label+' reading')),
+      ),
+      el('span',{class:'edit-link'},'Edit'),
+    ),
+  );
+}
+
+function renderRelDeepDive(){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const wrap = el('section',{class:'deep-dive'}, el('p',{class:'eyebrow'},'§ The Deep Dive'));
+  cfg.sections.forEach((s,i) => {
+    wrap.appendChild(accordion({id:'rd-'+s.id, idx:i+1, title:s.title, intro:s.intro, onExpand:elBody=>loadRelDeepDive(s,elBody)}));
+  });
+  return wrap;
+}
+
+async function streamRelBlueprint(){
+  const body = $('#blueprint-body');
+  body.innerHTML = '';
+  body.appendChild(el('div',{class:'bp-loading'}, markEl({size:26,loading:true}), el('span',{}, 'Reading the space between two charts. The relationship is its own thing, and it takes a moment to see it.')));
+  try {
+    const text = await streamToElement(relBlueprintPrompt(), body);
+    state.relReading.blueprint = text;
+  } catch (e) {
+    body.innerHTML = `<p class="err-inline">The synthesis didn't complete. ${e.message || 'Check the connection and try again.'}</p>`;
+    throw e;
+  }
+}
+
+async function loadRelDeepDive(section, container){
+  const text = await llmText(relDeepDivePrompt(section));
+  state.relReading.deepDive[section.id] = text;
+  container.innerHTML = renderMd(text);
+  container.style.opacity = '0'; container.style.transform = 'translateY(6px)';
+  requestAnimationFrame(() => { container.style.transition='opacity 600ms cubic-bezier(0.16,1,0.3,1),transform 600ms cubic-bezier(0.16,1,0.3,1)'; container.style.opacity='1'; container.style.transform='translateY(0)'; });
+}
+
+function copyRelReading(){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const a = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
+  const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
+  let out = `un/charted — relationship reading (${cfg.label})\n${a} & ${b}\n\n———\n\nTHE RELATIONSHIP\n\n`;
+  out += stripMd(state.relReading.blueprint) + '\n\n———\n\nTHE DEEP DIVE\n\n';
+  cfg.sections.forEach((s,i) => {
+    out += `${String(i+1).padStart(2,'0')} · ${s.title}\n${s.intro}\n\n`;
+    out += (state.relReading.deepDive[s.id] ? stripMd(state.relReading.deepDive[s.id]) : '[ Not yet expanded ]') + '\n\n';
+  });
+  navigator.clipboard.writeText(out).then(() => {
+    const btn = $('#copy-btn'); if (!btn) return;
+    const orig = btn.textContent; btn.textContent = 'Copied';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  }).catch(() => alert("Couldn't copy. Your browser may be blocking clipboard access."));
 }
 
 /* ─── Boot ─── */
