@@ -6,9 +6,10 @@
 > Deep Dive; the relational Blueprint reports the verdict jargon-free.
 >
 > Computed now: Western synastry + composite (below), plus BaZi Day Master
-> interaction, Numerology Life Path interaction, and the Vedic/lunar nodal axis
-> (§4, contributed through the `SYNASTRY_CONTRIBUTORS` registry). HD connection
-> theory is the remaining later phase — see `relationship-feature-spec.md`.
+> interaction, Numerology Life Path interaction, the Vedic/lunar nodal axis (§4),
+> and Human Design connection theory (`hd-connection-theory.md`) — all contributed
+> through the `SYNASTRY_CONTRIBUTORS` registry. HD runs only when both birth times
+> and the HD service are available.
 
 ---
 
