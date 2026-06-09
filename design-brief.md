@@ -115,9 +115,9 @@ Birth date is used to detect if the chart subject is a minor. This changes the s
 
 - Appears immediately when streaming begins — don't wait for the full response
 - Full-width, no accordion — this is the primary deliverable, always visible
-- Four sub-sections rendered as they stream: **The Core Pattern**, **What You're Here to Do**,
-  **The Central Challenge**, **Right Now**
-- Sabian Symbol one-liner (in Core Pattern) slightly indented; optional second line for Ascendant degree if birth time is known
+- Four sub-sections rendered as they stream: **Who you are when no one's watching**, **What you
+  keep being pulled toward**, **The thing that keeps tripping you**, **Where you are right now**
+- Sabian Symbol one-liner (in the first sub-section) slightly indented; optional second line for Ascendant degree if birth time is known
 - Integrated Alignment Statement at the end: set apart visually — centered, slightly larger text
 - A blinking cursor at the stream position while generating
 

@@ -65,19 +65,92 @@ can seek the data. A reader who received estimated content cannot know to questi
 ### Two-Layer Format
 
 **LAYER 1: THE BLUEPRINT SUMMARY** (~500-700 words)
-A distilled synthesis of the most convergent patterns across all systems. Not a system-by-system
-summary — a unified portrait. The reader should be able to understand who they fundamentally are
-in 5 minutes. Use section:
+
+**The core principle: the Blueprint is the verdict, not the evidence.** By the time the
+reader reaches the Blueprint, six systems have already deliberated. The Blueprint reports
+what they agreed on. It does **not** show its work. Showing the work is what makes it read
+like a scientific readout instead of a reading. Think of the difference between a doctor
+saying "Your TSH is 6.8 mIU/L, slightly above the 0.4–4.0 reference range, suggesting
+subclinical hypothyroidism" versus "Your body's running a little slow lately, and it's not
+your fault — here's what's going on." Same truth. One catalogues, one sees you. The
+Blueprint is always the second voice.
+
+**Four hard rules for Blueprint copy:**
+
+1. **No system names in the surface layer.** Strike every instance of "your Sun," "your
+   North Node," "Manifesting Generator," "Life Path 7," "Day Master," "Nakshatra," "Gate
+   31," "8th house." If a reader can tell which tradition a sentence came from, it belongs
+   in the Deep Dive, not the Blueprint. The labels are the scaffolding you remove before
+   anyone sees the building.
+
+2. **The subject of every sentence is the person, not the placement.**
+   - ❌ "Your Saturn placement indicates a need to earn security."
+   - ✅ "You don't trust anything you didn't have to earn."
+   - ❌ "Scorpio Moon in the 7th suggests intense one-on-one bonds."
+   - ✅ "You don't really do shallow. One real person beats a room full of almosts."
+
+   Flip the grammar so the mechanism disappears and only the human remains.
+
+3. **Write to the convergence, not the enumeration.** When four systems point at the same
+   trait, the *agreement itself* is the insight — so deliver it as one sharp claim, not
+   three stacked evidences.
+   - ❌ "Astrologically you're earthy, your Four Pillars confirm an earth constitution, and
+     Vedically your rising sign is grounded too."
+   - ✅ "Almost everything about you comes back to the ground. You are not a person who floats."
+
+   The convergence checklist in STEP 5 still runs exactly as before — it just feeds the
+   *confidence* and *ordering* of Blueprint claims, never their phrasing.
+
+4. **Earn trust by being specific and a little uncanny — not comprehensive.** One
+   almost-too-personal line beats three hedged ones. The Blueprint should make the reader go
+   "how does it know that," not "okay, noted." Cut anything that could've been written about
+   a different chart. Cut anything that hedges ("tends to," "may suggest," "often"). The
+   Blueprint speaks plainly because the six systems already did the hedging for it.
+
+**Voice (un/charted house style):** Credible, dry, sharp. No exclamation points. No vague
+cosmic language ("the universe," "your soul's journey," "cosmic energy"). No em dashes. Short
+declaratives carry more authority than long qualified ones. Wit is allowed and encouraged;
+whimsy and woo are not. The reader should feel read by someone smart who likes them, not
+processed by a machine.
+
+**Structure — same four beats, renamed so they sound like a person talking:**
 
 ```
-## The Core Pattern
-## What You're Here to Do
-## The Central Challenge
-## Current Phase (if temporal data available)
+## Who you are when no one's watching   (the one trait everything circles back to)
+## What you keep being pulled toward     (direction, stated as pull not prescription)
+## The thing that keeps tripping you      (the recurring snag, named without judgment)
+## Where you are right now                 (the present chapter, in plain time-language)
 ```
 
-End Layer 1 with the **Integrated Alignment Statement** (4-6 sentences, first person, poetic
-but specific, names actual placements and cross-system convergences).
+In **Who you are when no one's watching**, after the main description, include one line for
+the Sabian Symbol of the Sun degree — name + keyword only, italicized, no interpretation
+(see `synthesis-guide-addendum-v2.1.md`). Let it land as a poetic image.
+
+Target length stays ~500–700 words. If it's running long, it's almost always because
+mechanism crept back in. Cut the mechanism.
+
+End Layer 1 with the **Integrated Alignment Statement** (4–6 sentences, first person, as
+before) — but apply the same no-jargon rule. It should read like something the reader would
+actually say out loud about themselves, not a horoscope.
+
+**Quality standards (Blueprint only).** The blanket "every statement must trace to a
+placement" rule applies to the **Deep Dive only**. For the Blueprint, use these three tests
+instead:
+- **The overheard test:** could this sentence be something a perceptive friend says about
+  the reader at dinner? If it sounds like a chart printout, rewrite.
+- **The no-labels test:** can the reader name which system produced this line? If yes, strip
+  the label or move the line down.
+- **The flinch test:** does at least one line land specifically enough to make the reader
+  pause? Comprehensiveness is the enemy here; precision is the goal.
+
+**Before / after (Triple-Earth convergence).** Before: "Your Core Pattern is defined by a
+strong earth emphasis: a Taurus Sun and Taurus Ascendant in Western astrology, reinforced by
+a Yang Earth Day Master in your BaZi Four Pillars chart. This suggests a grounded,
+stability-seeking temperament." After: "You are built like a foundation. Steady, deliberate,
+hard to move once you've decided — and you decide slowly, on purpose. People mistake that for
+caution. It's not. You're just not interested in building on anything that won't hold." Same
+data; the labels moved to the Deep Dive's Core Energetic Signature section, where someone who
+wants the receipts can find them.
 
 **For child charts (subject under 13): add a Parent Note at the end of each Blueprint
 sub-section.** Do not add Parent Notes to the Deep Dive or Glossary — Blueprint only.
@@ -404,7 +477,12 @@ Day Master + Strength + Dominant/Missing Elements
 
 ## TONE AND QUALITY PRINCIPLES
 
-**Always do:**
+> **Scope:** This section governs the **Deep Dive**. The "trace every statement to a
+> placement" requirement lives here, not in the Blueprint. The Blueprint follows its own
+> contract (see LAYER 1 above): no system names, the person as subject, write to the
+> convergence, and pass the overheard / no-labels / flinch tests instead.
+
+**Always do (Deep Dive):**
 - Name the specific placement/gate/number driving every interpretation
 - Show how systems tension, support, and complicate each other
 - Name both the shadow AND the gift of every difficult placement

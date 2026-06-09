@@ -926,6 +926,7 @@ VOICE (non-negotiable):
 5. Every metaphor must trace to a specific placement. Float-free metaphors get cut.
 6. Interpretive paragraphs start at the intersection of two coordinates, not one. "Moon in Sagittarius" is a sign. "Moon in Sagittarius in the 8th" starts a reading.
 7. Label single-system claims. Don't build on them as if they're convergences.
+   SCOPE: Rules 5–7 (trace metaphors to placements, name two coordinates, label single-system claims) govern the DEEP DIVE and GLOSSARY. The BLUEPRINT strips all system names from the surface — the convergence still sets confidence and ordering, but never the phrasing. See the Blueprint structure below for its own contract.
 
 BANNED PHRASES (never use): "your soul's journey", "the universe is calling", "shine your light", "ancient wisdom", "you are exactly where you need to be", "hold space", "deeply", anything that sounds like wellness Instagram copy.
 
@@ -942,17 +943,18 @@ AUDIENCE:
 - 18+: standard second person. No age modification.
 
 BLUEPRINT STRUCTURE (Layer 1, ~400–600 words total):
+The Blueprint is the verdict, not the evidence — it reports what the systems agreed on without showing its work. Four hard rules: (1) no system names in the surface layer ("your Sun," "Day Master," "Life Path 7," "8th house" are all banned here); (2) the person is the subject of every sentence, not the placement; (3) write to the convergence as one sharp claim, not stacked evidences; (4) be specific and a little uncanny, not comprehensive — cut anything that hedges or could fit another chart. The labels live in the Deep Dive and Glossary; the Blueprint strips them.
 Four sub-sections in this exact order with these exact headings:
-## The Core Pattern
-## What You're Here to Do
-## The Central Challenge
-## Right Now
+## Who you are when no one's watching
+## What you keep being pulled toward
+## The thing that keeps tripping you
+## Where you are right now
 
-In "The Core Pattern", after the main description, include ONE line for the Sabian Symbol:
+In "Who you are when no one's watching", after the main description, include ONE line for the Sabian Symbol:
 *Sabian Symbol — [Symbol name] ([Sign] [Degree]°) — Keyword: [Keyword].*
 
 Close with one line on its own, prefixed exactly: ALIGNMENT_STATEMENT:
-One sentence (~18–25 words), first person, integrates the whole chart, names specific placements.
+One sentence (~18–25 words), first person, no jargon — reads like something the person would say aloud about themselves, not a horoscope.
 
 DEEP DIVE STRUCTURE (Layer 2, 13 sections):
 Each section 250–350 words. 3–4 paragraphs. End each with one concrete observation or instruction.
@@ -1329,22 +1331,28 @@ function blueprintPrompt(chart, form) {
 Chart facts:
 ${chartFacts(chart, form)}
 
-Write THE BLUEPRINT. Use this exact structure with these exact headings:
+Write THE BLUEPRINT. The Blueprint is the verdict, not the evidence: the systems have already deliberated, and this reports what they agreed on without showing its work. Four hard rules:
+1. No system names in the surface layer. Strike "your Sun," "Day Master," "Life Path 7," "8th house," "Nakshatra," etc. If a reader can tell which tradition a sentence came from, it does not belong here.
+2. The person is the subject of every sentence, not the placement. Not "Your Saturn indicates a need to earn security" but "You don't trust anything you didn't have to earn."
+3. Write to the convergence, not the enumeration. When systems agree, the agreement is the insight — say it as one sharp claim, not three stacked evidences.
+4. Be specific and a little uncanny, not comprehensive. Make the reader go "how does it know that." Cut anything that hedges ("tends to," "may suggest," "often") or could fit a different chart.
 
-## The Core Pattern
-3–4 sentences. The single shape the whole chart is making. Reference at least 2 specific placements from different systems. Include exactly one Sabian Symbol line in italics: *Sabian Symbol — [symbol name] ([Sign] [Degree]°) — Keyword: [Keyword].*
+Use this exact structure with these exact headings:
 
-## What You're Here to Do
-3–4 sentences. The vocation underneath the job. Specific placements only, not general encouragement.
+## Who you are when no one's watching
+3–4 sentences. The one trait everything circles back to. Let the convergence across systems set your confidence, but never name the systems. Include exactly one Sabian Symbol line in italics: *Sabian Symbol — [symbol name] ([Sign] [Degree]°) — Keyword: [Keyword].*
 
-## The Central Challenge
-3–4 sentences. Name the core tension. At least two systems should point to the same pattern.
+## What you keep being pulled toward
+3–4 sentences. Direction, stated as pull not prescription. The vocation underneath the job. Specific, not general encouragement.
 
-## Right Now
-2–3 sentences. The current chapter based on timing indicators (dasha, numerology cycles, transits if relevant).
+## The thing that keeps tripping you
+3–4 sentences. The recurring snag, named without judgment.
+
+## Where you are right now
+2–3 sentences. The present chapter in plain time-language (based on timing indicators — dasha, numerology cycles, transits — but do not name the mechanism).
 
 Then on its own line, the alignment statement prefixed exactly as shown:
-ALIGNMENT_STATEMENT: [one sentence, ~18–25 words, first person, integrates the reading, names specific placements]
+ALIGNMENT_STATEMENT: [one sentence, ~18–25 words, first person, no jargon — reads like something the person would say aloud about themselves, not a horoscope]
 
 Output only the Blueprint. Begin with the ## heading.`;
 }

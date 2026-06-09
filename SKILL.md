@@ -194,11 +194,22 @@ omitted with a one-line note in the header — not approximated.
 ### Two-Layer Format
 
 **Layer 1 — The Blueprint** (~500-700 words):
-Four sub-sections: Core Pattern | What You're Here to Do | The Central Challenge | Current Phase
-In **Core Pattern**, include one line: the Sabian Symbol for the Sun degree (name + keyword only).
+The Blueprint is the verdict, not the evidence — it reports what the six systems agreed on,
+it does not show its work. Four hard rules (see `references/synthesis-guide-v2.md` — LAYER 1):
+no system names in the surface layer (no "your Sun," "Day Master," "Life Path 7," "8th
+house"); the person is the subject of every sentence, not the placement; write to the
+convergence as one sharp claim, not stacked evidences; be specific and a little uncanny, not
+comprehensive (cut anything that hedges or could fit another chart).
+
+Four sub-sections, in this exact order, with these exact headings:
+**Who you are when no one's watching** | **What you keep being pulled toward** | **The thing
+that keeps tripping you** | **Where you are right now**
+In **Who you are when no one's watching**, include one line: the Sabian Symbol for the Sun
+degree (name + keyword only, italicized, no interpretation).
 End with the Integrated Alignment Statement (4-6 sentences; first person for adult and teen
 subjects; for child subjects, first person marked explicitly as written for the child to read
-when older).
+when older) — apply the same no-jargon rule so it reads like something the reader would say
+aloud about themselves, not a horoscope.
 
 For child charts (subject under 13): add a **Parent Note** (*For parents: ...*) at the end
 of each Blueprint sub-section. Chart-specific and practical — grounded in the placement just
@@ -281,10 +292,17 @@ The file should be committed and pushed if running in a git-tracked environment.
 
 ## QUALITY STANDARDS
 
-Every statement must trace to a specific placement, gate, number, or pillar.
+**Deep Dive:** Every statement must trace to a specific placement, gate, number, or pillar.
 The cross-system test: does any other system confirm this claim? If yes, name it. If no, label it as single-system.
 The specificity test: could this sentence have been written about a different chart? If yes, add a second coordinate (sign + house, nakshatra + degree, BaZi element + Ten God) until it can't.
 The depth test: does this paragraph make the person feel seen, or just catalogued?
+
+**Blueprint only:** Do NOT trace to placements on the surface — strip the labels (no system
+names, the person is the subject, write to the convergence). Three tests replace the trace
+rule here:
+- The overheard test: could a perceptive friend say this at dinner? If it sounds like a chart printout, rewrite.
+- The no-labels test: can the reader name which system produced this line? If yes, strip the label or move it to the Deep Dive.
+- The flinch test: does at least one line land specifically enough to make the reader pause? Precision over comprehensiveness.
 The conjunction test: are planets described as conjunct actually within orb? (8° personal planets, 5° angles) If not, use "co-present in [sign/house]."
 The missing data test: is every section in the output supported by confirmed data? If not, that section is omitted, not approximated.
 

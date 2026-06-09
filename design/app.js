@@ -85,7 +85,8 @@ Voice rules (do not break):
 - No exclamation points. No em-dashes overstuffed. Period.
 - The reader is intelligent, psychology-literate, slightly tired.
 - Specific instructions when you have them ("Sleep on it."). No general encouragement.
-- Use names of systems and placements directly. Never explain that astrology "is metaphor" — assume the reader knows.
+- In the Deep Dive, name systems and placements directly. In the Blueprint, strip them: the surface layer names no systems — the person is the subject of every sentence, not the placement.
+- Never explain that astrology "is metaphor" — assume the reader knows.
 `.trim();
 
 /* ─────────────────────── Light, deterministic chart calc ─────────────────────── */
@@ -396,21 +397,27 @@ ${audienceFraming(chart.audience, form.name)}
 The subject's chart facts (six systems):
 ${chartFacts(chart, form)}
 
-Write THE BLUEPRINT for this person. About 350-450 words total. Four sub-sections, in this exact order, with these exact markdown headings:
+Write THE BLUEPRINT for this person. About 350-450 words total. The Blueprint is the verdict, not the evidence: the systems have already deliberated, and this reports what they agreed on without showing its work. Four hard rules:
+1. No system names in the surface layer. Strike "your Sun," "Day Master," "Life Path 7," "8th house," "Nakshatra," etc. If a reader can tell which tradition a sentence came from, it does not belong here.
+2. The person is the subject of every sentence, not the placement. Not "Your Saturn indicates a need to earn security" but "You don't trust anything you didn't have to earn."
+3. Write to the convergence, not the enumeration. When systems agree, the agreement is the insight — say it as one sharp claim, not stacked evidences.
+4. Be specific and a little uncanny, not comprehensive. Make the reader go "how does it know that." Cut anything that hedges or could fit a different chart.
 
-## The Core Pattern
-3-4 sentences. The single shape the whole chart is making. Reference at least two specific placements by name. End with a one-line Sabian-Symbol-style image (italicized) for the Sun degree. Format the Sabian line as: *Sabian Symbol — [image].*
+Four sub-sections, in this exact order, with these exact markdown headings:
 
-## What You're Here to Do
-3-4 sentences. The vocation underneath the job. Specific. Not "find your purpose".
+## Who you are when no one's watching
+3-4 sentences. The one trait everything circles back to. Let the convergence across systems set your confidence, but never name the systems. End with a one-line Sabian-Symbol-style image (italicized) for the Sun degree. Format the Sabian line as: *Sabian Symbol — [image].*
 
-## The Central Challenge
-3-4 sentences. The pinch point. The tension a placement in one system and a placement in another system are both pointing at.
+## What you keep being pulled toward
+3-4 sentences. Direction, stated as pull not prescription. The vocation underneath the job. Specific. Not "find your purpose".
 
-## Right Now
-2-3 sentences. The current chapter. What this season is for.
+## The thing that keeps tripping you
+3-4 sentences. The recurring snag, named without judgment.
 
-Close with one centered line in italics, on its own line, starting with the exact prefix "ALIGNMENT_STATEMENT:" — one sentence that integrates the whole reading. About 18-25 words. Do not add anything after.
+## Where you are right now
+2-3 sentences. The current chapter. What this season is for. Plain time-language, no named mechanism.
+
+Close with one centered line in italics, on its own line, starting with the exact prefix "ALIGNMENT_STATEMENT:" — one sentence that integrates the whole reading, no jargon, reads like something the person would say aloud about themselves. About 18-25 words. Do not add anything after.
 
 Output ONLY the Blueprint. Do not write a title or preamble. Begin with the ## heading.`;
 
