@@ -35,10 +35,15 @@
 - □ Numerology — do the two Life Paths share a number (one road, one blind spot)?
   Light touch; only surfaces when it converges.
 
-## Later phase (not yet computed)
+## Human Design (computed when both birth times + the HD service are available)
 
-- □ Human Design — do electromagnetic channels confirm an attraction the
-  synastry already shows? (companionship / dominance / compromise)
+- □ Do electromagnetic channels confirm an attraction the synastry already
+  shows? That HD + Western agreement is a top-strength convergence — lead on it.
+- □ Companionship channels → sameness/ease; dominance → one leads there;
+  compromise → a negotiation point. Map these onto "where the current runs" vs.
+  "where it snags," named directionally.
+- □ Does the HD picture cut against the Western chemistry (e.g. magnetic
+  synastry but mostly dominance/compromise channels)? Name the tension honestly.
 
 ---
 

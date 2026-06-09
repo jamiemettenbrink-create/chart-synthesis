@@ -1326,6 +1326,17 @@ async function fetchHD(form, utcOffset) {
   } catch (_) { return null; }
 }
 
+// Best-effort: attach Human Design to an already-computed (cached) chart, so the
+// relational reading can run HD connection theory. No-op if HD is already present,
+// the birth time is unknown, or the service is unavailable.
+async function enrichHD(chart, form){
+  if (!chart || chart.humanDesign) return;
+  if (form.timeUnknown || !form.time) return;
+  const off = form.geo ? Math.round(form.geo.lon / 15) : 0;
+  const hd = await fetchHD(form, off);
+  if (hd) chart.humanDesign = computeChart(form, hd).humanDesign;
+}
+
 /* ─── Compute chart ─── */
 function signOf(lon) { return SIGNS[Math.floor(norm360(lon) / 30)]; }
 function degInSign(lon) { return norm360(lon) % 30; }
@@ -1738,6 +1749,54 @@ function nodalOverlap(chartA, chartB){
 }
 SYNASTRY_CONTRIBUTORS.push(baziInteraction, lifePathInteraction, nodalOverlap);
 
+// Human Design connection theory — compare two gate sets across the 36 channels.
+const HD_CHANNELS = [
+  [1,8],[2,14],[3,60],[4,63],[5,15],[6,59],[7,31],[9,52],[10,20],[10,34],
+  [10,57],[11,56],[12,22],[13,33],[16,48],[17,62],[18,58],[19,49],[20,34],[20,57],
+  [21,45],[23,43],[24,61],[25,51],[26,44],[27,50],[28,38],[29,46],[30,41],[32,54],
+  [34,57],[35,36],[37,40],[39,55],[42,53],[47,64],
+];
+function hdGateSet(chart){
+  const g = chart.humanDesign && chart.humanDesign.gates;
+  if (!g) return null;
+  const set = new Set(String(g).split(/[,\s]+/).map(n => parseInt(n,10)).filter(n => n > 0));
+  return set.size ? set : null;
+}
+// Each channel across the two charts is exactly one of: companionship (both fully
+// wired), electromagnetic (each holds one half, together they complete it),
+// dominance (one fully wired, the other holds neither gate), or compromise (one
+// fully wired, the other holds just one of the two gates).
+function hdConnection(chartA, chartB){
+  const A = hdGateSet(chartA), B = hdGateSet(chartB);
+  if (!A || !B) return null;
+  const electro=[], compan=[], domA=[], domB=[], compA=[], compB=[];
+  for (const [g1,g2] of HD_CHANNELS){
+    const a1=A.has(g1), a2=A.has(g2), b1=B.has(g1), b2=B.has(g2);
+    const aFull=a1&&a2, bFull=b1&&b2, ch=`${g1}-${g2}`;
+    if (aFull && bFull) compan.push(ch);
+    else if (aFull && !b1 && !b2) domA.push(ch);
+    else if (bFull && !a1 && !a2) domB.push(ch);
+    else if (aFull && (b1 !== b2)) compB.push(ch);          // B half-wired against A's full channel
+    else if (bFull && (a1 !== a2)) compA.push(ch);          // A half-wired against B's full channel
+    else if (!aFull && !bFull && (a1||b1) && (a2||b2)) electro.push(ch); // union completes it
+  }
+  const facts=[], hints=[];
+  if (electro.length) facts.push(`HD electromagnetic (each holds half, together you complete it): ${electro.join(', ')}.`);
+  if (compan.length)  facts.push(`HD companionship (both fully wired the same): ${compan.join(', ')}.`);
+  if (domA.length)    facts.push(`HD dominance — A wired, B open: ${domA.join(', ')}.`);
+  if (domB.length)    facts.push(`HD dominance — B wired, A open: ${domB.join(', ')}.`);
+  if (compA.length)   facts.push(`HD compromise — A half-wired against B's full channel: ${compA.join(', ')}.`);
+  if (compB.length)   facts.push(`HD compromise — B half-wired against A's full channel: ${compB.join(', ')}.`);
+
+  if (electro.length) hints.push(`MAGNETISM (HD): you each hold half of ${electro.length} circuit(s) the other completes — the classic electric pull, with the built-in love/irritation flip on exactly those wires.`);
+  if (compan.length)  hints.push(`SAMENESS (HD): ${compan.length} circuit(s) you're both fully wired the same way — instant ease and reinforcement, with the risk of an echo chamber.`);
+  if (domA.length+domB.length) hints.push(`ONE LEADS (HD): in ${domA.length+domB.length} place(s) one of you is wired and the other open — the wired one consistently sets the tone and conditions the other there.`);
+  if (compA.length+compB.length) hints.push(`NEGOTIATION (HD): ${compA.length+compB.length} place(s) where one is fully wired and the other only half — a reliable spot that needs ongoing negotiation.`);
+  if (!facts.length) return null;
+  return { facts, hints };
+}
+SYNASTRY_CONTRIBUTORS.push(hdConnection);
+
 /* ─── Relational synthesis prompts ─── */
 function westernSummaryLine(chart){
   const w = chart.western;
@@ -1772,7 +1831,7 @@ function relationalFacts(){
   syn.hints.forEach(h => L.push(`  - ${h}`));
   if (syn.extraFacts.length){ L.push(''); L.push('ADDITIONAL SYSTEM SIGNALS:'); syn.extraFacts.forEach(f => L.push(`  ${f}`)); }
   L.push('');
-  L.push('SYSTEMS NOTE: this reading computes Western synastry + composite, BaZi Day Master interaction, Numerology Life Path, and the Vedic/lunar nodal axis (see signals above). Human Design connection theory is not yet computed — do not invent HD relational content.');
+  L.push('SYSTEMS NOTE: this reading can draw on Western synastry + composite, BaZi Day Master interaction, Numerology Life Path, the Vedic/lunar nodal axis, and Human Design connection theory (when both birth times and the HD service are available). Use ONLY the signals listed above — do not invent content for any system not represented there.');
   return L.join('\n');
 }
 function relBlueprintPrompt(){
@@ -2407,6 +2466,9 @@ async function startRelationalReading(){
   const other = upsertPerson(state.form2, self.id);
   state.chart    = derivedChartFor(self);
   state.chartB   = derivedChartFor(other);
+  // Best-effort Human Design for both, so connection theory can run (no-op without
+  // birth times or the HD service). Cached onto the derived charts.
+  await Promise.all([ enrichHD(state.chart, state.form), enrichHD(state.chartB, state.form2) ]);
   state.synastry = computeSynastry(state.chart, state.chartB);
   // Navigate the moment the charts are ready — block only on the Blueprint.
   renderRelationalReading();
