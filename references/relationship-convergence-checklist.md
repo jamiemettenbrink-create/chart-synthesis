@@ -12,37 +12,43 @@
 
 ---
 
-## Western (computed in the slice)
+## Western (computed)
 
 - □ Do several inter-aspects point at the same theme (e.g. Sun–Moon **and**
   Venus–Mars contacts both saying *attraction*)? That cluster is one Blueprint claim.
 - □ Does the composite Sun/Moon confirm what the inter-aspects suggest about the
   relationship's core nature? Agreement between the chemistry and the third
-  entity is the strongest single signal available in the slice.
+  entity is the strongest single Western signal.
 - □ Is the dominant aspect flavor ease (trines/sextiles) or friction
   (squares/oppositions)? This sets the "where the current runs" vs. "where it
   snags" balance.
 - □ Are the friction contacts concentrated on one axis (e.g. Mars to either
   Sun/Moon)? Name that one snag specifically rather than listing every square.
 
-## Later phases (not computed in the slice)
+## Cross-system (computed)
+
+- □ BaZi — does the Day Master interaction (resonance / one-way support /
+  one-way control) echo the Western chemistry or cut against it? A "feeds" or
+  "checks" direction is itself a Blueprint-worthy dynamic when it converges.
+- □ Vedic — does either person's lunar nodal axis fall on the other's Sun/Moon/
+  Venus/Mars? A nodal hit raises the "fated, sticky" reading — weight it.
+- □ Numerology — do the two Life Paths share a number (one road, one blind spot)?
+  Light touch; only surfaces when it converges.
+
+## Later phase (not yet computed)
 
 - □ Human Design — do electromagnetic channels confirm an attraction the
   synastry already shows? (companionship / dominance / compromise)
-- □ BaZi — does the Day Master interaction (produces / controls / weakens /
-  resonates) echo the Western chemistry or cut against it?
-- □ Vedic — does either person's nodal axis fall on the other's key placements?
-- □ Numerology — do the two Life Paths reinforce or complicate the pattern?
 
 ---
 
 ## Weighting
 
-Weight cross-tradition agreement more heavily than within-tradition agreement
-(once later phases exist). In the Western-only slice, the strongest convergence
-is inter-aspects agreeing with the composite. A single contact with nothing else
-behind it is a single-system observation — hold it lightly and keep it in the
-Deep Dive, not the Blueprint.
+Weight cross-tradition agreement more heavily than within-tradition agreement —
+e.g. the Western chemistry and the BaZi Day Master dynamic and a nodal hit all
+pointing the same way is far stronger than three Western aspects alone. A single
+contact with nothing else behind it is a single-system observation — hold it
+lightly and keep it in the Deep Dive, not the Blueprint.
 
 ## The discipline that does not bend
 

@@ -5,9 +5,10 @@
 > (the relationship as its own third entity). Receipts live in the relational
 > Deep Dive; the relational Blueprint reports the verdict jargon-free.
 >
-> Slice scope: Western only. BaZi Day Master interaction, HD connection theory,
-> Vedic nodal overlap, and Numerology Life Path interaction are later phases —
-> see `relationship-feature-spec.md`.
+> Computed now: Western synastry + composite (below), plus BaZi Day Master
+> interaction, Numerology Life Path interaction, and the Vedic/lunar nodal axis
+> (§4, contributed through the `SYNASTRY_CONTRIBUTORS` registry). HD connection
+> theory is the remaining later phase — see `relationship-feature-spec.md`.
 
 ---
 
@@ -69,3 +70,36 @@ from the composite Sun + Moon, not from either person's chart.
   Ascendant.
 - **The convergence is the insight.** When inter-aspects and the composite agree
   on a theme, that agreement — stated once — is the Blueprint line.
+
+---
+
+## 4. Cross-system relational layers
+
+These plug into the synastry engine through the `SYNASTRY_CONTRIBUTORS` registry
+and add their signals to the relational convergence hints. They are receipts for
+the Deep Dive; the Blueprint still reports the verdict jargon-free. None of them
+produce a score.
+
+### BaZi — Day Master interaction
+Compare the two Day Master elements through the Five-Element cycle:
+- **Same element →** resonance: instant recognition and sameness, with the risk of
+  one note and no counterbalance.
+- **Generating (one feeds the next: Wood→Fire→Earth→Metal→Water→Wood) →** one-way
+  support: the feeding element naturally nourishes and energizes the other; watch
+  for the giver running dry.
+- **Controlling (one checks the next two along: Wood→Earth→Water→Fire→Metal→Wood) →**
+  one-way control: the controlling element disciplines or contains the other;
+  steadying in small doses, controlling in large ones.
+The dynamic is **directional** — name who feeds or checks whom, not a verdict.
+
+### Numerology — Life Path interaction
+Light touch, one line, and only when it converges: if both walk the same Life
+Path, name the shared road (deep mutual understanding plus a shared blind spot).
+Otherwise it stays in the receipts, not the Blueprint.
+
+### Vedic — lunar nodal axis (Rahu / Ketu)
+Using the mean lunar node, flag where one person's North or South Node lands on
+the other's Sun, Moon, Venus, or Mars (within 6°). Nodal contacts read as a
+*fated, sticky* quality — the relationship feels less optional than chosen and
+carries a pull toward growth. This is nodal **synastry**, not Ashtakoota scoring;
+the no-score discipline still holds.
