@@ -845,6 +845,17 @@ const PLANET_ELEMENTS = {
              L:[100.46457166, 35999.37244981], lp:[102.93768193, 0.32327364], ln:[0.0, 0.0] },
   Mars:    { a:[1.52371034, 0.00001847], e:[0.09339410, 0.00007882], I:[1.84969142,-0.00813131],
              L:[-4.55343205, 19140.30268499], lp:[-23.94362959, 0.44441088], ln:[49.55953891,-0.29257343] },
+  // Outer planets — added for astrocartography (JPL low-precision elements, Standish 1800–2050).
+  Jupiter: { a:[5.20288700,-0.00011607], e:[0.04838624,-0.00013253], I:[1.30439695,-0.00183714],
+             L:[34.39644051, 3034.74612775], lp:[14.72847983, 0.21252668], ln:[100.47390909, 0.20469106] },
+  Saturn:  { a:[9.53667594,-0.00125060], e:[0.05386179,-0.00050991], I:[2.48599187, 0.00193609],
+             L:[49.95424423, 1222.49362201], lp:[92.59887831,-0.41897216], ln:[113.66242448,-0.28867794] },
+  Uranus:  { a:[19.18916464,-0.00196176], e:[0.04725744,-0.00004397], I:[0.77263783,-0.00242939],
+             L:[313.23810451, 428.48202785], lp:[170.95427630, 0.40805281], ln:[74.01692503, 0.04240589] },
+  Neptune: { a:[30.06992276, 0.00026291], e:[0.00859048, 0.00005105], I:[1.77004347, 0.00035372],
+             L:[-55.12002969, 218.45945325], lp:[44.96476227,-0.32241464], ln:[131.78422574,-0.00508664] },
+  Pluto:   { a:[39.48211675,-0.00031596], e:[0.24882730, 0.00005170], I:[17.14001206, 0.00004818],
+             L:[238.92903833, 145.20780515], lp:[224.06891629,-0.04062942], ln:[110.30393684,-0.01183482] },
 };
 function solveKepler(M, e) {
   // Newton's method, M in radians
@@ -1131,6 +1142,7 @@ const state = {
   hdData: null,
   reading: { blueprint:'', deepDive:{}, glossary:{} },
   relReading: { blueprint:'', deepDive:{} },
+  acg: null,                                  // astrocartography lines, computed on demand
   generating: false,
 };
 
@@ -2120,6 +2132,216 @@ async function startReading() {
   prefetchDeepDive();
 }
 
+/* ─── Astrocartography (relocation: "you + a place") ──────────────────────
+   A third reading type. Reuses the natal ephemeris, so positions match the
+   birth chart. Each body draws four lines — where it was angular at birth:
+   MC/IC (meridians) and ASC/DSC (horizon curves). Bodies are placed on the
+   ecliptic (latitude 0), the same simplification the natal angle math uses;
+   MC/IC are exact, the Moon/Pluto horizon curves carry a ~1–2° zone. */
+const ACG_BODIES = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+const ACG_COLOR = { Sun:'#E8A800', Moon:'#7C8BA1', Mercury:'#11998E', Venus:'#E0529C', Mars:'#D7263D', Jupiter:'#8E44AD', Saturn:'#5D4037', Uranus:'#1565C0', Neptune:'#0097A7', Pluto:'#9AA0AC' };
+const ACG_ABBR = { Sun:'Sun', Moon:'Moon', Mercury:'Mer', Venus:'Ven', Mars:'Mar', Jupiter:'Jup', Saturn:'Sat', Uranus:'Ura', Neptune:'Nep', Pluto:'Plu' };
+const ACG_RULER = { Aries:'Mars', Taurus:'Venus', Gemini:'Mercury', Cancer:'Moon', Leo:'Sun', Virgo:'Mercury', Libra:'Venus', Scorpio:'Pluto', Sagittarius:'Jupiter', Capricorn:'Saturn', Aquarius:'Uranus', Pisces:'Neptune' };
+const ACG_DOMICILE = { Sun:['Leo'], Moon:['Cancer'], Mercury:['Gemini','Virgo'], Venus:['Taurus','Libra'], Mars:['Aries','Scorpio'], Jupiter:['Sagittarius','Pisces'], Saturn:['Capricorn','Aquarius'], Uranus:['Aquarius'], Neptune:['Pisces'], Pluto:['Scorpio'] };
+const ACG_EXALT = { Sun:'Aries', Moon:'Taurus', Mercury:'Virgo', Venus:'Pisces', Mars:'Capricorn', Jupiter:'Cancer', Saturn:'Libra' };
+const ACG_ANGLE_MEANING = {
+  MC: 'overhead at birth — career, reputation, what you become known for here',
+  IC: 'underfoot at birth — home, roots, the private and inner self here',
+  ASC: 'rising at birth — fuses with your body and identity; you become this here, visibly',
+  DSC: 'setting at birth — shows up through other people: partners, clients, opponents',
+};
+const ACG_CITIES = [
+  ['Los Angeles',34.05,-118.24],['Denver',39.74,-104.99],['New York',40.71,-74.01],
+  ['Mexico City',19.43,-99.13],['Vancouver',49.28,-123.12],['Chicago',41.88,-87.63],
+  ['Bogota',4.71,-74.07],['Lima',-12.05,-77.04],['Santiago',-33.45,-70.67],
+  ['Buenos Aires',-34.60,-58.38],['Rio de Janeiro',-22.91,-43.17],
+  ['London',51.51,-0.13],['Paris',48.86,2.35],['Madrid',40.42,-3.70],['Rome',41.90,12.50],
+  ['Berlin',52.52,13.40],['Moscow',55.76,37.62],['Istanbul',41.01,28.98],
+  ['Cairo',30.04,31.24],['Lagos',6.52,3.38],['Nairobi',-1.29,36.82],['Cape Town',-33.92,18.42],
+  ['Dubai',25.20,55.27],['Mumbai',19.08,72.88],['New Delhi',28.61,77.21],['Bangkok',13.76,100.50],
+  ['Singapore',1.35,103.82],['Hong Kong',22.32,114.17],['Beijing',39.90,116.41],
+  ['Tokyo',35.68,139.65],['Seoul',37.57,126.98],['Sydney',-33.87,151.21],
+  ['Auckland',-36.85,174.76],['Honolulu',21.31,-157.86],
+];
+
+function acgWrap180(x){ return ((x + 180) % 360 + 360) % 360 - 180; }
+function acgEquatorial(lon, eps){
+  const lr = lon*D2R, er = eps*D2R;
+  return {
+    ra:  norm360(Math.atan2(Math.cos(er)*Math.sin(lr), Math.cos(lr))*R2D),
+    dec: Math.asin(Math.sin(er)*Math.sin(lr))*R2D,
+  };
+}
+function acgHorizon(ra, dec, phi, GMST){
+  const arg = -Math.tan(phi*D2R)*Math.tan(dec*D2R);
+  if (arg < -1 || arg > 1) return null;       // circumpolar / never rises here
+  const H0 = Math.acos(arg)*R2D;
+  return { asc: acgWrap180(ra - H0 - GMST), dsc: acgWrap180(ra + H0 - GMST) };
+}
+function computeAstrocartography(form){
+  // Mirror computeChart's JD / offset derivation exactly so positions match.
+  const [y,m,d] = form.date.split('-').map(Number);
+  const estOffset = form.geo ? Math.round(form.geo.lon/15) : 0;
+  let hourUT = 12;
+  if (!form.timeUnknown && form.time){ const [h,mi] = form.time.split(':').map(Number); hourUT = h + mi/60 - estOffset; }
+  const JD = julianDay(y, m, d, hourUT);
+  const T = (JD - 2451545.0)/36525.0;
+  const eps = meanObliquity(T), GMST = gmst(JD);
+  const lons = {
+    Sun: sunLongitudeFromJD(JD), Moon: moonLongitudeFromJD(JD),
+    Mercury: planetGeoLongitude('Mercury',JD), Venus: planetGeoLongitude('Venus',JD),
+    Mars: planetGeoLongitude('Mars',JD), Jupiter: planetGeoLongitude('Jupiter',JD),
+    Saturn: planetGeoLongitude('Saturn',JD), Uranus: planetGeoLongitude('Uranus',JD),
+    Neptune: planetGeoLongitude('Neptune',JD), Pluto: planetGeoLongitude('Pluto',JD),
+  };
+  const lats = []; for (let la=72; la>=-72; la-=1) lats.push(la);
+  const bodies = {};
+  for (const p of ACG_BODIES){
+    const lon = lons[p];
+    const { ra, dec } = acgEquatorial(lon, eps);
+    const asc=[], dsc=[];
+    for (const phi of lats){ const h = acgHorizon(ra,dec,phi,GMST); if (h){ asc.push([phi,h.asc]); dsc.push([phi,h.dsc]); } }
+    bodies[p] = { lon, sign: signOf(lon), ra, dec, mc: acgWrap180(ra-GMST), ic: acgWrap180(ra-GMST+180), asc, dsc };
+  }
+  return { JD, eps, gmst:GMST, bodies };
+}
+function acgLineLonAtLat(curve, lat){
+  for (let i=0;i<curve.length-1;i++){
+    const [la1,lo1]=curve[i],[la2,lo2]=curve[i+1];
+    if ((la1-lat)*(la2-lat) <= 0 && la1!==la2){
+      if (Math.abs(lo1-lo2) > 180) continue;   // skip +-180 seam
+      const f=(lat-la1)/(la2-la1); return lo1 + f*(lo2-lo1);
+    }
+  }
+  return null;
+}
+function acgNearPlace(acg, lat, lng, orb){
+  const hits=[];
+  for (const p of ACG_BODIES){
+    const b=acg.bodies[p];
+    for (const ang of ['mc','ic']){ const dd=Math.abs(acgWrap180(b[ang]-lng)); if (dd<=orb) hits.push({planet:p, angle:ang.toUpperCase(), lineLon:b[ang], dist:dd}); }
+    for (const ang of ['asc','dsc']){ const ll=acgLineLonAtLat(b[ang], lat); if (ll!=null){ const dd=Math.abs(acgWrap180(ll-lng)); if (dd<=orb) hits.push({planet:p, angle:ang.toUpperCase(), lineLon:ll, dist:dd}); } }
+  }
+  hits.sort((a,b)=>a.dist-b.dist);
+  return hits;
+}
+function acgDignity(chart, acg, planet){
+  const sign = acg.bodies[planet].sign, notes=[];
+  const rising = chart.western.rising ? chart.western.rising.sign : null;
+  if (rising && ACG_RULER[rising]===planet) notes.push('rules your whole chart (ruler of your rising sign)');
+  if ((ACG_DOMICILE[planet]||[]).includes(sign)) notes.push('in its own sign natally — unusually strong');
+  if (ACG_EXALT[planet]===sign) notes.push('exalted natally — at its best');
+  return notes.length ? `${planet} ${notes.join('; ')}` : null;
+}
+function acgFactsForPlace(acg, chart, form, place){
+  const orbNear = 5;                            // generous, so there's always an honest verdict
+  const hits = acgNearPlace(acg, place.lat, place.lng, orbNear);
+  const L=[];
+  L.push(`READER: ${form.name} (you). Born ${form.date}${form.timeUnknown?'':' at '+form.time} in ${form.geo?.display||form.city}.`);
+  if (chart.western.rising) L.push(`Rising sign: ${chart.western.rising.sign} (its ruler, ${ACG_RULER[chart.western.rising.sign]}, is your chart ruler).`);
+  L.push(`PLACE BEING READ: ${place.name} (${place.lat.toFixed(2)}°, ${place.lng.toFixed(2)}°).`);
+  L.push('');
+  L.push(`PLANETARY LINES NEAR ${place.name.toUpperCase()} (within ${orbNear}° longitude; ~70 mi per degree, influence strongest under ~2°):`);
+  if (!hits.length) L.push('  None within 5°. Astrocartographically quiet — no planet is angular nearby. Say so plainly; do not invent a line.');
+  for (const h of hits){
+    const mi = Math.round(h.dist*Math.cos(place.lat*D2R)*69);
+    const dig = acgDignity(chart, acg, h.planet);
+    L.push(`  ${h.planet} ${h.angle} — ${h.dist.toFixed(1)}° off (~${mi} mi). ${ACG_ANGLE_MEANING[h.angle]}.${dig?' NATAL NOTE: '+dig+'.':''}`);
+  }
+  if (form.geo){
+    const home = acgNearPlace(acg, form.geo.lat, form.geo.lon, orbNear).slice(0,3);
+    if (home.length){ L.push(''); L.push(`FOR CONTRAST — lines near the birthplace (${(form.geo.display||form.city).split(',')[0]}): ` + home.map(h=>`${h.planet} ${h.angle} (${h.dist.toFixed(1)}°)`).join(', ') + '.'); }
+  }
+  return L.join('\n');
+}
+function relocationPrompt(facts, place){
+  return `Write a RELOCATION READING — what living in ${place.name} does to this person's chart, using astrocartography.
+
+${facts}
+
+INSTRUCTIONS:
+- This is a "you + a place" reading. The subject is the relationship between the person and the location.
+- Lead with the single strongest line (smallest distance). If a nearby planet also carries a NATAL NOTE (rules the chart / own sign / exalted), that is the headline: say why this place amplifies something already central to them.
+- Translate each nearby line into lived experience — how it actually feels to live there — not jargon. House voice: no system-first sentences, the person is the subject, verdict over evidence, dry and honest.
+- Where useful, contrast the place with what the birthplace already gives them.
+- Name one honest caution (every strong line has a cost).
+- 350–550 words. Open with one bold title line: "**${place.name}: <3–5 word verdict>**". No preamble.
+- If no lines are within orb, say plainly this is an astrocartographically quiet place and what that means (steadier, less amplified). Do not fabricate a line.`;
+}
+
+function acgRegionBounds(lat, lng){
+  return [Math.max(-180,lng-45), Math.min(180,lng+45), Math.max(-85,lat-32), Math.min(85,lat+32)];
+}
+function acgMapSVG(acg, opts){
+  opts = opts || {};
+  const [lonMin,lonMax,latMin,latMax] = opts.bounds || [-180,180,-85,85];
+  const W=920, H=520, MX=44, MTOP=20, MBOT=16, pw=W-2*MX, ph=H-MTOP-MBOT;
+  const lonSpan=lonMax-lonMin, lonGrid = lonSpan>140?30:(lonSpan>80?20:10), latGrid=(latMax-latMin)>100?20:15;
+  const inLon = lo => lo>=lonMin && lo<=lonMax;
+  const X = lo => MX + (lo-lonMin)/(lonMax-lonMin)*pw;
+  const Y = la => MTOP + (latMax-la)/(latMax-latMin)*ph;
+  const esc = t => String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const s=[];
+  s.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="100%" font-family="ui-sans-serif,system-ui,sans-serif">`);
+  s.push(`<rect width="${W}" height="${H}" fill="#11141b"/>`);
+  s.push(`<rect x="${MX}" y="${MTOP}" width="${pw}" height="${ph}" fill="#171a22" stroke="#333a48"/>`);
+  for (let lo=Math.ceil(lonMin/lonGrid)*lonGrid; lo<=lonMax; lo+=lonGrid){ const x=X(lo).toFixed(1); s.push(`<line x1="${x}" y1="${MTOP}" x2="${x}" y2="${MTOP+ph}" stroke="#262b36"/>`); s.push(`<text x="${x}" y="${MTOP+ph-3}" fill="#5b606b" font-size="8" text-anchor="middle">${lo}°</text>`); }
+  for (let la=Math.ceil(latMin/latGrid)*latGrid; la<=latMax; la+=latGrid){ const y=Y(la).toFixed(1); s.push(`<line x1="${MX}" y1="${y}" x2="${MX+pw}" y2="${y}" stroke="#262b36"/>`); s.push(`<text x="${MX-3}" y="${(+y+3).toFixed(1)}" fill="#5b606b" font-size="8" text-anchor="end">${la}°</text>`); }
+  for (const [nm,la,lo] of ACG_CITIES){ if (la<latMin||la>latMax||!inLon(lo)) continue; const cx=X(lo).toFixed(1), cy=Y(la).toFixed(1); s.push(`<circle cx="${cx}" cy="${cy}" r="1.8" fill="#aeb3bd"/>`); s.push(`<text x="${(+cx+3).toFixed(1)}" y="${(+cy+2.5).toFixed(1)}" fill="#6b7280" font-size="7">${esc(nm)}</text>`); }
+  const dash={MC:'',IC:'2,3',ASC:'6,3',DSC:'6,3,1,3'};
+  const drawMer=(lo,c,da,lab)=>{ if(!inLon(lo))return; const x=X(lo).toFixed(1); s.push(`<line x1="${x}" y1="${MTOP}" x2="${x}" y2="${MTOP+ph}" stroke="${c}" stroke-width="1.5" stroke-dasharray="${da}" opacity="0.9"/>`); s.push(`<text x="${x}" y="${MTOP+8}" fill="${c}" font-size="7" text-anchor="middle">${lab}</text>`); };
+  const drawCurve=(curve,c,da,lab)=>{ let seg=[],segs=[],prev=null; for(const [la,lo] of curve){ const vis=inLon(lo)&&la>=latMin&&la<=latMax; if(prev!=null&&Math.abs(lo-prev)>180){segs.push(seg);seg=[];} if(!vis){ if(seg.length){segs.push(seg);seg=[];} prev=lo; continue; } seg.push([la,lo]); prev=lo; } segs.push(seg); let labeled=false; for(const sg of segs){ if(sg.length<2)continue; const pts=sg.map(([la,lo])=>`${X(lo).toFixed(1)},${Y(la).toFixed(1)}`).join(' '); s.push(`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="1.5" stroke-dasharray="${da}" opacity="0.9"/>`); if(!labeled){ const [la,lo]=sg[0]; s.push(`<text x="${(X(lo)+2).toFixed(1)}" y="${(Y(la)+7).toFixed(1)}" fill="${c}" font-size="7">${lab}</text>`); labeled=true; } } };
+  for (const p of ACG_BODIES){ const b=acg.bodies[p], c=ACG_COLOR[p], g=ACG_ABBR[p]; drawMer(b.mc,c,dash.MC,g+' MC'); drawMer(b.ic,c,dash.IC,g+' IC'); drawCurve(b.asc,c,dash.ASC,g+' AS'); drawCurve(b.dsc,c,dash.DSC,g+' DS'); }
+  const mark=(la,lo,col,lab)=>{ if(la<latMin||la>latMax||!inLon(lo))return; const cx=X(lo).toFixed(1),cy=Y(la).toFixed(1); s.push(`<circle cx="${cx}" cy="${cy}" r="5" fill="none" stroke="${col}" stroke-width="1.6"/>`); s.push(`<circle cx="${cx}" cy="${cy}" r="1.8" fill="${col}"/>`); s.push(`<text x="${(+cx+7).toFixed(1)}" y="${(+cy-5).toFixed(1)}" fill="${col}" font-size="9" font-weight="bold">${esc(lab)}</text>`); };
+  if (opts.home) mark(opts.home.lat,opts.home.lng,'#ffd166',opts.home.name);
+  if (opts.place) mark(opts.place.lat,opts.place.lng,'#39FF88',opts.place.name);
+  s.push('</svg>');
+  return s.join('');
+}
+
+function renderPlacesPanel(){
+  // Astrocartography angles need a known birth time and a located birthplace.
+  if (state.form.timeUnknown || !state.form.geo || !(state.chart && state.chart.western && state.chart.western.rising)){
+    return el('section',{class:'places'},
+      el('p',{class:'eyebrow'},'§ Places'),
+      el('p',{class:'glossary-intro'},'Astrocartography needs a known birth time and a located birthplace — it maps where each planet was angular at the moment you were born. Add your exact birth time to unlock relocation readings.'));
+  }
+  const sec = el('section',{class:'places'});
+  sec.appendChild(el('p',{class:'eyebrow'},'§ Places — read a location'));
+  sec.appendChild(el('p',{class:'glossary-intro'},'Astrocartography maps where each planet was rising, setting, or overhead at your birth. Stand near one of those lines and that planet gets turned up in your life. Enter a place to see what it does to your chart.'));
+  const status = el('p',{class:'field-help'});
+  const input = el('input',{type:'text',placeholder:'City, country',style:'flex:1;min-width:0'});
+  const out = el('div',{style:'margin-top:14px'});
+  const go = el('button',{type:'button',class:'btn btn-line',onclick:async()=>{
+    const q = input.value.trim();
+    if (q.length < 2){ status.textContent='Enter a place.'; status.className='field-help err'; return; }
+    go.disabled = true; status.textContent='Locating…'; status.className='field-help';
+    const tmp={};
+    await geocodeInto(q, status, tmp);
+    go.disabled = false;
+    if (!tmp.geo) return;                         // geocodeInto already set the error status
+    const place = { name: q.split(',')[0].trim(), lat: tmp.geo.lat, lng: tmp.geo.lon };
+    if (!state.acg) state.acg = computeAstrocartography(state.form);
+    out.innerHTML='';
+    const homeName = (state.form.geo.display || state.form.city || 'birthplace').split(',')[0];
+    const mapWrap = el('div',{style:'border:1px solid #2a2e38;border-radius:10px;overflow:hidden;margin-bottom:14px'});
+    mapWrap.innerHTML = acgMapSVG(state.acg, {
+      bounds: acgRegionBounds(place.lat, place.lng),
+      home: { name: homeName, lat: state.form.geo.lat, lng: state.form.geo.lon },
+      place: { name: place.name, lat: place.lat, lng: place.lng },
+    });
+    out.appendChild(mapWrap);
+    const rd = el('div',{class:'blueprint-body'}, el('span',{class:'cursor'}));
+    out.appendChild(rd);
+    try { await streamToElement(relocationPrompt(acgFactsForPlace(state.acg, state.chart, state.form, place), place), rd); }
+    catch(e){ rd.innerHTML=''; rd.appendChild(el('p',{class:'field-help err'}, 'Reading unavailable: '+e.message)); }
+  }}, 'Read this place');
+  sec.appendChild(el('div',{style:'display:flex;gap:10px;align-items:stretch'}, input, go));
+  sec.appendChild(status);
+  sec.appendChild(out);
+  return sec;
+}
+
 function renderReading() {
   const root = $('#app');
   root.innerHTML = '';
@@ -2132,6 +2354,7 @@ function renderReading() {
   ));
   shell.appendChild(renderDeepDive());
   shell.appendChild(renderGlossary());
+  shell.appendChild(renderPlacesPanel());
   shell.appendChild(el('div',{class:'copy-wrap'},el('button',{id:'copy-btn',class:'btn btn-line btn-block',onclick:copyFullReading},'Copy full reading')));
   shell.appendChild(el('footer',{class:'reading-footer'},el('p',{class:'end'},'The map no one else saw coming.')));
 }
