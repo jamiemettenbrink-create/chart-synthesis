@@ -111,6 +111,18 @@ Your current Vedic chapter is a **Mercury major-period (2021–2038)**, which ma
 
 ---
 
+## Living in Boulder, CO
+
+![North America detail](jamie-rae-mettenbrink-astrocartography-northamerica.png)
+
+Boulder (40.0°N, 105.3°W) has, by a wide margin, a single dominant signature: it sits in the **Venus rising (ASC)** zone. The Venus ASC line runs through the Front Range about **3.2° / ~170 miles east** of Boulder (Denver is ~150 miles); every other line is 600+ miles away.
+
+This matters more for you than it would for most people, because **Venus rules your entire chart** — Taurus is your rising sign, and natal Venus sits in its own sign in the 1st house. So Boulder amplifies the planet that already runs your chart, on the angle (rising) that fuses with body and identity. Practically: you're met as the warmer, more magnetic, more at-ease version of yourself; beauty, nature, relationship, pleasure, and a sense of value get foregrounded. It's one of the gentlest, most affirming places you could stand.
+
+Just as important is what Boulder *avoids*. You're ~700 miles east of your Sun/Moon/Pluto Full-Moon line (that intensity lives out toward the West Coast) and nowhere near a Saturn, Mars, or Pluto angular line. Boulder gives you the Venusian lift without the fated, heavy charge of your birth coast. The one thing to stay awake to: a Venus-rising line foregrounds harmony and being liked, which is the pleasant version of the exact South-Node-Libra accommodation groove your nodal axis (toward North Node Aries) is trying to grow out of. The location supports comfort; the self-assertion work is something you'll choose deliberately there.
+
+---
+
 ## Honest limits
 
 Astrocartography is a symbolic relocation technique, not a forecast. The lines are zones of emphasis, not switches, and a place is always more than one line — geography, language, money, and the people already in your life matter more than any of this. The two outer-body horizon curves (Moon, Pluto) are computed to ~1–2°; treat them as bands. And every line here is built from the *same* birth data as your natal chart, so if your recorded birth time were off by a few minutes, the **MC/IC meridian lines shift by roughly that many degrees of longitude** (4 minutes of time ≈ 1° of longitude) — the ASC/DSC curves move too. The 6:10 AM time looks solid against the chart, but that's the one input worth being sure of.

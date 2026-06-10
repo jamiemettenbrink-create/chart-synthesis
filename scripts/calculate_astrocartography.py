@@ -94,6 +94,7 @@ COLOR = {
 # and a globally distributed set of major cities. (name, lat, lng)
 CITIES = [
     ("Phoenix (birthplace)", 33.49, -111.93),
+    ("Boulder", 40.015, -105.27),
     ("Los Angeles", 34.05, -118.24), ("Vancouver", 49.28, -123.12),
     ("Denver", 39.74, -104.99), ("Chicago", 41.88, -87.63),
     ("Toronto", 43.65, -79.38), ("New York", 40.71, -74.01),
@@ -256,13 +257,27 @@ def proximity_report(lines, orb=2.0):
 # SVG rendering (equirectangular projection)
 # ----------------------------------------------------------------------------
 
-def build_svg(lines, title, subtitle, orb=2.0):
+REGIONS = {
+    'world':         (-180, 180, -85, 85),
+    'north-america': (-140, -52, 7, 72),
+    'europe':        (-25, 45, 30, 72),
+    'asia':          (40, 150, -10, 60),
+}
+
+
+def build_svg(lines, title, subtitle, orb=2.0, bounds=None, home=None):
+    lon_min, lon_max, lat_min, lat_max = bounds or REGIONS['world']
     W, H = 1500, 820
     MX, MTOP, MBOT = 60, 70, 150          # margins (legend lives in MBOT)
     plot_w = W - 2 * MX
     plot_h = H - MTOP - MBOT
-    lon_min, lon_max = -180, 180
-    lat_min, lat_max = -85, 85
+    lon_span = lon_max - lon_min
+    # Finer graticule when zoomed in.
+    lon_grid = 30 if lon_span > 140 else (20 if lon_span > 80 else 10)
+    lat_grid = 20 if (lat_max - lat_min) > 100 else 10
+
+    def in_lon(lon):
+        return lon_min <= lon <= lon_max
 
     def X(lon):
         return MX + (lon - lon_min) / (lon_max - lon_min) * plot_w
@@ -283,25 +298,28 @@ def build_svg(lines, title, subtitle, orb=2.0):
     s.append(f'<text x="{MX}" y="56" fill="#9aa0ac" font-size="14">{subtitle}</text>')
 
     # Graticule
-    for lon in range(-180, 181, 30):
+    g0 = int(math.ceil(lon_min / lon_grid) * lon_grid)
+    for lon in range(g0, int(lon_max) + 1, lon_grid):
         x = X(lon)
         s.append(f'<line x1="{x:.1f}" y1="{MTOP}" x2="{x:.1f}" y2="{MTOP+plot_h}" '
                  f'stroke="#2a2e38" stroke-width="1"/>')
         s.append(f'<text x="{x:.1f}" y="{MTOP+plot_h+16}" fill="#6b7280" '
                  f'font-size="11" text-anchor="middle">{lon}°</text>')
-    for lat in range(-80, 81, 20):
+    lg0 = int(math.ceil(lat_min / lat_grid) * lat_grid)
+    for lat in range(lg0, int(lat_max) + 1, lat_grid):
         y = Y(lat)
         s.append(f'<line x1="{MX}" y1="{y:.1f}" x2="{MX+plot_w}" y2="{y:.1f}" '
                  f'stroke="#2a2e38" stroke-width="1"/>')
         s.append(f'<text x="{MX-8}" y="{y+4:.1f}" fill="#6b7280" font-size="11" '
                  f'text-anchor="end">{lat}°</text>')
     # Equator emphasis
-    s.append(f'<line x1="{MX}" y1="{Y(0):.1f}" x2="{MX+plot_w}" y2="{Y(0):.1f}" '
-             f'stroke="#3c4250" stroke-width="1.5"/>')
+    if lat_min <= 0 <= lat_max:
+        s.append(f'<line x1="{MX}" y1="{Y(0):.1f}" x2="{MX+plot_w}" y2="{Y(0):.1f}" '
+                 f'stroke="#3c4250" stroke-width="1.5"/>')
 
     # Cities
     for name, lat, lng in CITIES:
-        if not (lat_min <= lat <= lat_max):
+        if not (lat_min <= lat <= lat_max and in_lon(lng)):
             continue
         cx, cy = X(lng), Y(lat)
         birth = name.endswith('(birthplace)')
@@ -313,10 +331,21 @@ def build_svg(lines, title, subtitle, orb=2.0):
         s.append(f'<text x="{cx+5:.1f}" y="{cy+3:.1f}" fill="#8b909b" '
                  f'font-size="9">{label}</text>')
 
+    # Home marker (where the person currently lives)
+    if home and (lat_min <= home['lat'] <= lat_max) and in_lon(home['lng']):
+        hx, hy = X(home['lng']), Y(home['lat'])
+        s.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="7" fill="none" '
+                 f'stroke="#39FF88" stroke-width="2"/>')
+        s.append(f'<circle cx="{hx:.1f}" cy="{hy:.1f}" r="2.5" fill="#39FF88"/>')
+        s.append(f'<text x="{hx+10:.1f}" y="{hy-8:.1f}" fill="#39FF88" '
+                 f'font-size="12" font-weight="bold">{home["name"]}</text>')
+
     # Line styles per angle
     dash = {'MC': 'none', 'IC': '2,4', 'ASC': '7,4', 'DSC': '7,4,1,4'}
 
     def draw_meridian(lon, color, da, label):
+        if not in_lon(lon):
+            return
         x = X(lon)
         s.append(f'<line x1="{x:.1f}" y1="{MTOP}" x2="{x:.1f}" y2="{MTOP+plot_h}" '
                  f'stroke="{color}" stroke-width="2" stroke-dasharray="{da}" '
@@ -325,23 +354,33 @@ def build_svg(lines, title, subtitle, orb=2.0):
                  f'text-anchor="middle">{label}</text>')
 
     def draw_curve(curve, color, da, label):
-        # Split into segments wherever the longitude crosses the +-180 seam.
+        # Break into segments on the +-180 seam OR when a point leaves the
+        # visible bounds, so zoomed panels don't draw lines across the margins.
         seg, segs = [], []
         prev = None
         for lat, lon in curve:
+            visible = in_lon(lon) and (lat_min <= lat <= lat_max)
             if prev is not None and abs(lon - prev) > 180:
                 segs.append(seg); seg = []
+            if not visible:
+                if seg:
+                    segs.append(seg); seg = []
+                prev = lon
+                continue
             seg.append((lat, lon)); prev = lon
         segs.append(seg)
+        drawn = False
         for sg in segs:
             if len(sg) < 2:
                 continue
+            drawn = True
             pts = ' '.join(f'{X(lo):.1f},{Y(la):.1f}' for la, lo in sg)
             s.append(f'<polyline points="{pts}" fill="none" stroke="{color}" '
                      f'stroke-width="2" stroke-dasharray="{da}" opacity="0.92"/>')
-        # label near the top of the longest segment
-        longest = max(segs, key=len)
-        if longest:
+        # label near the top of the longest visible segment
+        vis = [sg for sg in segs if len(sg) >= 2]
+        if drawn and vis:
+            longest = max(vis, key=len)
             la, lo = longest[0]
             s.append(f'<text x="{X(lo)+4:.1f}" y="{Y(la)+10:.1f}" fill="{color}" '
                      f'font-size="9">{label}</text>')
@@ -440,6 +479,11 @@ def main():
     ap.add_argument('--lng', type=float, required=True)
     ap.add_argument('--orb', type=float, default=2.0,
                     help='Orb of influence in degrees of longitude (default 2.0)')
+    ap.add_argument('--region', default='world', choices=sorted(REGIONS),
+                    help='Map extent (default world)')
+    ap.add_argument('--home', default=None,
+                    help='Current home to mark, as "Name,lat,lng" '
+                         '(e.g. "Boulder,40.015,-105.27")')
     ap.add_argument('--svg', default=None, help='Path to write the SVG map')
     ap.add_argument('--json', default=None, help='Path to write the raw line JSON')
     args = ap.parse_args()
@@ -453,6 +497,12 @@ def main():
 
     print(format_summary(lines, chart, args.orb))
 
+    home = None
+    if args.home:
+        parts = args.home.split(',')
+        home = {'name': parts[0].strip(),
+                'lat': float(parts[1]), 'lng': float(parts[2])}
+
     if args.svg:
         title = f"{args.name} — Astrocartography"
         sign = chart['planets']['Sun']
@@ -461,7 +511,8 @@ def main():
                f"Sun {sign['degree']}° {sign['sign']}, "
                f"Moon {chart['planets']['Moon']['degree']}° "
                f"{chart['planets']['Moon']['sign']}")
-        svg = build_svg(lines, title, sub, args.orb)
+        svg = build_svg(lines, title, sub, args.orb,
+                        bounds=REGIONS[args.region], home=home)
         os.makedirs(os.path.dirname(args.svg) or '.', exist_ok=True)
         with open(args.svg, 'w') as f:
             f.write(svg)
