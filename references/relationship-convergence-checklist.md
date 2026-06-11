@@ -27,9 +27,13 @@
 
 ## Cross-system (computed)
 
-- □ BaZi — does the Day Master interaction (resonance / one-way support /
+- □ BaZi (stems) — does the Day Master interaction (resonance / one-way support /
   one-way control) echo the Western chemistry or cut against it? A "feeds" or
   "checks" direction is itself a Blueprint-worthy dynamic when it converges.
+- □ BaZi (branches) — do the two Year animals form a six-combination/three-harmony
+  (bond, ease) or a clash (volatility)? When the animal pairing and the Day Master
+  direction agree, that's a within-tradition convergence; when the stem layer says
+  "support" but the branch layer "clashes," name the mixed signal honestly.
 - □ Vedic — does either person's lunar nodal axis fall on the other's Sun/Moon/
   Venus/Mars? A nodal hit raises the "fated, sticky" reading — weight it.
 - □ Numerology — do the two Life Paths share a number (one road, one blind spot)?

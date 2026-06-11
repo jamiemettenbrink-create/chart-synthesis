@@ -6,10 +6,10 @@
 > Deep Dive; the relational Blueprint reports the verdict jargon-free.
 >
 > Computed now: Western synastry + composite (below), plus BaZi Day Master
-> interaction, Numerology Life Path interaction, the Vedic/lunar nodal axis (§4),
-> and Human Design connection theory (`hd-connection-theory.md`) — all contributed
-> through the `SYNASTRY_CONTRIBUTORS` registry. HD runs only when both birth times
-> and the HD service are available.
+> interaction, BaZi Year-animal (Chinese zodiac) interaction, Numerology Life Path
+> interaction, the Vedic/lunar nodal axis (§4), and Human Design connection theory
+> (`hd-connection-theory.md`) — all contributed through the `SYNASTRY_CONTRIBUTORS`
+> registry. HD runs only when both birth times and the HD service are available.
 
 ---
 
@@ -92,6 +92,24 @@ Compare the two Day Master elements through the Five-Element cycle:
   one-way control: the controlling element disciplines or contains the other;
   steadying in small doses, controlling in large ones.
 The dynamic is **directional** — name who feeds or checks whom, not a verdict.
+
+### BaZi — Earthly-Branch (Chinese zodiac animal) interaction
+Compare the two **Year animals** (the 12-year branch cycle) the same way a single
+chart's pillars are read — only here the two branches belong to two people. A
+pairing falls into exactly one of these, or none:
+- **Same animal →** resonance: an easy, familiar likeness that can tip into too
+  much sameness with no counterbalance.
+- **Six Combination (六合) →** a bonded pair that merges toward a new element
+  (Rat–Ox, Tiger–Pig, Rabbit–Dog, Dragon–Rooster, Snake–Monkey, Horse–Goat):
+  natural cooperation and an easy "we fit" quality.
+- **Three Harmony (三合) →** the two share a trine of the same element
+  (Water: Monkey-Rat-Dragon · Wood: Pig-Rabbit-Goat · Fire: Tiger-Horse-Dog ·
+  Metal: Snake-Rooster-Ox): allied temperaments, low friction, shared direction.
+- **Clash (六冲) →** the two sit opposite on the wheel, six apart (Rat–Horse,
+  Ox–Goat, Tiger–Monkey, Rabbit–Rooster, Dragon–Dog, Snake–Pig): a charged
+  push-pull axis — electric in small doses, destabilizing in large ones.
+This is the animal-cycle counterpart to the Day Master (stem) layer: stems give
+the elemental direction, branches give the zodiac-pair texture. Still no score.
 
 ### Numerology — Life Path interaction
 Light touch, one line, and only when it converges: if both walk the same Life
