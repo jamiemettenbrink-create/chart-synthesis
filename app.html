@@ -130,6 +130,18 @@ input,select,textarea{font:inherit;color:inherit}
 .deep-dive,.glossary{margin-top:56px}
 .deep-dive .eyebrow,.glossary .eyebrow{margin-bottom:20px}
 .glossary-intro{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.45;color:var(--pewter);max-width:56ch;margin:0 0 28px;text-wrap:pretty}
+/* ─── Astrocartography sections + core/addon layering ─── */
+.places{margin-top:56px}
+.acg-map-wrap{border:1px solid var(--slate);border-radius:10px;overflow:hidden;margin:6px 0 22px;background:#11141b}
+.addon-section{margin-top:56px;padding-top:52px;border-top:1px solid var(--slate)}
+.addon-section .eyebrow{color:var(--auric)}
+.addon-sub{font-family:var(--display);font-style:italic;font-size:18px;color:var(--pewter);margin:14px 0 24px;max-width:52ch;text-wrap:pretty}
+.addon-deepdive{margin-top:48px}
+/* ─── Sticky in-page jump navigation ─── */
+.jump-nav{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 4px;padding:11px 0;background:color-mix(in srgb,var(--void) 88%,transparent);border-bottom:1px solid var(--slate-soft);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.jump-link{font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:var(--pewter);background:transparent;border:1px solid var(--slate-soft);border-radius:999px;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:color 150ms ease-out,border-color 150ms ease-out,background 150ms ease-out}
+.jump-link:hover{color:var(--parchment);border-color:var(--slate);background:var(--iron)}
+.blueprint,.deep-dive,.glossary,.places,.addon-section{scroll-margin-top:72px}
 .acc{border-top:1px solid var(--slate-soft)}
 .deep-dive .acc:last-child,.glossary .acc:last-child{border-bottom:1px solid var(--slate-soft)}
 .acc-header{display:grid;grid-template-columns:30px 1fr 18px;gap:10px;align-items:start;width:100%;background:transparent;border:0;padding:22px 0;cursor:pointer;text-align:left;min-height:56px;transition:opacity 150ms ease-out}
@@ -1140,7 +1152,8 @@ const state = {
   form: BLANK_PERSON_FORM(),
   form2: BLANK_PERSON_FORM(),                 // the second person (relational mode)
   relationship: { enabled:false, type:'romantic' },
-  mode: 'single',                             // 'single' | 'relational'
+  location: { enabled:false, city:'', geo:null },  // optional "add a location" addon
+  mode: 'single',                             // 'single' | 'relational' (legacy; routing is now per-section)
   chart: null,
   chartB: null,
   synastry: null,
@@ -2056,8 +2069,8 @@ function renderForm() {
     relToggle.classList.toggle('is-on',state.relationship.enabled);
     relDot.classList.toggle('is-on',state.relationship.enabled);
     relBlock.classList.toggle('is-on',state.relationship.enabled);
-    generateBtn.textContent = state.relationship.enabled ? 'Generate Relationship Reading' : 'Generate Reading';
-  }},relDot,'Add a second person');
+    updateGenerateBtn();
+  }},relDot,'Add a relationship');
   form.appendChild(el('div',{class:'field rel-toggle-field'},relToggle));
 
   const typeGrid = el('div',{class:'rel-type-grid'});
@@ -2077,22 +2090,54 @@ function renderForm() {
   personFieldset(state.form2,'p').forEach(n => relBlock.appendChild(n));
   form.appendChild(relBlock);
 
+  // ── Location: add a place to relocate the chart to ──
+  const locBlock = el('div',{class:'rel-block'+(state.location.enabled?' is-on':''),id:'loc-block'});
+  const locDot = el('span',{class:'dot'+(state.location.enabled?' is-on':'')});
+  const locToggle = el('button',{type:'button',class:'time-toggle'+(state.location.enabled?' is-on':''),title:'Read how a place reshapes your chart (astrocartography).',onclick:()=>{
+    state.location.enabled = !state.location.enabled;
+    locToggle.classList.toggle('is-on',state.location.enabled);
+    locDot.classList.toggle('is-on',state.location.enabled);
+    locBlock.classList.toggle('is-on',state.location.enabled);
+    updateGenerateBtn();
+  }},locDot,'Add a location');
+  form.appendChild(el('div',{class:'field rel-toggle-field'},locToggle));
+  const locHelp = el('p',{class:'field-help'});
+  const locInput = el('input',{id:'f-loc',type:'text',autocomplete:'off',placeholder:'City, country',value:state.location.city});
+  setupGeocodeFor(locInput, locHelp, state.location);
+  locBlock.appendChild(el('div',{class:'rel-block-head'},
+    el('p',{class:'rel-block-title'},'A place to read'),
+    el('p',{class:'rel-block-sub'},'Astrocartography relocates your birth chart. Stand near one of your planetary lines and that planet gets turned up — this reads what a place does to you. Needs a known birth time.'),
+  ));
+  locBlock.appendChild(field({id:'f-loc',label:'Location',input:locInput,helpEl:locHelp}));
+  form.appendChild(locBlock);
+
   const formErr = el('p',{id:'form-err',class:'form-err'});
   form.appendChild(formErr);
-  const generateBtn = el('button',{type:'submit',class:'btn btn-primary btn-block'}, state.relationship.enabled ? 'Generate Relationship Reading' : 'Generate Reading');
+  const generateBtn = el('button',{type:'submit',class:'btn btn-primary btn-block'});
+  function updateGenerateBtn(){
+    const add = [];
+    if (state.relationship.enabled) add.push('Relationship');
+    if (state.location.enabled) add.push('Location');
+    generateBtn.textContent = add.length ? 'Generate Reading + ' + add.join(' + ') : 'Generate Reading';
+  }
+  updateGenerateBtn();
   form.appendChild(generateBtn);
   form.addEventListener('submit', e => {
     e.preventDefault();
     const errs = validate();
     if (state.relationship.enabled) errs.push(...validatePerson(state.form2,'Second person'));
+    if (state.location.enabled){
+      if (state.form.timeUnknown) errs.push('A location reading needs a known birth time. Turn off the location toggle, or add your birth time.');
+      if (!state.location.geo) errs.push('Location is empty or not found. Enter a city for the location reading, or turn the toggle off.');
+    }
     if (errs.length) { formErr.textContent=errs[0]; formErr.classList.add('show'); return; }
     formErr.classList.remove('show');
     // Immediate, synchronous acknowledgment — the click registers before any
     // async work starts, so silence never reads as breakage.
     generateBtn.disabled = true;
-    generateBtn.textContent = state.relationship.enabled ? 'Reading the relationship…' : 'Reading the chart…';
-    if (state.relationship.enabled) { startRelationalReading(); }
-    else { upsertSelf(state.form); startReading(); }   // the form-filler is "you"
+    generateBtn.textContent = state.relationship.enabled ? 'Reading the charts…' : 'Reading the chart…';
+    upsertSelf(state.form);   // the form-filler is always "you"
+    startReading();
   });
   shell.appendChild(el('footer',{class:'form-footer'},el('p',{},'v2 · Real astronomy (Meeus + JPL elements) · Synthesis generated via Claude API. UTC offset estimated from longitude — accurate to ±1hr.')));
   const saved = renderSavedManage();
@@ -2115,26 +2160,53 @@ function validate() {
   return errs;
 }
 
-/* ─── Reading lifecycle ─── */
+/* ─── Reading lifecycle — one core reading, plus optional addons ─────────────
+   The form-filler is always "you": the core natal reading. Two independent
+   toggles layer on additional sections in the SAME document — a relationship
+   (you + someone) and a location (you + a place). Each addon computes its own
+   data and renders its own §section; nothing replaces the core reading. */
 async function startReading() {
-  state.mode = 'single';
+  state.mode = state.relationship.enabled ? 'relational' : 'single';   // legacy flag, kept for any external readers
   state.reading = { blueprint:'', deepDive:{}, glossary:{} };
+  state.relReading = { blueprint:'', deepDive:{} };
   ddInit();
   state.generating = true;
-  // Try HD API if key configured
-  const estOffset = state.form.geo ? Math.round(state.form.geo.lon / 15) : 0;
-  state.hdData = await fetchHD(state.form, estOffset);
-  state.chart = computeChart(state.form, state.hdData);
-  // Navigate the moment chart data is ready — block only on the Blueprint,
-  // never on the Deep Dive.
+  // Core "you" chart. With a relationship addon, both charts come from the
+  // deterministic roster-derived path so the pair stays symmetric.
+  if (state.relationship.enabled) {
+    const self  = upsertSelf(state.form);
+    const other = upsertPerson(state.form2, self.id);
+    state.chart  = derivedChartFor(self);
+    state.chartB = derivedChartFor(other);
+    await Promise.all([ enrichHD(state.chart, state.form), enrichHD(state.chartB, state.form2) ]);
+    state.synastry = computeSynastry(state.chart, state.chartB);
+  } else {
+    // Solo: compute directly. Self is upserted by the form submit (not here), so
+    // reading a saved roster person solo never overwrites "you".
+    const estOffset = state.form.geo ? Math.round(state.form.geo.lon / 15) : 0;
+    state.hdData = await fetchHD(state.form, estOffset);
+    state.chart = computeChart(state.form, state.hdData);
+  }
+  // Astrocartography (for the core map section and any location addon) needs a
+  // known birth time + located birthplace. Computed once, reused by both.
+  state.acg = acgAvailable() ? computeAstrocartography(state.form) : null;
+  // Navigate the moment chart data is ready — block only on the Blueprints,
+  // never on the Deep Dives or the addon streams.
   renderReading();
   await streamBlueprint();
+  if (state.relationship.enabled) await streamRelBlueprint();
   state.generating = false;
   const copyBtn = $('#copy-btn');
   if (copyBtn) copyBtn.classList.add('show');
-  // Race the reader: prefetch Deep Dive sections in display order so expands
-  // land on ready content. Fire-and-forget — never blocks the screen.
+  // Fire-and-forget: race the reader on every layer present.
+  if (state.acg) { streamMapDigest(); if (state.location.enabled) streamLocationReading(); }
   prefetchDeepDive();
+}
+
+// Astrocartography is only meaningful with a known birth time and a located
+// birthplace (it maps where each planet was angular at the exact moment).
+function acgAvailable(){
+  return !state.form.timeUnknown && !!state.form.geo && !!(state.chart && state.chart.western && state.chart.western.rising);
 }
 
 /* ─── Astrocartography (relocation: "you + a place") ──────────────────────
@@ -2274,6 +2346,44 @@ INSTRUCTIONS:
 - If no lines are within orb, say plainly this is an astrocartographically quiet place and what that means (steadier, less amplified). Do not fabricate a line.`;
 }
 
+// Facts for the always-on "Your Map" digest: the birthplace's own angular lines,
+// the strongest (dignified) lines anywhere, and which world cities sit on a line.
+function acgGlobalFacts(acg, chart, form){
+  const L=[];
+  L.push(`READER: ${form.name} (you). Born ${form.date}${form.timeUnknown?'':' at '+form.time} in ${form.geo?.display||form.city}.`);
+  if (chart.western.rising) L.push(`Rising: ${chart.western.rising.sign} (chart ruler ${ACG_RULER[chart.western.rising.sign]}).`);
+  const dignified = ACG_BODIES.filter(p => acgDignity(chart, acg, p)).map(p => `${p} — ${acgDignity(chart, acg, p)}`);
+  L.push('');
+  L.push('YOUR STRONGEST LINES (dignified — these carry the most weight wherever in the world they fall):');
+  if (!dignified.length) L.push('  No standout dignities — no single planet dominates the map; lines read more evenly.');
+  dignified.forEach(d => L.push('  '+d+'.'));
+  const home = acgNearPlace(acg, form.geo.lat, form.geo.lon, 6);
+  L.push('');
+  L.push(`LINES AT THE BIRTHPLACE (${(form.geo.display||form.city).split(',')[0]} — what home already gives, within 6°):`);
+  if (!home.length) L.push('  None within 6° — the birthplace itself is astrocartographically quiet.');
+  home.slice(0,4).forEach(h => { const dig=acgDignity(chart,acg,h.planet); L.push(`  ${h.planet} ${h.angle} — ${h.dist.toFixed(1)}° off. ${ACG_ANGLE_MEANING[h.angle]}.${dig?' NATAL NOTE: '+dig+'.':''}`); });
+  const cityHits=[];
+  for (const [nm,la,lo] of ACG_CITIES){ const hits = acgNearPlace(acg, la, lo, 4); if (hits.length) cityHits.push({ city:nm, h:hits[0] }); }
+  cityHits.sort((a,b)=>a.h.dist-b.h.dist);
+  L.push('');
+  L.push('MAJOR CITIES SITTING ON ONE OF YOUR LINES (closest first, within 4°):');
+  if (!cityHits.length) L.push('  None of the reference cities fall on a line within orb.');
+  cityHits.slice(0,8).forEach(ch => { const dig=acgDignity(chart,acg,ch.h.planet); L.push(`  ${ch.city}: ${ch.h.planet} ${ch.h.angle} (${ch.h.dist.toFixed(1)}° off)${dig?' — '+dig:''}.`); });
+  return L.join('\n');
+}
+function mapDigestPrompt(facts){
+  return `Write a short ASTROCARTOGRAPHY MAP DIGEST — a high-level read of what this person's relocation map says about them and the world.
+
+${facts}
+
+INSTRUCTIONS:
+- This is the overview of their whole map, not one place. Synthesize: which lines define them, what their birthplace already gives, and 2–4 places worth knowing (and why).
+- Lead with their strongest line(s) — dignified planets carry the most weight wherever they fall.
+- Translate lines into lived experience, not jargon. House voice: the person is the subject, verdict over evidence, dry and honest. No system-first sentences.
+- Name one place that amplifies something already central to them, and one place that would steady or quiet them.
+- 200–320 words. No bold title line, no preamble — start with the body. End without a summary sentence.`;
+}
+
 function acgRegionBounds(lat, lng){
   return [Math.max(-180,lng-45), Math.min(180,lng+45), Math.max(-85,lat-32), Math.min(85,lat+32)];
 }
@@ -2353,15 +2463,117 @@ function renderReading() {
   const shell = el('div',{class:'shell shell-reading'});
   root.appendChild(shell);
   shell.appendChild(renderHeaderSummary());
-  shell.appendChild(el('section',{class:'blueprint'},
+
+  // Build the single document section by section, collecting jump-nav targets.
+  const nav = [];
+  const addSection = (node, label) => { nav.push({ id: node.id, label }); shell.appendChild(node); };
+
+  // ── Core: Blueprint ──
+  addSection(el('section',{class:'blueprint',id:'sec-blueprint'},
     el('p',{class:'eyebrow'},'§ The Blueprint'),
     el('div',{class:'blueprint-body',id:'blueprint-body'}),
-  ));
-  shell.appendChild(renderDeepDive());
-  shell.appendChild(renderGlossary());
-  shell.appendChild(renderPlacesPanel());
+  ), 'Blueprint');
+
+  // ── Core: Deep Dive ──
+  const dd = renderDeepDive(); dd.id = 'sec-deepdive';
+  addSection(dd, 'Deep Dive');
+
+  // ── Core: Your Map (astrocartography) — only with a known birth time + place ──
+  if (state.acg) addSection(renderMapSection(), 'Your Map');
+
+  // ── Addon: Relationship ──
+  if (state.relationship.enabled) addSection(renderRelationshipSection(), 'Relationship');
+
+  // ── Addon: Location ──
+  if (state.location.enabled && state.acg) {
+    const place = locationPlace();
+    addSection(renderLocationSection(place), place.name);
+  }
+
+  // ── Core: Glossary ──
+  const gl = renderGlossary(); gl.id = 'sec-glossary';
+  addSection(gl, 'At a Glance');
+
+  // ── Core: interactive "read a place" search (only when astrocartography works) ──
+  if (state.acg) { const pp = renderPlacesPanel(); pp.id = 'sec-places'; addSection(pp, 'Read a place'); }
+
+  // Jump-nav sits directly under the header, above the first section.
+  shell.insertBefore(renderJumpNav(nav), shell.children[1]);
+
   shell.appendChild(el('div',{class:'copy-wrap'},el('button',{id:'copy-btn',class:'btn btn-line btn-block',onclick:copyFullReading},'Copy full reading')));
   shell.appendChild(el('footer',{class:'reading-footer'},el('p',{class:'end'},'The map no one else saw coming.')));
+}
+
+// Sticky in-page navigation across the layers present. Anchor scroll only — the
+// reading stays one document (the "Copy full reading" model depends on that).
+function renderJumpNav(items){
+  const nav = el('nav',{class:'jump-nav','aria-label':'Jump to section'});
+  items.forEach(it => nav.appendChild(el('button',{type:'button',class:'jump-link',onclick:()=>{
+    const t = document.getElementById(it.id);
+    if (t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+  }}, it.label)));
+  return nav;
+}
+
+/* ─── Core map section (always-on astrocartography overview) ─── */
+function renderMapSection(){
+  const wrap = el('section',{class:'places map-section',id:'sec-map'});
+  wrap.appendChild(el('p',{class:'eyebrow'},'§ Your Map'));
+  wrap.appendChild(el('p',{class:'glossary-intro'},'Astrocartography maps where each planet was rising, setting, or overhead at your birth. The lines are fixed — they say which parts of the world turn up which parts of you.'));
+  const homeName = (state.form.geo.display || state.form.city || 'birthplace').split(',')[0];
+  const mapWrap = el('div',{class:'acg-map-wrap'});
+  mapWrap.innerHTML = acgMapSVG(state.acg, { home: { name: homeName, lat: state.form.geo.lat, lng: state.form.geo.lon } });
+  wrap.appendChild(mapWrap);
+  wrap.appendChild(el('div',{class:'blueprint-body',id:'map-digest-body'}, el('span',{class:'cursor'})));
+  return wrap;
+}
+async function streamMapDigest(){
+  const body = $('#map-digest-body'); if (!body) return;
+  try { state.reading.mapDigest = await streamToElement(mapDigestPrompt(acgGlobalFacts(state.acg, state.chart, state.form)), body); }
+  catch(e){ body.innerHTML=''; body.appendChild(el('p',{class:'field-help err'}, 'Map reading unavailable: '+e.message)); }
+}
+
+/* ─── Relationship addon section (core + addon, in-document) ─── */
+function renderRelationshipSection(){
+  const cfg = REL_TYPE_CONFIG[state.relationship.type];
+  const a = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
+  const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
+  const wrap = el('section',{class:'blueprint addon-section',id:'sec-relationship'});
+  wrap.appendChild(el('p',{class:'eyebrow'},'§ The Relationship'));
+  wrap.appendChild(el('p',{class:'addon-sub'}, `${a} & ${b} — ${cfg.label.toLowerCase()}. The weather between you, not a verdict.`));
+  wrap.appendChild(el('div',{class:'blueprint-body',id:'rel-blueprint-body'}));
+  const ddWrap = el('section',{class:'deep-dive addon-deepdive'});
+  ddWrap.appendChild(el('p',{class:'eyebrow'},'§ The Relationship — Deep Dive'));
+  relSections().forEach((s,i) => ddWrap.appendChild(deepDiveAccordion(s, i+1)));
+  wrap.appendChild(ddWrap);
+  return wrap;
+}
+
+/* ─── Location addon section (relocation reading for a chosen place) ─── */
+function locationPlace(){
+  const g = state.location.geo;
+  return { name: ((state.location.city||'').split(',')[0].trim()) || 'This place', lat: g.lat, lng: g.lon };
+}
+function renderLocationSection(place){
+  const wrap = el('section',{class:'places addon-section',id:'sec-location'});
+  wrap.appendChild(el('p',{class:'eyebrow'},'§ '+place.name));
+  wrap.appendChild(el('p',{class:'glossary-intro'},`What living in ${place.name} does to your chart — your lines relocated to its longitude.`));
+  const homeName = (state.form.geo.display || state.form.city || 'birthplace').split(',')[0];
+  const mapWrap = el('div',{class:'acg-map-wrap'});
+  mapWrap.innerHTML = acgMapSVG(state.acg, {
+    bounds: acgRegionBounds(place.lat, place.lng),
+    home: { name: homeName, lat: state.form.geo.lat, lng: state.form.geo.lon },
+    place: { name: place.name, lat: place.lat, lng: place.lng },
+  });
+  wrap.appendChild(mapWrap);
+  wrap.appendChild(el('div',{class:'blueprint-body',id:'loc-reading-body'}, el('span',{class:'cursor'})));
+  return wrap;
+}
+async function streamLocationReading(){
+  const body = $('#loc-reading-body'); if (!body) return;
+  const place = locationPlace();
+  try { state.reading.locationReading = await streamToElement(relocationPrompt(acgFactsForPlace(state.acg, state.chart, state.form, place), place), body); }
+  catch(e){ body.innerHTML=''; body.appendChild(el('p',{class:'field-help err'}, 'Reading unavailable: '+e.message)); }
 }
 
 function renderHeaderSummary() {
@@ -2493,29 +2705,28 @@ function ddJob(id) {
   return ddJobs[id];
 }
 
-// Mode-aware glue so the single-chart and relational Deep Dives share ONE job
-// system (dedup, prefetch, instant-ready reveal, background fill). The only
-// per-mode differences are the prompt, where the text is stored, and the list
-// of sections — everything else (ddJobs, deepDiveAccordion, prefetch) is shared.
-function activeDeepDiveSections() {
-  return state.mode === 'relational'
-    ? REL_TYPE_CONFIG[state.relationship.type].sections
-    : DEEP_DIVE_SECTIONS;
-}
+// Per-section glue so the core and relationship Deep Dives share ONE job system
+// (dedup, prefetch, instant-ready reveal, background fill) while coexisting in the
+// same document. Routing keys off section.kind ('rel' = relationship addon), not a
+// global mode, so both can be live at once. Core sections carry no kind.
+function ddKey(section) { return (section.kind ? section.kind + ':' : '') + section.id; }
 function ddPromptFor(section) {
-  return state.mode === 'relational'
+  return section.kind === 'rel'
     ? relDeepDivePrompt(section)
     : deepDivePrompt(state.chart, state.form, section);
 }
 function ddStore(section, text) {
-  if (state.mode === 'relational') state.relReading.deepDive[section.id] = text;
+  if (section.kind === 'rel') state.relReading.deepDive[section.id] = text;
   else state.reading.deepDive[section.id] = text;
+}
+function relSections() {
+  return REL_TYPE_CONFIG[state.relationship.type].sections.map(s => Object.assign({ kind:'rel' }, s));
 }
 
 // Generate one section, deduplicated. Safe to call from both prefetch and
 // expand — concurrent callers share the same in-flight promise.
 function ensureDeepDive(section) {
-  const job = ddJob(section.id);
+  const job = ddJob(ddKey(section));
   if (job.status === 'ready') return Promise.resolve();
   if (job.status === 'loading') return job.promise;
   job.status = 'loading';
@@ -2535,19 +2746,22 @@ function ensureDeepDive(section) {
   return job.promise;
 }
 
-// Background driver: race the reader by generating early sections of whichever
-// reading is active (single-chart or relational), ahead of time.
+// Background driver: race the reader by generating early sections of every
+// layer present (core, plus the relationship addon when enabled), ahead of time.
 async function prefetchDeepDive() {
-  const sections = activeDeepDiveSections();
-  const n = Math.min(CONFIG.deepDivePrefetch, sections.length);
-  for (let i = 0; i < n; i++) {
-    try { await ensureDeepDive(sections[i]); }
-    catch (_) { /* stay silent in the background; surfaced if the user expands */ }
+  const lists = [DEEP_DIVE_SECTIONS];
+  if (state.relationship.enabled) lists.push(relSections());
+  for (const sections of lists) {
+    const n = Math.min(CONFIG.deepDivePrefetch, sections.length);
+    for (let i = 0; i < n; i++) {
+      try { await ensureDeepDive(sections[i]); }
+      catch (_) { /* stay silent in the background; surfaced if the user expands */ }
+    }
   }
 }
 
 function deepDiveAccordion(section, idx) {
-  const job = ddJob(section.id);
+  const job = ddJob(ddKey(section));
   const body = el('div',{class:'acc-body',id:'dd-'+section.id+'-body'});
   let open = false;
 
@@ -2645,15 +2859,10 @@ async function regenerateInPlace(){
   const veil = el('div',{class:'regen-veil'}, markEl({size:96,loading:true}), el('p',{class:'regen-msg'},'Regenerating'));
   shell.appendChild(veil);
   requestAnimationFrame(()=>veil.classList.add('show'));
-  const estOffset = state.form.geo ? Math.round(state.form.geo.lon / 15) : 0;
-  state.hdData = await fetchHD(state.form, estOffset);
-  state.chart = computeChart(state.form, state.hdData);
-  state.reading = {blueprint:'',deepDive:{},glossary:{}};
-  ddInit();
   await new Promise(r=>setTimeout(r,600));
-  renderReading();
-  await streamBlueprint();
-  prefetchDeepDive();
+  // Re-run the full lifecycle so every layer present (core, relationship,
+  // location, map) recomputes and re-streams. renderReading replaces the veil.
+  await startReading();
 }
 
 /* ─── Copy ─── */
@@ -2666,6 +2875,22 @@ async function copyFullReading(){
     const s=DEEP_DIVE_SECTIONS[i];
     out+=`${String(i+1).padStart(2,'0')} · ${s.title}\n${s.intro}\n\n`;
     out+=(state.reading.deepDive[s.id]?stripMd(state.reading.deepDive[s.id]):'[ Not yet expanded ]')+'\n\n';
+  }
+  if (state.acg && state.reading.mapDigest){
+    out+='———\n\nYOUR MAP\n\n'+stripMd(state.reading.mapDigest)+'\n\n';
+  }
+  if (state.relationship.enabled){
+    const cfg = REL_TYPE_CONFIG[state.relationship.type];
+    const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
+    out+=`———\n\nTHE RELATIONSHIP (${cfg.label} · with ${b})\n\n`;
+    out+=(state.relReading.blueprint?stripMd(state.relReading.blueprint):'[ Not yet generated ]')+'\n\n';
+    cfg.sections.forEach((s,i)=>{
+      out+=`${String(i+1).padStart(2,'0')} · ${s.title}\n${s.intro}\n\n`;
+      out+=(state.relReading.deepDive[s.id]?stripMd(state.relReading.deepDive[s.id]):'[ Not yet expanded ]')+'\n\n';
+    });
+  }
+  if (state.location.enabled && state.reading.locationReading){
+    out+=`———\n\n${locationPlace().name.toUpperCase()} (relocation)\n\n`+stripMd(state.reading.locationReading)+'\n\n';
   }
   out+='———\n\nYOUR CHART AT A GLANCE\n\n';
   for (const sys of SYSTEMS){
@@ -2682,77 +2907,16 @@ async function copyFullReading(){
   } catch(_){alert("Couldn't copy. Your browser may be blocking clipboard access.");}
 }
 
-/* ─── Relational reading lifecycle ─── */
+/* ─── Relational reading entry — relationship is now an addon on the core
+   reading (core + addon), so this just flips the toggle and runs the unified
+   lifecycle. Kept as a named entry for the roster "read them with you" path. ─── */
 async function startRelationalReading(){
-  state.mode = 'relational';
-  state.relReading = { blueprint:'', deepDive:{} };
-  ddInit();                              // share the single-chart job system, cleared per reading
-  state.generating = true;
-  // Persist both people to the roster, then read their deterministic derived charts.
-  // The form-filler is "you"; the second person is added by you.
-  const self  = upsertSelf(state.form);
-  const other = upsertPerson(state.form2, self.id);
-  state.chart    = derivedChartFor(self);
-  state.chartB   = derivedChartFor(other);
-  // Best-effort Human Design for both, so connection theory can run (no-op without
-  // birth times or the HD service). Cached onto the derived charts.
-  await Promise.all([ enrichHD(state.chart, state.form), enrichHD(state.chartB, state.form2) ]);
-  state.synastry = computeSynastry(state.chart, state.chartB);
-  // Navigate the moment the charts are ready — block only on the Blueprint.
-  renderRelationalReading();
-  await streamRelBlueprint();
-  state.generating = false;
-  const copyBtn = $('#copy-btn');
-  if (copyBtn) copyBtn.classList.add('show');
-  // Same hybrid generation as the single-chart flow: race the reader.
-  prefetchDeepDive();
-}
-
-function renderRelationalReading(){
-  const root = $('#app');
-  root.innerHTML = '';
-  const shell = el('div',{class:'shell shell-reading'});
-  root.appendChild(shell);
-  shell.appendChild(renderRelHeader());
-  shell.appendChild(el('section',{class:'blueprint'},
-    el('p',{class:'eyebrow'},'§ The Relationship'),
-    el('div',{class:'blueprint-body',id:'blueprint-body'}),
-  ));
-  shell.appendChild(renderRelDeepDive());
-  shell.appendChild(el('div',{class:'copy-wrap'},el('button',{id:'copy-btn',class:'btn btn-line btn-block',onclick:copyRelReading},'Copy full reading')));
-  shell.appendChild(el('footer',{class:'reading-footer'},el('p',{class:'end'},'The map no one else saw coming.')));
-}
-
-function renderRelHeader(){
-  const cfg = REL_TYPE_CONFIG[state.relationship.type];
-  const a = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
-  const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
-  return el('header',{class:'app-header app-header--reading'},
-    el('div',{style:'display:flex;align-items:center;justify-content:space-between;gap:12px'},
-      el('span',{class:'mk-only'}, markEl({ariaLabel:'un/charted'})),
-      navLink(),
-    ),
-    el('button',{class:'profile-summary',type:'button',onclick:()=>renderForm(),'aria-label':'Edit birth data'},
-      el('span',{class:'ps-line'},
-        el('span',{class:'ps-name dual'}, a, el('span',{class:'ps-amp'},'&'), b),
-        el('span',{class:'ps-meta-row'}, el('span',{class:'rel-tag'}, cfg.label+' reading')),
-      ),
-      el('span',{class:'edit-link'},'Edit'),
-    ),
-  );
-}
-
-function renderRelDeepDive(){
-  const cfg = REL_TYPE_CONFIG[state.relationship.type];
-  const wrap = el('section',{class:'deep-dive'}, el('p',{class:'eyebrow'},'§ The Deep Dive'));
-  // Reuse the shared deep-dive accordion so relational sections get the same
-  // prefetch / instant-ready / background-fill behavior as the single chart.
-  cfg.sections.forEach((s,i) => wrap.appendChild(deepDiveAccordion(s, i+1)));
-  return wrap;
+  state.relationship.enabled = true;
+  return startReading();
 }
 
 async function streamRelBlueprint(){
-  const body = $('#blueprint-body');
+  const body = $('#rel-blueprint-body');
   body.innerHTML = '';
   body.appendChild(el('div',{class:'bp-loading'}, markEl({size:26,loading:true}), el('span',{}, 'Reading the space between two charts. The relationship is its own thing, and it takes a moment to see it.')));
   try {
@@ -2764,23 +2928,6 @@ async function streamRelBlueprint(){
   }
 }
 
-function copyRelReading(){
-  const cfg = REL_TYPE_CONFIG[state.relationship.type];
-  const a = (state.form.name.trim().split(/\s+/)[0]) || state.form.name;
-  const b = (state.form2.name.trim().split(/\s+/)[0]) || state.form2.name;
-  let out = `un/charted — relationship reading (${cfg.label})\n${a} & ${b}\n\n———\n\nTHE RELATIONSHIP\n\n`;
-  out += stripMd(state.relReading.blueprint) + '\n\n———\n\nTHE DEEP DIVE\n\n';
-  cfg.sections.forEach((s,i) => {
-    out += `${String(i+1).padStart(2,'0')} · ${s.title}\n${s.intro}\n\n`;
-    out += (state.relReading.deepDive[s.id] ? stripMd(state.relReading.deepDive[s.id]) : '[ Not yet expanded ]') + '\n\n';
-  });
-  navigator.clipboard.writeText(out).then(() => {
-    const btn = $('#copy-btn'); if (!btn) return;
-    const orig = btn.textContent; btn.textContent = 'Copied';
-    setTimeout(() => { btn.textContent = orig; }, 2000);
-  }).catch(() => alert("Couldn't copy. Your browser may be blocking clipboard access."));
-}
-
 /* ─── Roster ("Your People") ─── */
 function goForm(){ renderForm(); }
 function goRoster(){ renderRoster(); }
@@ -2788,6 +2935,7 @@ function resetFormsForNew(){
   state.form = BLANK_PERSON_FORM();
   state.form2 = BLANK_PERSON_FORM();
   state.relationship = { enabled:false, type:'romantic' };
+  state.location = { enabled:false, city:'', geo:null };
 }
 function personMeta(p){
   const dt = p.birth_date ? new Date(p.birth_date+'T00:00:00').toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}) : '—';
@@ -2858,6 +3006,7 @@ function personCard(p, isSelf){
 function readPerson(p){
   state.form = personToForm(p);
   state.relationship.enabled = false;
+  state.location = { enabled:false, city:'', geo:null };
   startReading();
 }
 // Read a saved person against you — ask the relationship type first.
@@ -2868,6 +3017,7 @@ function readWithYou(p){
     state.form = personToForm(self);
     state.form2 = personToForm(p);
     state.relationship = { enabled:true, type };
+    state.location = { enabled:false, city:'', geo:null };
     startRelationalReading();
   });
 }
