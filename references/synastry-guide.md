@@ -94,9 +94,18 @@ Compare the two Day Master elements through the Five-Element cycle:
 The dynamic is **directional** — name who feeds or checks whom, not a verdict.
 
 ### BaZi — Earthly-Branch (Chinese zodiac animal) interaction
-Compare the two **Year animals** (the 12-year branch cycle) the same way a single
-chart's pillars are read — only here the two branches belong to two people. A
-pairing falls into exactly one of these, or none:
+Two layers read the same branch tables, only here the branches belong to two
+people instead of two pillars of one chart. Compute both:
+
+- **Year animal** — the familiar 12-year zodiac sign; reads as general temperament
+  and affinity between the two.
+- **Day branch (日支, the Spouse Palace)** — the day pillar's branch is the seat of
+  intimate partnership, so this contact lands directly in the relationship sphere.
+  It is the more partnership-specific of the two; weight it more heavily for an
+  intimate/romantic reading. (Depends only on the birth date, so it is available
+  even when birth time is unknown.)
+
+For either layer, a pairing falls into exactly one of these, or none:
 - **Same animal →** resonance: an easy, familiar likeness that can tip into too
   much sameness with no counterbalance.
 - **Six Combination (六合) →** a bonded pair that merges toward a new element
@@ -110,6 +119,10 @@ pairing falls into exactly one of these, or none:
   push-pull axis — electric in small doses, destabilizing in large ones.
 This is the animal-cycle counterpart to the Day Master (stem) layer: stems give
 the elemental direction, branches give the zodiac-pair texture. Still no score.
+When the Year and Day-branch layers agree (e.g. both bond, or both clash) that is
+a stronger, within-tradition convergence; when they diverge (Year affinity but a
+Spouse-Palace clash, or vice versa) name the mixed signal — general ease with
+intimate friction, or the reverse — rather than averaging them away.
 
 ### Numerology — Life Path interaction
 Light touch, one line, and only when it converges: if both walk the same Life
