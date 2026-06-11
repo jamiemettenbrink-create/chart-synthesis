@@ -137,11 +137,15 @@ input,select,textarea{font:inherit;color:inherit}
 .addon-section .eyebrow{color:var(--auric)}
 .addon-sub{font-family:var(--display);font-style:italic;font-size:18px;color:var(--pewter);margin:14px 0 24px;max-width:52ch;text-wrap:pretty}
 .addon-deepdive{margin-top:48px}
-/* ─── Sticky in-page jump navigation ─── */
-.jump-nav{position:sticky;top:0;z-index:20;display:flex;flex-wrap:wrap;gap:6px;margin:22px 0 4px;padding:11px 0;background:color-mix(in srgb,var(--void) 88%,transparent);border-bottom:1px solid var(--slate-soft);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.jump-link{font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.09em;text-transform:uppercase;color:var(--pewter);background:transparent;border:1px solid var(--slate-soft);border-radius:999px;padding:6px 13px;cursor:pointer;white-space:nowrap;transition:color 150ms ease-out,border-color 150ms ease-out,background 150ms ease-out}
-.jump-link:hover{color:var(--parchment);border-color:var(--slate);background:var(--iron)}
-.blueprint,.deep-dive,.glossary,.places,.addon-section{scroll-margin-top:72px}
+/* ─── Sticky in-page jump navigation — pins directly below the (also sticky)
+   reading header. --reading-header-h / --sticky-stack-h are measured in JS so the
+   offsets track the header's real height across breakpoints and name-wrapping. ─── */
+.jump-nav{position:sticky;top:var(--reading-header-h,0px);z-index:25;display:flex;flex-wrap:nowrap;gap:2px;align-items:stretch;margin:-20px calc(var(--gutter)*-1) 10px;padding:0 calc(var(--gutter) - 14px);background:rgba(13,13,17,0.92);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.jump-nav::-webkit-scrollbar{display:none}
+.jump-link{position:relative;font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.11em;text-transform:uppercase;color:var(--pewter);background:transparent;border:0;border-bottom:1.5px solid transparent;padding:13px 14px 12px;cursor:pointer;white-space:nowrap;transition:color 200ms var(--ease-reveal),border-color 200ms var(--ease-reveal)}
+.jump-link:hover{color:var(--parchment)}
+.jump-link.is-active{color:var(--auric);border-bottom-color:var(--auric)}
+.blueprint,.deep-dive,.glossary,.places,.addon-section{scroll-margin-top:calc(var(--sticky-stack-h,116px) + 14px)}
 .acc{border-top:1px solid var(--slate-soft)}
 .deep-dive .acc:last-child,.glossary .acc:last-child{border-bottom:1px solid var(--slate-soft)}
 .acc-header{display:grid;grid-template-columns:30px 1fr 18px;gap:10px;align-items:start;width:100%;background:transparent;border:0;padding:22px 0;cursor:pointer;text-align:left;min-height:56px;transition:opacity 150ms ease-out}
@@ -2502,17 +2506,81 @@ function renderReading() {
 
   shell.appendChild(el('div',{class:'copy-wrap'},el('button',{id:'copy-btn',class:'btn btn-line btn-block',onclick:copyFullReading},'Copy full reading')));
   shell.appendChild(el('footer',{class:'reading-footer'},el('p',{class:'end'},'The map no one else saw coming.')));
+
+  // Measure the sticky header and start scroll-spy once layout has settled.
+  requestAnimationFrame(() => initStickyNav(nav));
 }
 
 // Sticky in-page navigation across the layers present. Anchor scroll only — the
 // reading stays one document (the "Copy full reading" model depends on that).
+// Active state and the header-height offset are wired up by initStickyNav().
 function renderJumpNav(items){
   const nav = el('nav',{class:'jump-nav','aria-label':'Jump to section'});
-  items.forEach(it => nav.appendChild(el('button',{type:'button',class:'jump-link',onclick:()=>{
-    const t = document.getElementById(it.id);
-    if (t) t.scrollIntoView({ behavior:'smooth', block:'start' });
-  }}, it.label)));
+  items.forEach(it => {
+    const link = el('button',{type:'button',class:'jump-link','data-target':it.id,onclick:()=>{
+      setActiveJumpLink(it.id);
+      const t = document.getElementById(it.id);
+      if (t) t.scrollIntoView({ behavior:'smooth', block:'start' });
+    }}, it.label);
+    nav.appendChild(link);
+  });
   return nav;
+}
+
+function setActiveJumpLink(id){
+  const nav = document.querySelector('.jump-nav'); if (!nav) return;
+  let active = null;
+  nav.querySelectorAll('.jump-link').forEach(l => {
+    const on = l.getAttribute('data-target') === id;
+    l.classList.toggle('is-active', on);
+    if (on) active = l;
+  });
+  // Keep the active tab in view within the horizontally-scrolling strip.
+  if (active && typeof nav.scrollTo === 'function') nav.scrollTo({ left: active.offsetLeft - nav.clientWidth/2 + active.clientWidth/2, behavior:'smooth' });
+}
+
+// Measure the (sticky) reading header so the jump-nav pins directly below it and
+// section anchors clear the full sticky stack. Re-measured on resize / reflow.
+let _stickyRO = null;
+function syncStickyOffsets(){
+  const shell = document.querySelector('.shell-reading'); if (!shell) return;
+  const header = shell.querySelector('.app-header--reading');
+  const nav = shell.querySelector('.jump-nav');
+  const hh = header ? Math.round(header.getBoundingClientRect().height) : 0;
+  const nh = nav ? Math.round(nav.getBoundingClientRect().height) : 0;
+  shell.style.setProperty('--reading-header-h', hh + 'px');
+  shell.style.setProperty('--sticky-stack-h', (hh + nh) + 'px');
+}
+
+// Scroll-spy: highlight the tab for the topmost section sitting under the sticky
+// stack as the reader scrolls.
+let _spyIO = null;
+function initStickyNav(navItems){
+  syncStickyOffsets();
+  const shell = document.querySelector('.shell-reading'); if (!shell) return;
+  const header = shell.querySelector('.app-header--reading');
+  const nav = shell.querySelector('.jump-nav');
+  if (_stickyRO) _stickyRO.disconnect();
+  if (window.ResizeObserver){
+    _stickyRO = new ResizeObserver(syncStickyOffsets);
+    if (header) _stickyRO.observe(header);
+    if (nav) _stickyRO.observe(nav);
+  }
+  if (!window.__stickyResizeBound){ window.addEventListener('resize', syncStickyOffsets, {passive:true}); window.__stickyResizeBound = true; }
+
+  if (_spyIO) { _spyIO.disconnect(); _spyIO = null; }
+  if (window.IntersectionObserver){
+    const visible = new Set();
+    const stack = parseInt(getComputedStyle(shell).getPropertyValue('--sticky-stack-h')) || 116;
+    _spyIO = new IntersectionObserver((entries)=>{
+      entries.forEach(e => { if (e.isIntersecting) visible.add(e.target.id); else visible.delete(e.target.id); });
+      const top = navItems.find(it => visible.has(it.id));   // topmost in document order
+      if (top) setActiveJumpLink(top.id);
+    }, { rootMargin: `-${stack + 4}px 0px -62% 0px`, threshold: 0 });
+    navItems.forEach(it => { const s = document.getElementById(it.id); if (s) _spyIO.observe(s); });
+  }
+  // Seed the first tab active before any scroll.
+  if (navItems.length) setActiveJumpLink(navItems[0].id);
 }
 
 /* ─── Core map section (always-on astrocartography overview) ─── */
