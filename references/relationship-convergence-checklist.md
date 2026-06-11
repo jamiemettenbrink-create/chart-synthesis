@@ -34,6 +34,11 @@
   (bond, ease) or a clash (volatility)? When the animal pairing and the Day Master
   direction agree, that's a within-tradition convergence; when the stem layer says
   "support" but the branch layer "clashes," name the mixed signal honestly.
+- □ BaZi (Spouse Palace) — do the two Day-branch animals (日支, the intimate-partner
+  seat) bond or clash? Weight this above the Year animal for a romantic reading —
+  it lands directly in the partnership sphere. Year + Day-branch agreement is a
+  strong within-tradition convergence; divergence (general ease, intimate friction
+  — or the reverse) is itself the honest, Blueprint-worthy nuance.
 - □ Vedic — does either person's lunar nodal axis fall on the other's Sun/Moon/
   Venus/Mars? A nodal hit raises the "fated, sticky" reading — weight it.
 - □ Numerology — do the two Life Paths share a number (one road, one blind spot)?
