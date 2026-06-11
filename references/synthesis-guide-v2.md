@@ -27,9 +27,11 @@ Before writing anything, determine who will read this synthesis.
 
 **Child subject (under 13):** Write in third person throughout using the subject's name
 ("Leo", "their"). The parent is the actual reader. Do not pretend otherwise by using "you"
-— the awkwardness compounds over a long document. Exception: the Integrated Alignment
-Statement may be written in first person, clearly marked as something written *for the
-subject to read when older*.
+— the awkwardness compounds over a long document. **Never use gendered pronouns
+(he/she/him/her) — un/charted does not know the child's gender; use the name or singular
+they/them/their** (see the Pronouns rule in `voice-guide.md`). Exception: the Integrated
+Alignment Statement may be written in first person, clearly marked as something written
+*for the subject to read when older*.
 
 **Teen subject (13–17):** Second person with a brief framing note at the top stating that
 the reading is written directly to the subject and also intended for the parent to read as a portrait.
