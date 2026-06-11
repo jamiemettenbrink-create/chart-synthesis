@@ -28,6 +28,23 @@ The last sentence is the tell. The reading is defending itself against the reade
 
 ---
 
+## Pronouns
+
+un/charted never collects anyone's gender. So the writing never assumes it: **do not
+use gendered pronouns (he/she/him/her/his/hers) for anyone** — not the subject, not a
+child, not a partner or other person in a relational reading.
+
+- **Adult and teen readings** are second person ("you"), so this rarely comes up.
+- **Child readings** (third person to the parent) and **the other person in a relational
+  reading** (third person) are the exposure: refer to them by **first name** or with
+  **singular they/them/their**, and recast sentences so pronouns don't pile up. Leaning
+  on the name also keeps it unambiguous which person a line is about.
+
+This is not a stylistic preference — guessing gender from a name misgenders people, and a
+best friend who knew you for twenty years would never do that.
+
+---
+
 ## Core Principles
 
 **Honest and gracious at the same time.** Think of the best friend you've had for

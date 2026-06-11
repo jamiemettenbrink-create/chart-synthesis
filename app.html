@@ -1550,7 +1550,7 @@ function chartFacts(chart, form) {
 
 function audienceFraming(audience, name) {
   const firstName = name.split(' ')[0];
-  if (audience === 'minor') return `AUDIENCE: This subject is a child under 13. Write in THIRD PERSON throughout, addressed to the parent. Use the child's first name: ${firstName}. Example: "${firstName} has a Moon in..." Never use "you" to address the child.`;
+  if (audience === 'minor') return `AUDIENCE: This subject is a child under 13. Write in THIRD PERSON throughout, addressed to the parent. Use the child's first name: ${firstName}. Example: "${firstName} has a Moon in..." Never use "you" to address the child. PRONOUNS: un/charted does not know this child's gender — never use gendered pronouns (he/she/him/her/his/hers). Refer to ${firstName} by name or with singular they/them/their, and recast sentences to avoid pronoun pile-ups.`;
   if (audience === 'teen') return `AUDIENCE: This subject is 13–17. Write in second person. Open with one sentence acknowledging you are writing directly to them and that their parent may also read this.`;
   return `AUDIENCE: Adult (18+). Standard second person ("you").`;
 }
@@ -1905,6 +1905,7 @@ function relationalFacts(){
   const L = [];
   L.push(`RELATIONSHIP TYPE: ${cfg.label}. Framing word for person B: "${cfg.framing}".`);
   L.push(`READER ORIENTATION: the reader is ${nameA} (person A) — address them as "you". Person B (${nameB}) is ${cfg.framing}. Write to ${nameA} about the relationship with ${nameB}.`);
+  L.push(`PRONOUNS: un/charted does not collect anyone's gender — never use gendered pronouns (he/she/him/her/his/hers) for ${nameB} or anyone else. Refer to ${nameB} by name or with singular they/them/their; lean on the name to keep it unambiguous which person is meant.`);
   L.push(`This reads the relationship as a THIRD ENTITY. No score, no percentage, no "should you" verdict. Describe the weather and how to move through it.`);
   L.push('');
   L.push(`PERSON A — ${nameA} (you): ${westernSummaryLine(A)}.`);
