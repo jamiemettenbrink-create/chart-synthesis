@@ -1748,6 +1748,39 @@ function baziInteraction(chartA, chartB){
   else hint = `ELEMENTAL CONTROL (one-way): B's ${eb} checks A's ${ea} — B tends to discipline, contain, or correct A; steadying in small doses, controlling in large ones.`;
   return { facts: [`BaZi Day Masters: A is ${ea}, B is ${eb} (Five-Element relationship drives the dynamic above).`], hints: [hint] };
 }
+// BaZi Earthly-Branch interaction — the Chinese-zodiac animal pairing between the two
+// Year animals (the 12-year cycle). Mirrors the within-chart branch logic in
+// calculate_bazi.py: same-animal resonance, six-combination (六合) bond, three-harmony
+// (三合) trine alliance, and clash (六冲). No score — relational weather only, like the
+// Day Master interaction; a pairing falls into exactly one of these categories or none.
+const BAZI_SIX_COMBINATIONS = [ // [animalIdxA, animalIdxB, element formed] — Earthly-Branch 六合
+  [0,1,'Earth'], [2,11,'Wood'], [3,10,'Fire'], [4,9,'Metal'], [5,8,'Water'], [6,7,'Fire'],
+];
+const BAZI_THREE_HARMONY = [ // [trine group of animal indices, element formed] — 三合
+  [[8,0,4],'Water'], [[11,3,7],'Wood'], [[2,6,10],'Fire'], [[5,9,1],'Metal'],
+];
+function baziAnimalInteraction(chartA, chartB){
+  const a = BAZI_ANIMALS.indexOf(chartA.bazi && chartA.bazi.animal);
+  const b = BAZI_ANIMALS.indexOf(chartB.bazi && chartB.bazi.animal);
+  if (a < 0 || b < 0) return null;
+  const aN = BAZI_ANIMALS[a], bN = BAZI_ANIMALS[b];
+  const facts = [`BaZi Year animals (Chinese zodiac): A is the ${aN}, B is the ${bN}.`];
+  let hint = null;
+  if (a === b) {
+    hint = `ANIMAL RESONANCE: both born under the ${aN} — an easy, familiar likeness that can tip into too much sameness with no counterbalance.`;
+  } else if ((a + 6) % 12 === b) {
+    hint = `ANIMAL CLASH (六冲): the ${aN} and the ${bN} sit opposite on the zodiac wheel — a charged push-pull axis that brings volatility and fast change; electric in small doses, destabilizing in large ones.`;
+  } else {
+    const six = BAZI_SIX_COMBINATIONS.find(([x,y]) => (x===a&&y===b) || (x===b&&y===a));
+    const tri = BAZI_THREE_HARMONY.find(([grp]) => grp.indexOf(a)>=0 && grp.indexOf(b)>=0);
+    if (six) {
+      hint = `ANIMAL SIX-COMBINATION (六合): the ${aN} and the ${bN} are a bonded pair that merges toward ${six[2]} — natural cooperation, mutual attraction, an easy "we fit" quality.`;
+    } else if (tri) {
+      hint = `ANIMAL THREE-HARMONY (三合): the ${aN} and the ${bN} share the ${tri[1]} trine — allied temperaments that move the same direction with low friction and shared purpose.`;
+    }
+  }
+  return { facts, hints: hint ? [hint] : [] };
+}
 // Numerology Life Path interaction — light touch, only when it converges.
 function lifePathInteraction(chartA, chartB){
   const la = chartA.numerology && chartA.numerology.lifePath;
@@ -1781,7 +1814,7 @@ function nodalOverlap(chartA, chartB){
     hints: [`KARMIC AXIS: the lunar nodes bind the two charts (${hits.slice(0,2).join('; ')}) — a fated, sticky quality; the relationship feels less optional than chosen and carries a pull toward growth that is hard to walk away from.`],
   };
 }
-SYNASTRY_CONTRIBUTORS.push(baziInteraction, lifePathInteraction, nodalOverlap);
+SYNASTRY_CONTRIBUTORS.push(baziInteraction, baziAnimalInteraction, lifePathInteraction, nodalOverlap);
 
 // Human Design connection theory — compare two gate sets across the 36 channels.
 const HD_CHANNELS = [
@@ -1865,7 +1898,7 @@ function relationalFacts(){
   syn.hints.forEach(h => L.push(`  - ${h}`));
   if (syn.extraFacts.length){ L.push(''); L.push('ADDITIONAL SYSTEM SIGNALS:'); syn.extraFacts.forEach(f => L.push(`  ${f}`)); }
   L.push('');
-  L.push('SYSTEMS NOTE: this reading can draw on Western synastry + composite, BaZi Day Master interaction, Numerology Life Path, the Vedic/lunar nodal axis, and Human Design connection theory (when both birth times and the HD service are available). Use ONLY the signals listed above — do not invent content for any system not represented there.');
+  L.push('SYSTEMS NOTE: this reading can draw on Western synastry + composite, BaZi Day Master interaction, BaZi Year-animal (Chinese zodiac) interaction, Numerology Life Path, the Vedic/lunar nodal axis, and Human Design connection theory (when both birth times and the HD service are available). Use ONLY the signals listed above — do not invent content for any system not represented there.');
   return L.join('\n');
 }
 function relBlueprintPrompt(){
