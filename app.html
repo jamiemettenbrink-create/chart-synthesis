@@ -2201,6 +2201,9 @@ function renderForm() {
     // async work starts, so silence never reads as breakage.
     generateBtn.disabled = true;
     generateBtn.textContent = state.relationship.enabled ? 'Reading the charts…' : 'Reading the chart…';
+    // From the form, the relationship is an addon on your reading (you-first),
+    // not the lead — clear any lead flag left over from a roster "With you".
+    state.relationship.lead = false;
     upsertSelf(state.form);   // the form-filler is always "you"
     startReading();
   });
@@ -2230,7 +2233,15 @@ function validate() {
    toggles layer on additional sections in the SAME document — a relationship
    (you + someone) and a location (you + a place). Each addon computes its own
    data and renders its own §section; nothing replaces the core reading. */
-async function startReading() {
+async function startReading(opts) {
+  // Paint an instant loading state for every entry point except regenerate,
+  // which keeps the existing reading visible under its own veil. The rAF yield
+  // guarantees the browser paints it before the (synchronous) chart compute.
+  if (!(opts && opts.skipLoading)) {
+    renderReadingLoading();
+    await new Promise(r => requestAnimationFrame(r));
+  }
+  const relLead = state.relationship.enabled && state.relationship.lead;
   state.mode = state.relationship.enabled ? 'relational' : 'single';   // legacy flag, kept for any external readers
   state.reading = { blueprint:'', deepDive:{}, glossary:{} };
   state.relReading = { blueprint:'', deepDive:{} };
@@ -2258,8 +2269,15 @@ async function startReading() {
   // Navigate the moment chart data is ready — block only on the Blueprints,
   // never on the Deep Dives or the addon streams.
   renderReading();
-  await streamBlueprint();
-  if (state.relationship.enabled) await streamRelBlueprint();
+  // When the relationship leads (came in via "read them with you"), stream it
+  // first so the section the reader landed on fills immediately.
+  if (relLead) {
+    await streamRelBlueprint();
+    await streamBlueprint();
+  } else {
+    await streamBlueprint();
+    if (state.relationship.enabled) await streamRelBlueprint();
+  }
   state.generating = false;
   const copyBtn = $('#copy-btn');
   if (copyBtn) copyBtn.classList.add('show');
@@ -2522,6 +2540,24 @@ function renderPlacesPanel(){
   return sec;
 }
 
+// Immediate, full-screen acknowledgment painted the instant a reading is
+// requested — before any chart compute or network work. Without this, the
+// roster paths ("Read" / "With you") sat frozen on the roster until the data
+// was ready, so the click read as a no-op. renderReading() replaces this.
+function renderReadingLoading(){
+  const root = $('#app');
+  root.innerHTML = '';
+  root.appendChild(el('div',{class:'orbit-backdrop','aria-hidden':'true'},
+    el('div',{class:'ring r1'}),el('div',{class:'ring r2'}),el('div',{class:'ring r3'}),el('div',{class:'pt'})));
+  const shell = el('div',{class:'shell shell-form'});
+  root.appendChild(shell);
+  const msg = state.relationship.enabled
+    ? 'Reading the space between two charts. The relationship is its own thing, and it takes a moment to see it.'
+    : 'Casting the chart across seven systems.';
+  shell.appendChild(el('div',{class:'bp-loading',style:'min-height:60vh;align-items:center;justify-content:center'},
+    markEl({size:64,loading:true}), el('span',{}, msg)));
+}
+
 function renderReading() {
   const root = $('#app');
   root.innerHTML = '';
@@ -2532,6 +2568,13 @@ function renderReading() {
   // Build the single document section by section, collecting jump-nav targets.
   const nav = [];
   const addSection = (node, label) => { nav.push({ id: node.id, label }); shell.appendChild(node); };
+
+  // When the reader came in via "read them with you," the relationship is the
+  // thing they asked for — lead with it (it's what the page lands on), with the
+  // solo "you" reading following below. Otherwise the relationship is an addon
+  // layered onto the core reading and sits in its usual place.
+  const relLead = state.relationship.enabled && state.relationship.lead;
+  if (relLead) addSection(renderRelationshipSection(), 'Relationship');
 
   // ── Core: Blueprint ──
   addSection(el('section',{class:'blueprint',id:'sec-blueprint'},
@@ -2546,8 +2589,8 @@ function renderReading() {
   // ── Core: Your Map (astrocartography) — only with a known birth time + place ──
   if (state.acg) addSection(renderMapSection(), 'Your Map');
 
-  // ── Addon: Relationship ──
-  if (state.relationship.enabled) addSection(renderRelationshipSection(), 'Relationship');
+  // ── Addon: Relationship (in its addon position, unless it's leading above) ──
+  if (state.relationship.enabled && !relLead) addSection(renderRelationshipSection(), 'Relationship');
 
   // ── Addon: Location ──
   if (state.location.enabled && state.acg) {
@@ -2990,8 +3033,9 @@ async function regenerateInPlace(){
   requestAnimationFrame(()=>veil.classList.add('show'));
   await new Promise(r=>setTimeout(r,600));
   // Re-run the full lifecycle so every layer present (core, relationship,
-  // location, map) recomputes and re-streams. renderReading replaces the veil.
-  await startReading();
+  // location, map) recomputes and re-streams. renderReading replaces the veil,
+  // so skip the standalone loading screen and keep the veil-over-reading feel.
+  await startReading({ skipLoading:true });
 }
 
 /* ─── Copy ─── */
@@ -3135,6 +3179,7 @@ function personCard(p, isSelf){
 function readPerson(p){
   state.form = personToForm(p);
   state.relationship.enabled = false;
+  state.relationship.lead = false;
   state.location = { enabled:false, city:'', geo:null };
   startReading();
 }
@@ -3145,7 +3190,8 @@ function readWithYou(p){
   pickRelTypeModal(p, (type) => {
     state.form = personToForm(self);
     state.form2 = personToForm(p);
-    state.relationship = { enabled:true, type };
+    // lead:true — the relationship is the thing asked for, so render it first.
+    state.relationship = { enabled:true, type, lead:true };
     state.location = { enabled:false, city:'', geo:null };
     startRelationalReading();
   });
