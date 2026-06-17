@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#0D0D11"/>
+<meta name="theme-color" content="#15161D"/>
 <title>un/charted</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230D0D11'/%3E%3Cg stroke='%23EDE8DC' stroke-opacity='0.55' stroke-width='2' fill='none'%3E%3Cline x1='22' y1='26' x2='50' y2='16'/%3E%3Cline x1='50' y1='16' x2='78' y2='32'/%3E%3Cline x1='78' y1='32' x2='70' y2='64'/%3E%3Cline x1='70' y1='64' x2='38' y2='78'/%3E%3Cline x1='38' y1='78' x2='16' y2='58'/%3E%3Cline x1='16' y1='58' x2='22' y2='26'/%3E%3Cline x1='50' y1='16' x2='70' y2='64'/%3E%3Cline x1='44' y1='44' x2='70' y2='64'/%3E%3C/g%3E%3Cg fill='%23EDE8DC'%3E%3Ccircle cx='22' cy='26' r='4'/%3E%3Ccircle cx='50' cy='16' r='4'/%3E%3Ccircle cx='78' cy='32' r='4'/%3E%3Ccircle cx='38' cy='78' r='4'/%3E%3Ccircle cx='16' cy='58' r='4'/%3E%3Ccircle cx='44' cy='44' r='4'/%3E%3C/g%3E%3Ccircle cx='70' cy='64' r='6' fill='%23C8A96E'/%3E%3C/svg%3E"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --void:#0D0D11;--void-soft:#0F0F14;--iron:#1A1D26;--iron-soft:#161922;
+  --void:#15161D;--void-soft:#0F0F14;--iron:#1A1D26;--iron-soft:#161922;
   --slate:#3A4158;--slate-soft:#2A2F3F;--pewter:#7A869E;--pewter-soft:#5E6B83;
   --auric:#C8A96E;--auric-dim:rgba(200,169,110,0.65);--auric-faint:rgba(200,169,110,0.14);
   --parchment:#EDE8DC;--rust:#C76A6A;
@@ -41,7 +41,7 @@ input,select,textarea{font:inherit;color:inherit}
 .orbit-backdrop .pt{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--auric);top:50%;left:0;transform:translate(-50%,-50%);box-shadow:0 0 18px rgba(200,169,110,0.5)}
 @keyframes slow-drift{from{transform:translateY(-50%) rotate(0deg)}to{transform:translateY(-50%) rotate(360deg)}}
 @media(max-width:500px){.orbit-backdrop{opacity:0.32}}
-.app-header--form{position:sticky;top:0;z-index:30;margin:-28px calc(var(--gutter)*-1) 32px;padding:18px var(--gutter) 16px;background:rgba(13,13,17,0.85);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);text-align:left;display:flex;flex-direction:column;gap:6px}
+.app-header--form{position:sticky;top:0;z-index:30;margin:-28px calc(var(--gutter)*-1) 32px;padding:18px var(--gutter) 16px;background:rgba(21,22,29,0.85);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);text-align:left;display:flex;flex-direction:column;gap:6px}
 .app-header--form .lockup{font-size:36px}
 .app-header--form .tagline{font-family:var(--display);font-style:italic;font-size:16px;color:var(--auric);margin:0;line-height:1.3}
 .lede{font-family:var(--display);font-weight:400;font-size:22px;line-height:1.35;color:var(--parchment);margin:0 0 40px;text-wrap:pretty}
@@ -84,7 +84,7 @@ input,select,textarea{font:inherit;color:inherit}
 .btn-block{width:100%;display:block}
 .form-footer{margin-top:56px;border-top:1px solid var(--slate-soft);padding-top:22px}
 .form-footer p{font-family:var(--mono);font-size:11.5px;color:var(--pewter-soft);letter-spacing:0.06em;margin:0;text-transform:uppercase}
-.app-header--reading{margin:-28px calc(var(--gutter)*-1) 32px;padding:14px var(--gutter);background:rgba(13,13,17,0.85);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);position:sticky;top:0;z-index:30;display:flex;flex-direction:column;gap:10px}
+.app-header--reading{margin:-28px calc(var(--gutter)*-1) 32px;padding:14px var(--gutter);background:rgba(21,22,29,0.85);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);position:sticky;top:0;z-index:30;display:flex;flex-direction:column;gap:10px}
 .app-header--reading .mk-only .mk{width:26px;height:26px}
 .profile-summary{display:grid;grid-template-columns:1fr auto;align-items:start;gap:14px;background:transparent;border:0;padding:0;cursor:pointer;text-align:left;width:100%;transition:opacity 150ms ease-out}
 .profile-summary:hover{opacity:0.85}
@@ -98,8 +98,8 @@ input,select,textarea{font:inherit;color:inherit}
 .profile-summary:hover .edit-link{color:var(--auric)}
 .blueprint{margin-top:48px;padding-bottom:56px;border-bottom:1px solid var(--slate-soft);animation:fade-up 700ms var(--ease-reveal) both}
 .blueprint .eyebrow{margin-bottom:28px}
-.blueprint-body{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.55;color:var(--parchment);text-wrap:pretty;letter-spacing:0.005em}
-.blueprint-body p{margin:0 0 20px;max-width:38em}
+.blueprint-body{font-family:var(--display);font-weight:500;font-size:20px;line-height:1.7;color:var(--parchment);text-wrap:pretty;letter-spacing:0.005em}
+.blueprint-body p{margin:0 0 22px;max-width:34em}
 .blueprint-body h4.bp-sub{font-family:var(--display);font-weight:500;font-size:32px;line-height:1.15;color:var(--parchment);margin:32px 0 14px;letter-spacing:-0.005em;text-wrap:balance}
 .blueprint-body h4.bp-sub:first-child{margin-top:0}
 .blueprint-body p.sabian{padding:4px 0 4px 22px;border-left:2px solid var(--auric-dim);color:var(--auric);font-family:var(--display);font-style:italic;font-size:21px;line-height:1.4;margin:22px 0 28px;max-width:52ch}
@@ -140,7 +140,7 @@ input,select,textarea{font:inherit;color:inherit}
 /* ─── Sticky in-page jump navigation — pins directly below the (also sticky)
    reading header. --reading-header-h / --sticky-stack-h are measured in JS so the
    offsets track the header's real height across breakpoints and name-wrapping. ─── */
-.jump-nav{position:sticky;top:var(--reading-header-h,0px);z-index:25;display:flex;flex-wrap:nowrap;gap:2px;align-items:stretch;margin:-20px calc(var(--gutter)*-1) 10px;padding:0 calc(var(--gutter) - 14px);background:rgba(13,13,17,0.92);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.jump-nav{position:sticky;top:var(--reading-header-h,0px);z-index:25;display:flex;flex-wrap:nowrap;gap:2px;align-items:stretch;margin:-20px calc(var(--gutter)*-1) 10px;padding:0 calc(var(--gutter) - 14px);background:rgba(21,22,29,0.92);backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);border-bottom:1px solid var(--slate-soft);overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
 .jump-nav::-webkit-scrollbar{display:none}
 .jump-link{position:relative;font-family:var(--ui);font-weight:500;font-size:11px;letter-spacing:0.11em;text-transform:uppercase;color:var(--pewter);background:transparent;border:0;border-bottom:1.5px solid transparent;padding:13px 14px 12px;cursor:pointer;white-space:nowrap;transition:color 200ms var(--ease-reveal),border-color 200ms var(--ease-reveal)}
 .jump-link:hover{color:var(--parchment)}
@@ -181,7 +181,7 @@ input,select,textarea{font:inherit;color:inherit}
 .copy-wrap:has(#copy-btn.show){opacity:1;transform:translateY(0)}
 .reading-footer{margin-top:80px;padding-top:32px;border-top:1px solid var(--slate-soft);text-align:center}
 .reading-footer .end{font-family:var(--display);font-style:italic;color:var(--auric);font-size:17px;margin:0}
-.edit-overlay{position:fixed;inset:0;background:rgba(13,13,17,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:100;opacity:0;transition:opacity 240ms ease-out;display:flex;align-items:flex-end;justify-content:center}
+.edit-overlay{position:fixed;inset:0;background:rgba(21,22,29,0.7);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:100;opacity:0;transition:opacity 240ms ease-out;display:flex;align-items:flex-end;justify-content:center}
 .edit-overlay.show{opacity:1}
 .edit-sheet{width:100%;max-width:560px;max-height:92vh;overflow-y:auto;background:var(--iron);border-top:1px solid var(--slate);padding:28px var(--gutter) calc(28px + env(safe-area-inset-bottom));transform:translateY(100%);transition:transform 360ms var(--ease-reveal)}
 .edit-overlay.show .edit-sheet{transform:translateY(0)}
@@ -192,7 +192,7 @@ input,select,textarea{font:inherit;color:inherit}
 .edit-actions{margin-top:28px;display:flex;gap:10px;justify-content:space-between}
 .edit-actions .btn{flex:1}
 .shell-reading.regenerating>*:not(.regen-veil){opacity:0.4;transition:opacity 360ms ease-out;pointer-events:none}
-.regen-veil{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:rgba(13,13,17,0.4);opacity:0;transition:opacity 360ms ease-out;pointer-events:none}
+.regen-veil{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;background:rgba(21,22,29,0.4);opacity:0;transition:opacity 360ms ease-out;pointer-events:none}
 .regen-veil.show{opacity:1}
 .regen-msg{font-family:var(--display);font-style:italic;font-size:19px;color:var(--auric);margin:0;letter-spacing:0.01em}
 @keyframes fade-up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
@@ -228,7 +228,7 @@ input,select,textarea{font:inherit;color:inherit}
   .app-header--form .lockup{font-size:48px}
   .app-header--form .tagline{font-size:18px}
   .lede{font-size:26px;margin-bottom:56px}
-  .blueprint-body{font-size:20px}
+  .blueprint-body{font-size:21px}
   .blueprint-body h4.bp-sub{font-size:38px}
   .blueprint-body p.sabian{font-size:23px}
   .alignment-statement{font-size:28px!important;max-width:36ch!important}
