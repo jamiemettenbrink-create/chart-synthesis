@@ -296,6 +296,25 @@ input,select,textarea{font:inherit;color:inherit}
 .relpick-head .eyebrow{margin-bottom:6px}
 .relpick-q{font-family:var(--display);font-size:21px;color:var(--parchment);margin:0;line-height:1.3}
 .relpick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.pc-rel{font-family:var(--mono);font-size:10px;color:var(--auric);letter-spacing:0.12em;text-transform:uppercase;margin-top:2px}
+/* Relationship manager (Edit profile) */
+.rel-manage{margin-top:30px;border-top:1px solid var(--slate-soft);padding-top:22px}
+.rel-manage-head{margin-bottom:14px}
+.rel-manage-head .eyebrow{margin-bottom:6px}
+.rel-manage-sub{font-family:var(--ui);font-size:13px;color:var(--pewter);line-height:1.45;margin:0}
+.rel-edge-list{display:flex;flex-direction:column;gap:8px}
+.rel-edge-empty{font-family:var(--display);font-style:italic;font-size:15px;color:var(--pewter-soft);margin:2px 0}
+.rel-edge{display:flex;align-items:center;gap:10px;border-bottom:1px dashed var(--slate-soft);padding-bottom:8px}
+.rel-edge-name{flex:1;min-width:0;font-family:var(--display);font-size:17px;color:var(--parchment);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rel-edge-type{flex-shrink:0}
+.rel-edge-x{flex-shrink:0;background:transparent;border:1px solid var(--slate-soft);color:var(--pewter-soft);font-size:16px;line-height:1;width:32px;height:32px;cursor:pointer;transition:color 150ms ease-out,border-color 150ms ease-out}
+.rel-edge-x:hover{color:var(--rust);border-color:var(--rust)}
+.rel-add{margin-top:18px}
+.rel-add-label{font-family:var(--ui);font-weight:500;font-size:12px;letter-spacing:0.07em;text-transform:uppercase;color:var(--pewter);margin:0 0 8px}
+.rel-add-row{display:grid;grid-template-columns:1.5fr 1fr;gap:8px}
+.rel-add-new{display:none}
+.rel-add-new.is-on{display:block;margin-top:14px;padding-top:6px;border-top:1px dashed var(--slate-soft)}
+.rel-add-btn{margin-top:12px;width:100%}
 @media(min-width:720px){.roster-title{font-size:42px}.pc-name{font-size:22px}}
 </style>
 </head>
@@ -1191,6 +1210,7 @@ function formToPerson(f, addedBy){
     enneagram: f.enneagramType ? { type:f.enneagramType, wing:f.enneagramWing||null, instinct:f.enneagramInstinct||null } : null,
     added_by: addedBy || 'self',
     added_at: new Date().toISOString(),
+    relationships: [],   // [{personId, type}] — "who this person is to other saved people"
   };
 }
 function personToForm(p){
@@ -1244,10 +1264,36 @@ function updatePerson(id, f){
   const list = loadRoster();
   const i = list.findIndex(p => p.id === id);
   if (i < 0) return null;
-  list[i] = Object.assign(formToPerson(f, list[i].added_by), { id, added_at: list[i].added_at });
+  list[i] = Object.assign(formToPerson(f, list[i].added_by), { id, added_at: list[i].added_at, relationships: list[i].relationships || [] });
   saveRoster(list);
   delete derivedCache[id];
   return list[i];
+}
+
+/* ─── Relationships (persistent edges on a person; "who is X to you") ───
+   Stored on the person as `relationships: [{personId, type}]`. The self's
+   edges drive "read with you", so the relationship type is set once (in Edit
+   profile, or the first time you read someone with you) — not asked again. */
+function relationshipType(fromId, toId){
+  const p = getPerson(fromId);
+  const edge = p && p.relationships && p.relationships.find(r => r.personId === toId);
+  return edge ? edge.type : null;
+}
+function setRelationship(fromId, toId, type){
+  const list = loadRoster();
+  const p = list.find(x => x.id === fromId);
+  if (!p) return;
+  if (!p.relationships) p.relationships = [];
+  const edge = p.relationships.find(r => r.personId === toId);
+  if (edge) edge.type = type; else p.relationships.push({ personId: toId, type });
+  saveRoster(list);
+}
+function removeRelationship(fromId, toId){
+  const list = loadRoster();
+  const p = list.find(x => x.id === fromId);
+  if (!p || !p.relationships) return;
+  p.relationships = p.relationships.filter(r => r.personId !== toId);
+  saveRoster(list);
 }
 
 /* ─── Relationship type config — mirrors references/relationship-type-config.md (canonical source) ─── */
@@ -2252,6 +2298,8 @@ async function startReading(opts) {
   if (state.relationship.enabled) {
     const self  = upsertSelf(state.form);
     const other = upsertPerson(state.form2, self.id);
+    // Remember the nature of the relationship so future reads don't re-ask.
+    setRelationship(self.id, other.id, state.relationship.type);
     state.chart  = derivedChartFor(self);
     state.chartB = derivedChartFor(other);
     await Promise.all([ enrichHD(state.chart, state.form), enrichHD(state.chartB, state.form2) ]);
@@ -3166,10 +3214,13 @@ function personCard(p, isSelf){
     actions.appendChild(el('button',{type:'button',class:'pc-chip',onclick:()=>readPerson(p)},'Read'));
     actions.appendChild(el('button',{type:'button',class:'pc-chip danger',onclick:()=>{ if(confirm(`Forget ${p.display_name||'this person'}? This deletes their birth data from this browser.`)){ deletePerson(p.id); renderRoster(); } }},'Forget'));
   }
+  const self = isSelf ? null : getSelf();
+  const rel = self ? relationshipType(self.id, p.id) : null;
   return el('div',{class:'person-card'+(isSelf?' self':'')},
     el('div',{class:'pc-body'},
       el('span',{class:'pc-name'}, p.display_name || 'Unnamed'),
       el('span',{class:'pc-meta'}, personMeta(p)),
+      rel ? el('span',{class:'pc-rel'}, REL_TYPE_CONFIG[rel].label) : null,
     ),
     actions,
   );
@@ -3183,18 +3234,101 @@ function readPerson(p){
   state.location = { enabled:false, city:'', geo:null };
   startReading();
 }
-// Read a saved person against you — ask the relationship type first.
+// Read a saved person against you. If the relationship's nature is already
+// stored (set in Edit profile or a previous read), use it and skip the prompt;
+// otherwise ask once and remember the answer for next time.
 function readWithYou(p){
   const self = getSelf();
   if (!self){ alert('Set yourself first: start a reading and the chart you enter becomes you.'); return; }
-  pickRelTypeModal(p, (type) => {
+  const begin = (type) => {
     state.form = personToForm(self);
     state.form2 = personToForm(p);
     // lead:true — the relationship is the thing asked for, so render it first.
     state.relationship = { enabled:true, type, lead:true };
     state.location = { enabled:false, city:'', geo:null };
     startRelationalReading();
-  });
+  };
+  const known = relationshipType(self.id, p.id);
+  if (known){ begin(known); return; }
+  pickRelTypeModal(p, (type) => { setRelationship(self.id, p.id, type); begin(type); });
+}
+
+// Relationship manager for a person's Edit profile — lists the people already
+// tied to them (with an editable nature), and adds new ones: either an existing
+// saved person or a brand-new one entered inline. Edges persist immediately, so
+// they survive Cancel and are independent of the birth-data Save.
+function relationshipsSection(person){
+  const wrap = el('div',{class:'rel-manage'});
+  wrap.appendChild(el('div',{class:'rel-manage-head'},
+    el('p',{class:'eyebrow'},'Relationships'),
+    el('p',{class:'rel-manage-sub'},'Who the people in your life are to you. Set it here once and readings won’t ask again.'),
+  ));
+  const list = el('div',{class:'rel-edge-list'});
+  const addWrap = el('div',{class:'rel-add'});
+  wrap.appendChild(list);
+  wrap.appendChild(addWrap);
+
+  const rebuild = () => {
+    list.innerHTML = '';
+    const edges = (getPerson(person.id) && getPerson(person.id).relationships) || [];
+    if (!edges.length) list.appendChild(el('p',{class:'rel-edge-empty'},'No one added yet.'));
+    edges.forEach(edge => {
+      const other = getPerson(edge.personId);
+      const name = other ? (other.display_name || 'Unnamed') : 'Removed person';
+      const sel = el('select',{class:'rel-edge-type',onchange:e=>setRelationship(person.id, edge.personId, e.target.value)},
+        ...REL_TYPE_ORDER.map(t => el('option',{value:t,selected:edge.type===t}, REL_TYPE_CONFIG[t].label)));
+      list.appendChild(el('div',{class:'rel-edge'},
+        el('span',{class:'rel-edge-name'}, name),
+        sel,
+        el('button',{type:'button',class:'rel-edge-x','aria-label':'Remove '+name,onclick:()=>{ removeRelationship(person.id, edge.personId); rebuild(); }},'×'),
+      ));
+    });
+    buildAdd();
+  };
+
+  const addState = { who:'', type:'romantic', newForm: BLANK_PERSON_FORM() };
+  function buildAdd(){
+    addWrap.innerHTML = '';
+    addState.who = ''; addState.type = 'romantic'; addState.newForm = BLANK_PERSON_FORM();
+    const linked = new Set(((getPerson(person.id) && getPerson(person.id).relationships) || []).map(r => r.personId));
+    const candidates = loadRoster().filter(p => p.id !== person.id && !linked.has(p.id));
+
+    const newWrap = el('div',{class:'rel-add-new'});
+    const err = el('p',{class:'form-err'});
+    function toggleNew(){
+      newWrap.innerHTML = '';
+      const isNew = addState.who === '__new__';
+      newWrap.classList.toggle('is-on', isNew);
+      if (isNew) personFieldset(addState.newForm,'rel-new').forEach(n => newWrap.appendChild(n));
+    }
+    const whoSel = el('select',{class:'rel-add-who',onchange:e=>{ addState.who = e.target.value; toggleNew(); }},
+      el('option',{value:''},'Choose a person…'),
+      ...candidates.map(p => el('option',{value:p.id}, `${p.display_name||'Unnamed'} · ${p.birth_date||'?'}`)),
+      el('option',{value:'__new__'},'＋ Add a new person'),
+    );
+    const typeSel = el('select',{class:'rel-add-type',onchange:e=>addState.type=e.target.value},
+      ...REL_TYPE_ORDER.map(t => el('option',{value:t,selected:addState.type===t}, REL_TYPE_CONFIG[t].label)));
+    const onAdd = () => {
+      err.classList.remove('show'); err.textContent = '';
+      let targetId = addState.who;
+      if (!targetId){ err.textContent = 'Choose a person, or add a new one.'; err.classList.add('show'); return; }
+      if (targetId === '__new__'){
+        const errs = validatePerson(addState.newForm, 'New person');
+        if (errs.length){ err.textContent = errs[0]; err.classList.add('show'); return; }
+        targetId = upsertPerson(addState.newForm, person.id).id;
+      }
+      setRelationship(person.id, targetId, addState.type);
+      rebuild();
+    };
+    addWrap.appendChild(el('p',{class:'rel-add-label'},'Add a relationship'));
+    addWrap.appendChild(el('div',{class:'rel-add-row'}, whoSel, typeSel));
+    addWrap.appendChild(newWrap);
+    addWrap.appendChild(err);
+    addWrap.appendChild(el('button',{type:'button',class:'btn btn-ghost rel-add-btn',onclick:onAdd},'Add relationship'));
+  }
+
+  rebuild();
+  return wrap;
 }
 
 // Edit a stored person's birth data in place (reuses the modal chrome + personFieldset).
@@ -3207,6 +3341,7 @@ function editPersonModal(person){
   const form = el('form',{class:'form',novalidate:true});
   sheet.appendChild(form);
   personFieldset(tmp,'edit').forEach(n => form.appendChild(n));
+  form.appendChild(relationshipsSection(person));
   const errLine = el('p',{class:'form-err'});
   form.appendChild(errLine);
   form.appendChild(el('div',{class:'edit-actions'},
